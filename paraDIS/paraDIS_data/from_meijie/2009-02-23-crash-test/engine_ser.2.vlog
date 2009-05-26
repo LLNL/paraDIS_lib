@@ -1,0 +1,335 @@
+/usr/gapps/visit/1.11.1/linux-x86_64/bin/engine_ser -host 127.0.0.1 -timeout 480 -dir /usr/gapps/visit -port 5600 -key 80a1a1a58b5be88b9d24 
+ENGINE started
+Creating new VisWindow for id=0
+Succesfully loaded info about 20 plot plugins.
+Succesfully loaded info about 35 operator plugins.
+Succesfully loaded info about 89 database plugins.
+Executing DefineVirtualDatabaseRPC: db=/g/g0/rcook/current_projects/paraDIS/paraDIS_data/from_meijie/2009-02-23-crash-test/rs*.data database, path=/g/g0/rcook/current_projects/paraDIS/paraDIS_data/from_meijie/2009-02-23-crash-test/, time=0, numStates=16
+Loaded full database plugin paraDIS version 1.0a2
+Skipping already loaded database plugin paraDIS version 1.0a2
+starting populateDatabaseMetaData
+avtparaDISFileFormat version 1.1a2, 2008-02-13
+GetParaDISMetaData called 
+The file is a ParaDIS-style file
+finishing populateDatabaseMetaData
+Executing SetWinAnnotAttsRPC 1099x1040
+Executing DefineVirtualDatabaseRPC: db=/g/g0/rcook/current_projects/paraDIS/paraDIS_data/from_meijie/2009-02-23-crash-test/rs*.data database, path=/g/g0/rcook/current_projects/paraDIS/paraDIS_data/from_meijie/2009-02-23-crash-test/, time=0, numStates=16
+Skipping already loaded database plugin paraDIS version 1.0a2
+Executing ReadRPC
+Skipping already loaded database plugin paraDIS version 1.0a2
+Executing PreparePlotRPC: FilledBoundary_1.0
+Loaded full plot plugin FilledBoundary version 1.0
+Executing MakePlotRPC: FilledBoundary_1.0
+Executing ExecuteRPC with respondWithNullDataObject = 1
+FilledBoundaryPlot: Did not hit target topological dimension: 3
+Unable to determine spatial extents -- dataset needs an update
+Entered update for avtCurrentExtentFilter
+Entered update for avtCompactTreeFilter
+Entered update for avtVertexNormalsFilter
+Entered update for avtCondenseDatasetFilter
+Entered update for avtFilledBoundaryFilter
+Entered update for avtGhostZoneAndFacelistFilter
+Entered update for avtExpressionEvaluatorFilter
+GetMesh(segments)
+Starting GetParaDISMesh(segments)
+GetMesh: created 798 nodes  and 788 arm segments.
+Setting number of points to  798
+GetMesh: setting locations
+GetMesh: *** creating segment mesh ***
+GetMesh: Ending GetMesh
+Executing avtExpressionEvaluatorFilter
+Done executing avtExpressionEvaluatorFilter
+Done Updating avtExpressionEvaluatorFilter
+Executing avtGhostZoneAndFacelistFilter
+Entered update for avtFacelistFilter
+Executing avtFacelistFilter
+Done executing avtFacelistFilter
+Done Updating avtFacelistFilter
+Done executing avtGhostZoneAndFacelistFilter
+Done Updating avtGhostZoneAndFacelistFilter
+Executing avtFilledBoundaryFilter
+Done executing avtFilledBoundaryFilter
+A data object sink's current input was fed back into itself, ignoring...
+Done Updating avtFilledBoundaryFilter
+Executing avtCondenseDatasetFilter
+Done executing avtCondenseDatasetFilter
+Done Updating avtCondenseDatasetFilter
+Executing avtVertexNormalsFilter
+Done executing avtVertexNormalsFilter
+Done Updating avtVertexNormalsFilter
+Executing avtCompactTreeFilter
+Done executing avtCompactTreeFilter
+Done Updating avtCompactTreeFilter
+Executing avtCurrentExtentFilter
+Done executing avtCurrentExtentFilter
+Done Updating avtCurrentExtentFilter
+Executing SetWinAnnotAttsRPC 1099x1040
+Executing PrepareUpdatePlotAttsRPC: FilledBoundary_1.0
+Skipping already loaded plot plugin FilledBoundary version 1.0
+Executing UpdatePlotAttsRPC: FilledBoundary_1.0
+Executing RenderRPC for the following plots
+   0, 
+A data object sink's current input was fed back into itself, ignoring...
+avtPlot::Execute Receiving Polygon Data
+Executing SetWinAnnotAttsRPC 1099x1040
+Executing DefineVirtualDatabaseRPC: db=/g/g0/rcook/current_projects/paraDIS/paraDIS_data/from_meijie/2009-02-23-crash-test/rs*.data database, path=/g/g0/rcook/current_projects/paraDIS/paraDIS_data/from_meijie/2009-02-23-crash-test/, time=1, numStates=16
+Skipping already loaded database plugin paraDIS version 1.0a2
+Executing ReadRPC
+Skipping already loaded database plugin paraDIS version 1.0a2
+Executing ReleaseDataRPC: 0
+Releasing all data associated with network 0
+A data object sink's current input was fed back into itself, ignoring...
+A data object sink's current input was fed back into itself, ignoring...
+A data object sink's current input was fed back into itself, ignoring...
+A data object sink's current input was fed back into itself, ignoring...
+Executing PreparePlotRPC: FilledBoundary_1.0
+Skipping already loaded plot plugin FilledBoundary version 1.0
+Executing MakePlotRPC: FilledBoundary_1.0
+Executing ExecuteRPC with respondWithNullDataObject = 1
+FilledBoundaryPlot: Did not hit target topological dimension: 3
+Unable to determine spatial extents -- dataset needs an update
+Entered update for avtCurrentExtentFilter
+Entered update for avtCompactTreeFilter
+Entered update for avtVertexNormalsFilter
+Entered update for avtCondenseDatasetFilter
+Entered update for avtFilledBoundaryFilter
+Entered update for avtGhostZoneAndFacelistFilter
+Entered update for avtExpressionEvaluatorFilter
+GetMesh(segments)
+Starting GetParaDISMesh(segments)
+GetMesh: created 802 nodes  and 793 arm segments.
+Setting number of points to  802
+GetMesh: setting locations
+GetMesh: *** creating segment mesh ***
+GetMesh: Ending GetMesh
+Executing avtExpressionEvaluatorFilter
+Done executing avtExpressionEvaluatorFilter
+Done Updating avtExpressionEvaluatorFilter
+Executing avtGhostZoneAndFacelistFilter
+Entered update for avtFacelistFilter
+Executing avtFacelistFilter
+Done executing avtFacelistFilter
+Done Updating avtFacelistFilter
+Done executing avtGhostZoneAndFacelistFilter
+Done Updating avtGhostZoneAndFacelistFilter
+Executing avtFilledBoundaryFilter
+Done executing avtFilledBoundaryFilter
+A data object sink's current input was fed back into itself, ignoring...
+Done Updating avtFilledBoundaryFilter
+Executing avtCondenseDatasetFilter
+Done executing avtCondenseDatasetFilter
+Done Updating avtCondenseDatasetFilter
+Executing avtVertexNormalsFilter
+Done executing avtVertexNormalsFilter
+Done Updating avtVertexNormalsFilter
+Executing avtCompactTreeFilter
+Done executing avtCompactTreeFilter
+Done Updating avtCompactTreeFilter
+Executing avtCurrentExtentFilter
+Done executing avtCurrentExtentFilter
+Done Updating avtCurrentExtentFilter
+Executing SetWinAnnotAttsRPC 1099x1040
+Executing PrepareUpdatePlotAttsRPC: FilledBoundary_1.0
+Skipping already loaded plot plugin FilledBoundary version 1.0
+Executing UpdatePlotAttsRPC: FilledBoundary_1.0
+Executing RenderRPC for the following plots
+   1, 
+A data object sink's current input was fed back into itself, ignoring...
+avtPlot::Execute Receiving Polygon Data
+Executing SetWinAnnotAttsRPC 1099x1040
+Executing DefineVirtualDatabaseRPC: db=/g/g0/rcook/current_projects/paraDIS/paraDIS_data/from_meijie/2009-02-23-crash-test/rs*.data database, path=/g/g0/rcook/current_projects/paraDIS/paraDIS_data/from_meijie/2009-02-23-crash-test/, time=2, numStates=16
+Skipping already loaded database plugin paraDIS version 1.0a2
+Executing ReadRPC
+Skipping already loaded database plugin paraDIS version 1.0a2
+Executing ReleaseDataRPC: 1
+Releasing all data associated with network 1
+A data object sink's current input was fed back into itself, ignoring...
+A data object sink's current input was fed back into itself, ignoring...
+A data object sink's current input was fed back into itself, ignoring...
+A data object sink's current input was fed back into itself, ignoring...
+Executing PreparePlotRPC: FilledBoundary_1.0
+Skipping already loaded plot plugin FilledBoundary version 1.0
+Executing MakePlotRPC: FilledBoundary_1.0
+Executing ExecuteRPC with respondWithNullDataObject = 1
+FilledBoundaryPlot: Did not hit target topological dimension: 3
+Unable to determine spatial extents -- dataset needs an update
+Entered update for avtCurrentExtentFilter
+Entered update for avtCompactTreeFilter
+Entered update for avtVertexNormalsFilter
+Entered update for avtCondenseDatasetFilter
+Entered update for avtFilledBoundaryFilter
+Entered update for avtGhostZoneAndFacelistFilter
+Entered update for avtExpressionEvaluatorFilter
+GetMesh(segments)
+Starting GetParaDISMesh(segments)
+GetMesh: created 805 nodes  and 795 arm segments.
+Setting number of points to  805
+GetMesh: setting locations
+GetMesh: *** creating segment mesh ***
+GetMesh: Ending GetMesh
+Executing avtExpressionEvaluatorFilter
+Done executing avtExpressionEvaluatorFilter
+Done Updating avtExpressionEvaluatorFilter
+Executing avtGhostZoneAndFacelistFilter
+Entered update for avtFacelistFilter
+Executing avtFacelistFilter
+Done executing avtFacelistFilter
+Done Updating avtFacelistFilter
+Done executing avtGhostZoneAndFacelistFilter
+Done Updating avtGhostZoneAndFacelistFilter
+Executing avtFilledBoundaryFilter
+Done executing avtFilledBoundaryFilter
+A data object sink's current input was fed back into itself, ignoring...
+Done Updating avtFilledBoundaryFilter
+Executing avtCondenseDatasetFilter
+Done executing avtCondenseDatasetFilter
+Done Updating avtCondenseDatasetFilter
+Executing avtVertexNormalsFilter
+Done executing avtVertexNormalsFilter
+Done Updating avtVertexNormalsFilter
+Executing avtCompactTreeFilter
+Done executing avtCompactTreeFilter
+Done Updating avtCompactTreeFilter
+Executing avtCurrentExtentFilter
+Done executing avtCurrentExtentFilter
+Done Updating avtCurrentExtentFilter
+Executing SetWinAnnotAttsRPC 1099x1040
+Executing PrepareUpdatePlotAttsRPC: FilledBoundary_1.0
+Skipping already loaded plot plugin FilledBoundary version 1.0
+Executing UpdatePlotAttsRPC: FilledBoundary_1.0
+Executing RenderRPC for the following plots
+   2, 
+A data object sink's current input was fed back into itself, ignoring...
+avtPlot::Execute Receiving Polygon Data
+Executing SetWinAnnotAttsRPC 1099x1040
+Executing DefineVirtualDatabaseRPC: db=/g/g0/rcook/current_projects/paraDIS/paraDIS_data/from_meijie/2009-02-23-crash-test/rs*.data database, path=/g/g0/rcook/current_projects/paraDIS/paraDIS_data/from_meijie/2009-02-23-crash-test/, time=3, numStates=16
+Skipping already loaded database plugin paraDIS version 1.0a2
+Executing ReadRPC
+Skipping already loaded database plugin paraDIS version 1.0a2
+Executing ReleaseDataRPC: 2
+Releasing all data associated with network 2
+A data object sink's current input was fed back into itself, ignoring...
+A data object sink's current input was fed back into itself, ignoring...
+A data object sink's current input was fed back into itself, ignoring...
+A data object sink's current input was fed back into itself, ignoring...
+Executing PreparePlotRPC: FilledBoundary_1.0
+Skipping already loaded plot plugin FilledBoundary version 1.0
+Executing MakePlotRPC: FilledBoundary_1.0
+Executing ExecuteRPC with respondWithNullDataObject = 1
+FilledBoundaryPlot: Did not hit target topological dimension: 3
+Unable to determine spatial extents -- dataset needs an update
+Entered update for avtCurrentExtentFilter
+Entered update for avtCompactTreeFilter
+Entered update for avtVertexNormalsFilter
+Entered update for avtCondenseDatasetFilter
+Entered update for avtFilledBoundaryFilter
+Entered update for avtGhostZoneAndFacelistFilter
+Entered update for avtExpressionEvaluatorFilter
+GetMesh(segments)
+Starting GetParaDISMesh(segments)
+GetMesh: created 792 nodes  and 783 arm segments.
+Setting number of points to  792
+GetMesh: setting locations
+GetMesh: *** creating segment mesh ***
+GetMesh: Ending GetMesh
+Executing avtExpressionEvaluatorFilter
+Done executing avtExpressionEvaluatorFilter
+Done Updating avtExpressionEvaluatorFilter
+Executing avtGhostZoneAndFacelistFilter
+Entered update for avtFacelistFilter
+Executing avtFacelistFilter
+Done executing avtFacelistFilter
+Done Updating avtFacelistFilter
+Done executing avtGhostZoneAndFacelistFilter
+Done Updating avtGhostZoneAndFacelistFilter
+Executing avtFilledBoundaryFilter
+Done executing avtFilledBoundaryFilter
+A data object sink's current input was fed back into itself, ignoring...
+Done Updating avtFilledBoundaryFilter
+Executing avtCondenseDatasetFilter
+Done executing avtCondenseDatasetFilter
+Done Updating avtCondenseDatasetFilter
+Executing avtVertexNormalsFilter
+Done executing avtVertexNormalsFilter
+Done Updating avtVertexNormalsFilter
+Executing avtCompactTreeFilter
+Done executing avtCompactTreeFilter
+Done Updating avtCompactTreeFilter
+Executing avtCurrentExtentFilter
+Done executing avtCurrentExtentFilter
+Done Updating avtCurrentExtentFilter
+Executing SetWinAnnotAttsRPC 1099x1040
+Executing PrepareUpdatePlotAttsRPC: FilledBoundary_1.0
+Skipping already loaded plot plugin FilledBoundary version 1.0
+Executing UpdatePlotAttsRPC: FilledBoundary_1.0
+Executing RenderRPC for the following plots
+   3, 
+A data object sink's current input was fed back into itself, ignoring...
+avtPlot::Execute Receiving Polygon Data
+Executing SetWinAnnotAttsRPC 1099x1040
+Executing DefineVirtualDatabaseRPC: db=/g/g0/rcook/current_projects/paraDIS/paraDIS_data/from_meijie/2009-02-23-crash-test/rs*.data database, path=/g/g0/rcook/current_projects/paraDIS/paraDIS_data/from_meijie/2009-02-23-crash-test/, time=4, numStates=16
+Skipping already loaded database plugin paraDIS version 1.0a2
+Executing ReadRPC
+Skipping already loaded database plugin paraDIS version 1.0a2
+Executing ReleaseDataRPC: 3
+Releasing all data associated with network 3
+A data object sink's current input was fed back into itself, ignoring...
+A data object sink's current input was fed back into itself, ignoring...
+A data object sink's current input was fed back into itself, ignoring...
+A data object sink's current input was fed back into itself, ignoring...
+Executing PreparePlotRPC: FilledBoundary_1.0
+Skipping already loaded plot plugin FilledBoundary version 1.0
+Executing MakePlotRPC: FilledBoundary_1.0
+Executing ExecuteRPC with respondWithNullDataObject = 1
+FilledBoundaryPlot: Did not hit target topological dimension: 3
+Unable to determine spatial extents -- dataset needs an update
+Entered update for avtCurrentExtentFilter
+Entered update for avtCompactTreeFilter
+Entered update for avtVertexNormalsFilter
+Entered update for avtCondenseDatasetFilter
+Entered update for avtFilledBoundaryFilter
+Entered update for avtGhostZoneAndFacelistFilter
+Entered update for avtExpressionEvaluatorFilter
+GetMesh(segments)
+Starting GetParaDISMesh(segments)
+GetMesh: created 800 nodes  and 790 arm segments.
+Setting number of points to  800
+GetMesh: setting locations
+GetMesh: *** creating segment mesh ***
+GetMesh: Ending GetMesh
+Executing avtExpressionEvaluatorFilter
+Done executing avtExpressionEvaluatorFilter
+Done Updating avtExpressionEvaluatorFilter
+Executing avtGhostZoneAndFacelistFilter
+Entered update for avtFacelistFilter
+Executing avtFacelistFilter
+Done executing avtFacelistFilter
+Done Updating avtFacelistFilter
+Done executing avtGhostZoneAndFacelistFilter
+Done Updating avtGhostZoneAndFacelistFilter
+Executing avtFilledBoundaryFilter
+Done executing avtFilledBoundaryFilter
+A data object sink's current input was fed back into itself, ignoring...
+Done Updating avtFilledBoundaryFilter
+Executing avtCondenseDatasetFilter
+Done executing avtCondenseDatasetFilter
+Done Updating avtCondenseDatasetFilter
+Executing avtVertexNormalsFilter
+Done executing avtVertexNormalsFilter
+Done Updating avtVertexNormalsFilter
+Executing avtCompactTreeFilter
+Done executing avtCompactTreeFilter
+Done Updating avtCompactTreeFilter
+Executing avtCurrentExtentFilter
+Done executing avtCurrentExtentFilter
+Done Updating avtCurrentExtentFilter
+Executing SetWinAnnotAttsRPC 1099x1040
+Executing PrepareUpdatePlotAttsRPC: FilledBoundary_1.0
+Skipping already loaded plot plugin FilledBoundary version 1.0
+Executing UpdatePlotAttsRPC: FilledBoundary_1.0
+Executing RenderRPC for the following plots
+   4, 
+A data object sink's current input was fed back into itself, ignoring...
+avtPlot::Execute Receiving Polygon Data
+Executing QuitRPC
+ENGINE exited.

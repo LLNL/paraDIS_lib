@@ -1,0 +1,133 @@
+/usr/gapps/visit/1.11.1/linux-x86_64/bin/mdserver -host 127.0.0.1 -port 5601 -key 4f8d53a6c18f4213bb21 
+MDSERVER started.
+Succesfully loaded info about 89 database plugins.
+GetDBPluginInfoRPCExecutor::Update
+Loading plugins!
+Loaded full database plugin paraDIS version 1.0a2
+Loaded full database plugin paraDIS_tecplot version 1.0a1
+Loaded full database plugin ANALYZE version 1.0
+Loaded full database plugin ANSYS version 1.0
+Loaded full database plugin AUXFile version 1.0
+Loaded full database plugin AugDecomp version 1.0
+Loaded full database plugin BOV version 1.0
+Loaded full database plugin BOW version 1.0
+Loaded full database plugin Boxlib2D version 1.0
+Loaded full database plugin Boxlib3D version 1.0
+Loaded full database plugin CCM version 1.0
+Loaded full database plugin CEAucd version 1.0
+Loaded full database plugin CGNS version 1.0
+Loaded full database plugin CMAT version 1.0
+Loaded full database plugin CTRL version 1.0
+Loaded full database plugin Cale version 1.0
+Loaded full database plugin Chombo version 1.0
+Loaded full database plugin Claw version 1.0
+Loaded full database plugin Cosmos version 1.0
+Loaded full database plugin CosmosPP version 1.0
+Loaded full database plugin Curve2D version 1.0
+Loaded full database plugin DDCMD version 1.0
+Loaded full database plugin Dune version 1.0
+Loaded full database plugin Dyna3D version 1.0
+Loaded full database plugin EnSight version 1.0
+Loaded full database plugin Enzo version 1.0
+Loaded full database plugin Exodus version 1.0
+Loaded full database plugin ExtrudedVol version 1.0
+Loaded full database plugin FITS version 1.0
+Loaded full database plugin FLASH version 1.0
+Loaded full database plugin Fluent version 1.0
+Loaded full database plugin GDAL version 1.0
+Loaded full database plugin GGCM version 1.0
+Loaded full database plugin GTC version 1.0
+Loaded full database plugin Gadget version 2.0a
+Loaded full database plugin H5Nimrod version 1.0
+Loaded full database plugin H5Part version 1.0
+Loaded full database plugin Image version 1.0
+Loaded full database plugin KullLite version 1.0
+Loaded full database plugin Lines version 1.0
+Loaded full database plugin M3D version 1.0
+Loaded full database plugin MFIX version 1.0
+Loaded full database plugin MM5 version 1.0
+Loaded full database plugin Mili version 1.0
+Loaded full database plugin Miranda version 1.0
+Loaded full database plugin NASTRAN version 1.0
+Loaded full database plugin NETCDF version 1.0
+Loaded full database plugin Nek3D version 1.0
+Loaded full database plugin OVERFLOW version 1.0
+Loaded full database plugin OpenFOAM version 1.0
+Loaded full database plugin PATRAN version 1.0
+Loaded full database plugin PDB version 1.1
+Loaded full database plugin PFLOTRAN version 1.0
+Loaded full database plugin PLOT2D version 1.0
+Loaded full database plugin PLOT3D version 1.0
+Loaded full database plugin Pixie version 1.0
+Loaded full database plugin PlainText version 1.0
+Loaded full database plugin Point3D version 1.0
+Loaded full database plugin ProteinDataBank version 1.0
+Loaded full database plugin RAW version 1.0
+Loaded full database plugin S3D version 1.0
+Loaded full database plugin SAMI version 1.0
+Loaded full database plugin SAMRAI version 1.0
+Loaded full database plugin SAR version 1.0
+Loaded full database plugin SAS version 1.0
+Loaded full database plugin STL version 1.0
+Loaded full database plugin Shapefile version 1.0
+Loaded full database plugin Silo version 1.0
+Loaded full database plugin SimV1 version 1.0
+Loaded full database plugin SimV1Writer version 1.0
+Loaded full database plugin SimV2 version 1.0
+Loaded full database plugin Spheral version 1.0
+Loaded full database plugin TFT version 1.0
+Loaded full database plugin TSurf version 1.0
+Loaded full database plugin Tecplot version 1.0
+Loaded full database plugin Tetrad version 1.0
+Loaded full database plugin TimeVaryingExodus version 1.0
+Loaded full database plugin UNIC version 1.0
+Loaded full database plugin VASP version 1.0
+Loaded full database plugin VTK version 1.0
+Loaded full database plugin ViSUS version 1.0
+Loaded full database plugin Vis5D version 1.0
+Loaded full database plugin Vista version 1.0
+Loaded full database plugin WavefrontOBJ version 1.0
+Loaded full database plugin XDMF version 1.0
+Loaded full database plugin XYZ version 1.0
+Loaded full database plugin Xmdv version 1.0
+Loaded full database plugin ZeusMP version 1.0
+Loaded full database plugin ZipWrapper version 1.0
+GetFileListRPCExecutor::Update
+GetFileListRPCExecutor::Update
+GetDBPluginInfoRPCExecutor::Update
+GetMetaDataRPCExecutor::Update - file=/g/g0/rcook/current_projects/paraDIS/paraDIS_data/from_meijie/2009-02-23-crash-test/rs*.data database type=
+Read the Metadata for /g/g0/rcook/current_projects/paraDIS/paraDIS_data/from_meijie/2009-02-23-crash-test/rs*.data database, timeState=0, forceReadAllCyclesAndTimes=0, forcedFileType=, treatAllDBsAsTimeVarying = 0, createMeshQualityExpressions = 1, createTimeDerivativeExpressions = 1, createVectorMagnitudeExpressions = 1
+MDServerConnection::GetDatabase: Need to get a new database. file=/g/g0/rcook/current_projects/paraDIS/paraDIS_data/from_meijie/2009-02-23-crash-test/rs*.data database, timeState=0, forceReadAllCyclesAndTimes=0, forcedFileType=, treatAllDBsAsTimeVarying = 0
+New virtual database: /g/g0/rcook/current_projects/paraDIS/paraDIS_data/from_meijie/2009-02-23-crash-test/rs*.data database, path=/g/g0/rcook/current_projects/paraDIS/paraDIS_data/from_meijie/2009-02-23-crash-test/
+	/g/g0/rcook/current_projects/paraDIS/paraDIS_data/from_meijie/2009-02-23-crash-test/rs0600.data
+	/g/g0/rcook/current_projects/paraDIS/paraDIS_data/from_meijie/2009-02-23-crash-test/rs0601.data
+	/g/g0/rcook/current_projects/paraDIS/paraDIS_data/from_meijie/2009-02-23-crash-test/rs0602.data
+	/g/g0/rcook/current_projects/paraDIS/paraDIS_data/from_meijie/2009-02-23-crash-test/rs0603.data
+	/g/g0/rcook/current_projects/paraDIS/paraDIS_data/from_meijie/2009-02-23-crash-test/rs0604.data
+	/g/g0/rcook/current_projects/paraDIS/paraDIS_data/from_meijie/2009-02-23-crash-test/rs0605.data
+	/g/g0/rcook/current_projects/paraDIS/paraDIS_data/from_meijie/2009-02-23-crash-test/rs0606.data
+	/g/g0/rcook/current_projects/paraDIS/paraDIS_data/from_meijie/2009-02-23-crash-test/rs0607.data
+	/g/g0/rcook/current_projects/paraDIS/paraDIS_data/from_meijie/2009-02-23-crash-test/rs0608.data
+	/g/g0/rcook/current_projects/paraDIS/paraDIS_data/from_meijie/2009-02-23-crash-test/rs0609.data
+	/g/g0/rcook/current_projects/paraDIS/paraDIS_data/from_meijie/2009-02-23-crash-test/rs0610.data
+	/g/g0/rcook/current_projects/paraDIS/paraDIS_data/from_meijie/2009-02-23-crash-test/rs0611.data
+	/g/g0/rcook/current_projects/paraDIS/paraDIS_data/from_meijie/2009-02-23-crash-test/rs0612.data
+	/g/g0/rcook/current_projects/paraDIS/paraDIS_data/from_meijie/2009-02-23-crash-test/rs0613.data
+	/g/g0/rcook/current_projects/paraDIS/paraDIS_data/from_meijie/2009-02-23-crash-test/rs0614.data
+	/g/g0/rcook/current_projects/paraDIS/paraDIS_data/from_meijie/2009-02-23-crash-test/rs0615.data
+avtDatabaseFactory: trying extension-matched format paraDIS_1.0a2
+starting populateDatabaseMetaData
+avtparaDISFileFormat version 1.1a2, 2008-02-13
+GetParaDISMetaData called 
+The file is a ParaDIS-style file
+finishing populateDatabaseMetaData
+GetSILRPCExecutor::Update - file=/g/g0/rcook/current_projects/paraDIS/paraDIS_data/from_meijie/2009-02-23-crash-test/rs*.data database
+Read the SIL for /g/g0/rcook/current_projects/paraDIS/paraDIS_data/from_meijie/2009-02-23-crash-test/rs*.data database, timeState=0
+GetMetaDataRPCExecutor::Update - file=/g/g0/rcook/current_projects/paraDIS/paraDIS_data/from_meijie/2009-02-23-crash-test/rs*.data database type=
+Read the Metadata for /g/g0/rcook/current_projects/paraDIS/paraDIS_data/from_meijie/2009-02-23-crash-test/rs*.data database, timeState=0, forceReadAllCyclesAndTimes=0, forcedFileType=, treatAllDBsAsTimeVarying = 0, createMeshQualityExpressions = 1, createTimeDerivativeExpressions = 1, createVectorMagnitudeExpressions = 1
+GetSILRPCExecutor::Update - file=/g/g0/rcook/current_projects/paraDIS/paraDIS_data/from_meijie/2009-02-23-crash-test/rs*.data database
+Read the SIL for /g/g0/rcook/current_projects/paraDIS/paraDIS_data/from_meijie/2009-02-23-crash-test/rs*.data database, timeState=0
+GetDBPluginInfoRPCExecutor::Update
+Exception: (LostConnectionException) SocketConnection.C, line 159: <The reason for the exception was not described>
+catch(LostConnectionException) MDServerApplication.C:288
+MDSERVER exited.

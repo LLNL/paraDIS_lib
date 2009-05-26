@@ -1,0 +1,144 @@
+<?xml version="1.0"?>
+<Object name="VisIt">
+    <Field name="Version" type="string">1.10.0b</Field>
+    <Object name="GUI">
+        <Object name="FileServerList">
+            <Field name="path" type="string">/g/g0/rcook/current_projects/paraDIS/paraDIS_data/FieldTest</Field>
+            <Field name="filter" type="string">*</Field>
+            <Field name="useCurrentDir" type="bool">true</Field>
+            <Field name="automaticFileGrouping" type="bool">true</Field>
+            <Field name="smartFileGrouping" type="bool">true</Field>
+            <Object name="recentpaths">
+                <Field name="localhost" type="stringVector">"/g/g0/rcook/current_projects/paraDIS/paraDIS_data/FieldTest" "/g/g0/rcook/current_projects/paraDIS/paraDIS_data/from_moono" "/g/g0/rcook/current_projects/paraDIS/paraDIS_data/prismaticloop" "/g/g0/rcook/current_projects/paraDIS/paraDIS_data/2MIC" "/g/g0/rcook/current_projects/paraDIS/paraDIS_data" "/g/g0/rcook/current_projects/paraDIS/paraDIS_data/frommeijie" "/g/g0/rcook/current_projects/2008-04-29-walton" "/p/lscratchb/mrhee/from.lscratchc/DD/radiationloops5/restart" "/g/g0/rcook" "/g/g0/rcook/.visit" "/usr/mic/post1/wpp/rcook/2008-02-29-Kerman" "/usr/mic/post1/wpp/rcook/2008-02-29-Kerman/kerman_data_1000m" "/usr/mic/post1/wpp/data/2008-02-12-Anders" "/g/g0/rcook/current_projects/paraDIS/paraDIS_data/frommeijie/Movie" "/usr/gapps/visit/data" "/usr/mic/post1/wpp/rcook/2008-02-29-Kerman/extracted_topo_grid" "/home/rcook/current_projects" "/home/rcook" "/home/rcook/bin" "/home/rcook/current_projects/2008-03-27-artie-movie-noterrain" "/g/g0/rcook/current_projects/2008-03-14-charlesCerjan-IDL-problem" "/usr/mic/post1/wpp/rcook/2008-02-29-Kerman/kerman_1000m_q_20" "/g/g0/rcook/current_projects/paraDIS/paraDIS_data/rotation" </Field>
+                <Field name="prism.llnl.gov" type="stringVector">"/g/g0/rcook" "/usr/mic/post1/wpp/rcook" "/usr/mic/post1/wpp/rcook/2008-02-29-Kerman" "/usr/mic/post1/wpp/rcook/2008-02-29-Kerman/extracted_topo_grid" "/usr/mic/post1/wpp/rcook/2008-02-29-Kerman/kerman_data_1000m" "/usr/mic/post1/wpp/rcook/2008-02-29-Kerman/kerman_1000m_q_20" </Field>
+            </Object>
+        </Object>
+        <Object name="AppearanceAttributes">
+            <Field name="background" type="string">#c0c0c0</Field>
+            <Field name="foreground" type="string">#000000</Field>
+            <Field name="fontName" type="string">AR PL KaitiM Big5,10,-1,5,50,0,0,0,0,0</Field>
+            <Field name="style" type="string">motif</Field>
+            <Field name="orientation" type="int">0</Field>
+        </Object>
+        <Object name="Appearance">
+            <Field name="x" type="int">285</Field>
+            <Field name="y" type="int">663</Field>
+            <Field name="width" type="int">303</Field>
+            <Field name="height" type="int">250</Field>
+            <Field name="visible" type="bool">false</Field>
+            <Field name="posted" type="bool">false</Field>
+        </Object>
+        <Field name="postWhenShown" type="bool">false</Field>
+        <Object name="Color tables">
+            <Field name="x" type="int">18</Field>
+            <Field name="y" type="int">557</Field>
+            <Field name="width" type="int">332</Field>
+            <Field name="height" type="int">643</Field>
+            <Field name="visible" type="bool">false</Field>
+            <Field name="posted" type="bool">false</Field>
+            <Field name="currentColorTable" type="string">earthquake</Field>
+        </Object>
+        <Object name="Compute engines">
+            <Field name="x" type="int">6</Field>
+            <Field name="y" type="int">229</Field>
+            <Field name="width" type="int">312</Field>
+            <Field name="height" type="int">410</Field>
+            <Field name="visible" type="bool">false</Field>
+            <Field name="posted" type="bool">true</Field>
+        </Object>
+        <Object name="Information">
+            <Field name="x" type="int">122</Field>
+            <Field name="y" type="int">829</Field>
+            <Field name="width" type="int">453</Field>
+            <Field name="height" type="int">293</Field>
+            <Field name="visible" type="bool">false</Field>
+        </Object>
+        <Object name="Output">
+            <Field name="x" type="int">359</Field>
+            <Field name="y" type="int">582</Field>
+            <Field name="width" type="int">762</Field>
+            <Field name="height" type="int">402</Field>
+            <Field name="visible" type="bool">false</Field>
+            <Field name="posted" type="bool">false</Field>
+        </Object>
+        <Object name="Plugin Manager">
+            <Field name="x" type="int">5</Field>
+            <Field name="y" type="int">616</Field>
+            <Field name="width" type="int">421</Field>
+            <Field name="height" type="int">403</Field>
+            <Field name="visible" type="bool">false</Field>
+            <Field name="posted" type="bool">false</Field>
+            <Field name="activeTab" type="int">1</Field>
+        </Object>
+        <Object name="Preferences">
+            <Field name="x" type="int">69</Field>
+            <Field name="y" type="int">457</Field>
+            <Field name="width" type="int">317</Field>
+            <Field name="height" type="int">447</Field>
+            <Field name="visible" type="bool">false</Field>
+            <Field name="posted" type="bool">false</Field>
+        </Object>
+        <Object name="MainWin">
+            <Field name="x" type="int">151</Field>
+            <Field name="y" type="int">57</Field>
+            <Field name="width" type="int">400</Field>
+            <Field name="height" type="int">1024</Field>
+            <Field name="SPLITTER_VALUES" type="floatVector">0.256008 0.278997 0.444096 </Field>
+        </Object>
+        <Object name="Filled Boundary plot attributes">
+            <Field name="x" type="int">171</Field>
+            <Field name="y" type="int">99</Field>
+            <Field name="width" type="int">342</Field>
+            <Field name="height" type="int">639</Field>
+            <Field name="visible" type="bool">false</Field>
+            <Field name="posted" type="bool">false</Field>
+        </Object>
+        <Object name="Pseudocolor plot attributes">
+            <Field name="x" type="int">125</Field>
+            <Field name="y" type="int">619</Field>
+            <Field name="width" type="int">371</Field>
+            <Field name="height" type="int">581</Field>
+            <Field name="visible" type="bool">false</Field>
+            <Field name="posted" type="bool">false</Field>
+        </Object>
+        <Object name="Volume plot attributes">
+            <Field name="x" type="int">310</Field>
+            <Field name="y" type="int">26</Field>
+            <Field name="width" type="int">391</Field>
+            <Field name="height" type="int">770</Field>
+            <Field name="visible" type="bool">false</Field>
+            <Field name="posted" type="bool">false</Field>
+        </Object>
+        <Object name="Displace operator attributes">
+            <Field name="x" type="int">305</Field>
+            <Field name="y" type="int">492</Field>
+            <Field name="width" type="int">303</Field>
+            <Field name="height" type="int">151</Field>
+            <Field name="visible" type="bool">false</Field>
+            <Field name="posted" type="bool">false</Field>
+        </Object>
+        <Object name="Threshold operator attributes">
+            <Field name="x" type="int">725</Field>
+            <Field name="y" type="int">719</Field>
+            <Field name="width" type="int">555</Field>
+            <Field name="height" type="int">481</Field>
+            <Field name="visible" type="bool">false</Field>
+            <Field name="posted" type="bool">false</Field>
+        </Object>
+        <Object name="Tube operator attributes">
+            <Field name="x" type="int">88</Field>
+            <Field name="y" type="int">517</Field>
+            <Field name="width" type="int">224</Field>
+            <Field name="height" type="int">175</Field>
+            <Field name="visible" type="bool">false</Field>
+            <Field name="posted" type="bool">false</Field>
+        </Object>
+        <Field name="plotDatabases" type="stringVector">"localhost:/g/g0/rcook/current_projects/paraDIS/paraDIS_data/FieldTest/rs0000.data" "localhost:/g/g0/rcook/current_projects/paraDIS/paraDIS_data/FieldTest/femfld_INFstress.dat" </Field>
+        <Object name="TimeFormat">
+            <Field name="displayMode" type="string">Cycles</Field>
+            <Field name="precision" type="int">5</Field>
+        </Object>
+        <Field name="showSelectedFiles" type="bool">true</Field>
+        <Field name="allowFileSelectionChange" type="bool">true</Field>
+    </Object>
+</Object>

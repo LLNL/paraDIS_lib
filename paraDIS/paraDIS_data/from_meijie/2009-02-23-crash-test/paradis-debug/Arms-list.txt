@@ -1,0 +1,191 @@
+Printout of all arms.
+Arm #0: (arm): number 0, numSegments = 177, Type 2
+Terminal Node 0: (FullNode address )0xbb11f0 index 0 type 2
+(Node): NodeID: (domain id, node id) = (0, 0)
+(node): In bounds: true
+Location: (1358.11, -1948.91, -909.414)
+
+Terminal Segment 0: ArmSegment at 0xbb5030 number 1: 
+BurgersType: 4, length: 66.847
+ep0: (FullNode address )0xbb11f0 index 0 type 2
+(Node): NodeID: (domain id, node id) = (0, 0)
+(node): In bounds: true
+Location: (1358.11, -1948.91, -909.414)
+ep1: (FullNode address )0xbb8d00 index 37 type 2
+(Node): NodeID: (domain id, node id) = (0, 39)
+(node): In bounds: true
+Location: (1322.86, -1911.08, -951.777)
+
+Terminal Segment 1: ArmSegment at 0xbb4f80 number 0: 
+BurgersType: 4, length: 77.2331
+ep0: (FullNode address )0xbb11f0 index 0 type 2
+(Node): NodeID: (domain id, node id) = (0, 0)
+(node): In bounds: true
+Location: (1358.11, -1948.91, -909.414)
+ep1: (FullNode address )0xbb50e0 index 40 type 2
+(Node): NodeID: (domain id, node id) = (0, 42)
+(node): In bounds: true
+Location: (1398.61, -1992.69, -860.338)
+
+
+******************************************************
+
+Arm #1: (arm): number 1, numSegments = 103, Type 2
+Terminal Node 0: (FullNode address )0xbb54a0 index 8 type 2
+(Node): NodeID: (domain id, node id) = (0, 9)
+(node): In bounds: true
+Location: (-3141.38, 139.176, -896.935)
+
+Terminal Segment 0: ArmSegment at 0xbb5dc0 number 15: 
+BurgersType: 4, length: 84.2128
+ep0: (FullNode address )0xbb54a0 index 8 type 2
+(Node): NodeID: (domain id, node id) = (0, 9)
+(node): In bounds: true
+Location: (-3141.38, 139.176, -896.935)
+ep1: (FullNode address )0xbb69f0 index 16 type 2
+(Node): NodeID: (domain id, node id) = (0, 17)
+(node): In bounds: true
+Location: (-3136.91, 55.275, -891.229)
+
+Terminal Segment 1: ArmSegment at 0xbb5d00 number 14: 
+BurgersType: 4, length: 75.9255
+ep0: (FullNode address )0xbb54a0 index 8 type 2
+(Node): NodeID: (domain id, node id) = (0, 9)
+(node): In bounds: true
+Location: (-3141.38, 139.176, -896.935)
+ep1: (FullNode address )0xbde9c0 index 280 type 2
+(Node): NodeID: (domain id, node id) = (2, 51)
+(node): In bounds: true
+Location: (-3145.56, 214.814, -902.039)
+
+
+******************************************************
+
+Arm #2: (arm): number 2, numSegments = 189, Type 2
+Terminal Node 0: (FullNode address )0xbb90a0 index 111 type 2
+(Node): NodeID: (domain id, node id) = (1, 0)
+(node): In bounds: true
+Location: (-1778.54, -616.718, 1798.4)
+
+Terminal Segment 0: ArmSegment at 0xbcf700 number 114: 
+BurgersType: 5, length: 62.9544
+ep0: (FullNode address )0xbb90a0 index 111 type 2
+(Node): NodeID: (domain id, node id) = (1, 0)
+(node): In bounds: true
+Location: (-1778.54, -616.718, 1798.4)
+ep1: (FullNode address )0xbd2350 index 166 type 2
+(Node): NodeID: (domain id, node id) = (1, 55)
+(node): In bounds: true
+Location: (-1812.66, -656.495, 1833.29)
+
+Terminal Segment 1: ArmSegment at 0xbcf640 number 113: 
+BurgersType: 5, length: 65.9693
+ep0: (FullNode address )0xbb90a0 index 111 type 2
+(Node): NodeID: (domain id, node id) = (1, 0)
+(node): In bounds: true
+Location: (-1778.54, -616.718, 1798.4)
+ep1: (FullNode address )0xbd6900 index 188 type 2
+(Node): NodeID: (domain id, node id) = (1, 78)
+(node): In bounds: true
+Location: (-1743.33, -574.798, 1761.59)
+
+
+******************************************************
+
+Arm #3: (arm): number 3, numSegments = 106, Type 2
+Terminal Node 0: (FullNode address )0xbcfae0 index 114 type 2
+(Node): NodeID: (domain id, node id) = (1, 3)
+(node): In bounds: true
+Location: (-797.279, -2802.9, 1734.41)
+
+Terminal Segment 0: ArmSegment at 0xbcfc70 number 120: 
+BurgersType: 4, length: 94.5535
+ep0: (FullNode address )0xbcfae0 index 114 type 2
+(Node): NodeID: (domain id, node id) = (1, 3)
+(node): In bounds: true
+Location: (-797.279, -2802.9, 1734.41)
+ep1: (FullNode address )0xbd6fe0 index 194 type 2
+(Node): NodeID: (domain id, node id) = (1, 84)
+(node): In bounds: true
+Location: (-800.32, -2708.85, 1743.6)
+
+Terminal Segment 1: ArmSegment at 0xbcfbb0 number 119: 
+BurgersType: 4, length: 63.4383
+ep0: (FullNode address )0xbcfae0 index 114 type 2
+(Node): NodeID: (domain id, node id) = (1, 3)
+(node): In bounds: true
+Location: (-797.279, -2802.9, 1734.41)
+ep1: (FullNode address )0xbd83b0 index 211 type 2
+(Node): NodeID: (domain id, node id) = (1, 108)
+(node): In bounds: true
+Location: (-795.546, -2866.02, 1728.3)
+
+
+******************************************************
+
+Arm #4: (arm): number 4, numSegments = 103, Type 2
+Terminal Node 0: (FullNode address )0xbed7d0 index 469 type 2
+(Node): NodeID: (domain id, node id) = (4, 1)
+(node): In bounds: true
+Location: (1829.07, -3123.92, -3382.77)
+
+Terminal Segment 0: ArmSegment at 0xbed960 number 473: 
+BurgersType: 4, length: 86.5565
+ep0: (FullNode address )0xbed7d0 index 469 type 2
+(Node): NodeID: (domain id, node id) = (4, 1)
+(node): In bounds: true
+Location: (1829.07, -3123.92, -3382.77)
+ep1: (FullNode address )0xbeec10 index 485 type 2
+(Node): NodeID: (domain id, node id) = (4, 17)
+(node): In bounds: true
+Location: (1834.73, -3210.25, -3380.35)
+
+Terminal Segment 1: ArmSegment at 0xbed8a0 number 472: 
+BurgersType: 4, length: 45.1988
+ep0: (FullNode address )0xbed7d0 index 469 type 2
+(Node): NodeID: (domain id, node id) = (4, 1)
+(node): In bounds: true
+Location: (1829.07, -3123.92, -3382.77)
+ep1: (FullNode address )0xbed9a0 index 470 type 2
+(Node): NodeID: (domain id, node id) = (4, 2)
+(node): In bounds: true
+Location: (1825.87, -3078.85, -3384.02)
+
+
+******************************************************
+
+Arm #5: (arm): number 5, numSegments = 100, Type 2
+Terminal Node 0: (FullNode address )0xbf5640 index 554 type 2
+(Node): NodeID: (domain id, node id) = (5, 0)
+(node): In bounds: true
+Location: (3301.69, -735.696, 2591.01)
+
+Terminal Segment 0: ArmSegment at 0xbf5970 number 559: 
+BurgersType: 4, length: 94.6663
+ep0: (FullNode address )0xbf5640 index 554 type 2
+(Node): NodeID: (domain id, node id) = (5, 0)
+(node): In bounds: true
+Location: (3301.69, -735.696, 2591.01)
+ep1: (FullNode address )0xbf7720 index 574 type 2
+(Node): NodeID: (domain id, node id) = (5, 21)
+(node): In bounds: true
+Location: (3305.25, -830.257, 2588.29)
+
+Terminal Segment 1: ArmSegment at 0xbf58b0 number 558: 
+BurgersType: 4, length: 67.2183
+ep0: (FullNode address )0xbf5640 index 554 type 2
+(Node): NodeID: (domain id, node id) = (5, 0)
+(node): In bounds: true
+Location: (3301.69, -735.696, 2591.01)
+ep1: (FullNode address )0xbf5b80 index 556 type 2
+(Node): NodeID: (domain id, node id) = (5, 2)
+(node): In bounds: true
+Location: (3299.72, -668.526, 2592.59)
+
+
+******************************************************
+
+Number of arms: 6
+Total memory used by arms: 384
+Number of arm segments: 788
+Memory used by arm segments and their pointers: 44128

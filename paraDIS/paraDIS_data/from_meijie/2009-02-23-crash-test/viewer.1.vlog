@@ -1,0 +1,90 @@
+/usr/gapps/visit/1.11.1/linux-x86_64/bin/viewer -host 127.0.0.1 -debug 5 -geometry 1369x1121+551+57 -borders 22,0,0,0 -shift 0,22 -preshift 0,0 -defer -port 5600 -key e2249e9584963df2ae98 
+Processing option 1 -debug
+Processing option 3 -geometry
+Processing option 5 -borders
+Processing option 7 -shift
+Processing option 9 -preshift
+Processing option 11 -defer
+Viewer using font: AR PL KaitiM Big5,10,-1,5,50,0,0,0,0,0
+Qt: Warning: QFont::setRawMode(): Invalid XLFD: "AR PL KaitiM Big5,10,-1,5,50,0,0,0,0,0"
+Trying to load translator file: /usr/gapps/visit/1.11.1/linux-x86_64/bin/translations/visit_C
+Could not load translation.
+ViewerSubject::CustomizeAppearance: Setting the application style to: motif
+ViewerSubject::CustomizeAppearance: Font okay. name=AR PL KaitiM Big5,10,-1,5,50,0,0,0,0,0
+ViewerSubject::CustomizeAppearance: Setting foreground and background color
+Succesfully loaded info about 20 plot plugins.
+Succesfully loaded info about 35 operator plugins.
+Loaded full plot plugin Boundary version 1.0
+Loaded full plot plugin Contour version 1.0
+Loaded full plot plugin Curve version 1.0
+Loaded full plot plugin FilledBoundary version 1.0
+Loaded full plot plugin Histogram version 1.0
+Loaded full plot plugin Label version 1.0
+Loaded full plot plugin Mesh version 1.0
+Loaded full plot plugin Molecule version 1.0
+Loaded full plot plugin ParallelCoordinates version 1.0
+Loaded full plot plugin Pseudocolor version 1.0
+Loaded full plot plugin Scatter version 1.0
+Loaded full plot plugin Spreadsheet version 1.0
+Loaded full plot plugin Streamline version 1.0
+Loaded full plot plugin Subset version 1.0
+Loaded full plot plugin Surface version 1.0
+Loaded full plot plugin Tensor version 1.0
+Loaded full plot plugin Truecolor version 1.0
+Loaded full plot plugin Vector version 1.0
+Loaded full plot plugin Volume version 1.1
+Skipping disabled plot plugin WellBore version 1.0
+Loaded full operator plugin BoundaryOp version 1.0
+Loaded full operator plugin Box version 1.0
+Loaded full operator plugin Clip version 1.0
+Loaded full operator plugin Cone version 1.0
+Skipping disabled operator plugin CoordSwap version 1.0
+Skipping disabled operator plugin CracksClipper version 1.0
+Loaded full operator plugin CreateBonds version 1.0
+Loaded full operator plugin Cylinder version 1.0
+Skipping disabled operator plugin Decimate version 1.0
+Skipping disabled operator plugin DeferExpression version 1.0
+Loaded full operator plugin Displace version 1.0
+Loaded full operator plugin DualMesh version 1.0
+Loaded full operator plugin Elevate version 1.0
+Skipping disabled operator plugin ExternalSurface version 1.0
+Loaded full operator plugin IndexSelect version 1.0
+Loaded full operator plugin InverseGhostZone version 1.0
+Loaded full operator plugin Isosurface version 1.0
+Loaded full operator plugin Isovolume version 1.0
+Loaded full operator plugin Lineout version 1.0
+Skipping disabled operator plugin Merge version 1.0
+Loaded full operator plugin OnionPeel version 1.0
+Skipping disabled operator plugin PDF version 1.0
+Loaded full operator plugin Project version 1.0
+Loaded full operator plugin Reflect version 1.0
+Loaded full operator plugin Replicate version 1.0
+Loaded full operator plugin Resample version 1.0
+Loaded full operator plugin Revolve version 1.0
+Loaded full operator plugin Slice version 1.0
+Skipping disabled operator plugin Smooth version 1.0
+Loaded full operator plugin SphereSlice version 1.0
+Loaded full operator plugin ThreeSlice version 1.0
+Loaded full operator plugin Threshold version 1.0
+Loaded full operator plugin Transform version 1.0
+Loaded full operator plugin Tube version 1.0
+Skipping disabled operator plugin ZoneDump version 1.0
+ViewerMultipleAction::ConnectChildAction: Can't connect another action.
+ViewerMultipleAction::ConnectChildAction: Can't connect another action.
+ViewerMultipleAction::ConnectChildAction: Can't connect another action.
+ViewerMultipleAction::ConnectChildAction: Can't connect another action.
+ViewerMultipleAction::ConnectChildAction: Can't connect another action.
+Adding ToggleLockToolsRPC to the general toolbar
+Adding CopyActivePlotsRPC to the general toolbar
+DiscoverClientInformation: clear the client information list and send _QueryClientInformation to all clients. 
+ViewerSubject::OpenDatabaseHelper: Opening database localhost:/g/g0/rcook/current_projects/paraDIS/paraDIS_data/from_meijie/2009-02-23-crash-test/rs*.data database, timeState=0, addDefaultPlots=true, updateWindowInfo=true, forcedFileType=""
+VisWinAnnotations::AddAnnotationObject: New Legend object created. It is called "Plot0000".
+ViewerPlotList::SimpleAddPlot: Added legend annotation object for plot Plot0000
+No load balancer exists to reduce data.
+No load balancer exists to reduce data.
+No load balancer exists to reduce data.
+No load balancer exists to reduce data.
+No load balancer exists to reduce data.
+Starting to close the viewer.
+Closing metadata server on localhost.
+Closing compute engine on host yana4.llnl.gov.

@@ -1,0 +1,347 @@
+########################################
+###                                  ###
+###  ParaDiS control parameter file  ###
+###                                  ###
+########################################
+
+#
+#  Simulation cell and processor setup
+#  
+numXdoms =   4  
+numYdoms =   4  
+numZdoms =   4  
+numXcells =   16  
+numYcells =   16  
+numZcells =   16  
+xBoundType =   0  
+yBoundType =   0  
+zBoundType =   0  
+decompType =   2  
+DLBfreq =   3  
+xBoundMin =   0.000000e+00  
+xBoundMax =   0.000000e+00  
+yBoundMin =   0.000000e+00  
+yBoundMax =   0.000000e+00  
+zBoundMin =   0.000000e+00  
+zBoundMax =   0.000000e+00  
+#
+#  Simulation time and timestepping controls
+#  
+cycleStart =   82000  
+maxstep =   5000000  
+timeNow =   2.138596e-04  
+timeStart =   2.138587e-04  
+timestepIntegrator =   "trapezoid"  
+deltaTT =   9.365874e-10  
+maxDT =   1.000000e-06  
+nextDT =   1.123905e-09  
+dtIncrementFact =   1.200000e+00  
+dtDecrementFact =   5.000000e-01  
+dtExponent =   4.000000e+00  
+dtVariableAdjustment =   0  
+rTol =   1.000000e+01  
+rmax =   1.000000e+02  
+#
+#  Discretization controls
+#  
+maxSeg =   4.000000e+02  
+minSeg =   1.000000e+02  
+remeshRule =   2  
+#
+#  Fast Multipole Method controls
+#  
+fmEnabled =   1  
+fmMPOrder =   2  
+fmTaylorOrder =   5  
+fmCorrectionTbl =   "/g/g15/mrhee/DD/zz_2008_04_10_v221d/ParaDiS.v2.2.1d/fmtable_Va_m2_t5_pressure0_t400_L17500"  
+#
+#  Tables for non-FMM far-field force calcs
+#  
+Rijmfile =   "/g/g15/mrhee/bin/Rijm.cube.out"  
+RijmPBCfile =   "/g/g15/mrhee/bin/RijmPBC.cube.out"  
+#
+#  Loading conditions
+#  
+TempK =   4.000000e+02  
+pressure =   0.000000e+00  
+loadType =   1  
+appliedStress = [
+  3.165466e-01
+  1.714271e+00
+  1.439497e+08
+  -9.683520e+02
+  -2.509320e+03
+  8.234075e-01
+  ]
+eRate =   1.000000e+02  
+indxErate =   1  
+edotdir = [
+  2.833125e-04
+  3.862177e-04
+  9.999999e-01
+  ]
+cTimeOld =   0.000000e+00  
+dCyclicStrain =   0.000000e+00  
+netCyclicStrain =   0.000000e+00  
+numLoadCycle =   0  
+eAmp =   0.000000e+00  
+#
+#  Material and mobility parameters
+#  
+mobilityLaw =   "BCC_0"  
+ecFile =   ""  
+meltTempFile =   ""  
+meltTemp =   2.183000e+03  
+shearModulus =   5.266000e+10  
+pois =   3.434000e-01  
+burgMag =   2.622498e-10  
+YoungModulus =   2.000000e+11  
+rc =   5.000000e+00  
+Ecore =   2.019904e+10  
+MobScrew =   1.000000e+01  
+MobEdge =   1.000000e+01  
+MobClimb =   1.000000e-02  
+MobFileNL =   ""  
+MobGlide =   1.000000e+02  
+MobLine =   1.000000e+04  
+MobDeltaH0 =   1.728748e-19  
+MobPieirls =   3.240000e+08  
+MobAlpha =   9.661236e-01  
+MobGo =   4.900000e+10  
+MobLinearEdge =   -1.000000e+00  
+MobExpP =   5.000000e-01  
+MobExpQ =   1.230000e+00  
+MobCoeffA =   1.525000e+00  
+MobCoeffB =   1.286250e+00  
+MobCoeffC =   2.032370e-01  
+MobCoeffC0 =   2.048000e+03  
+MobCoeffD =   1.626950e-04  
+sessileburgspec = [
+  0.000000e+00
+  0.000000e+00
+  0.000000e+00
+  0.000000e+00
+  0.000000e+00
+  0.000000e+00
+  0.000000e+00
+  0.000000e+00
+  0.000000e+00
+  0.000000e+00
+  0.000000e+00
+  0.000000e+00
+  0.000000e+00
+  0.000000e+00
+  0.000000e+00
+  0.000000e+00
+  0.000000e+00
+  0.000000e+00
+  0.000000e+00
+  0.000000e+00
+  0.000000e+00
+  0.000000e+00
+  0.000000e+00
+  0.000000e+00
+  0.000000e+00
+  0.000000e+00
+  0.000000e+00
+  0.000000e+00
+  0.000000e+00
+  0.000000e+00
+  ]
+sessilelinespec = [
+  0.000000e+00
+  0.000000e+00
+  0.000000e+00
+  0.000000e+00
+  0.000000e+00
+  0.000000e+00
+  0.000000e+00
+  0.000000e+00
+  0.000000e+00
+  0.000000e+00
+  0.000000e+00
+  0.000000e+00
+  0.000000e+00
+  0.000000e+00
+  0.000000e+00
+  0.000000e+00
+  0.000000e+00
+  0.000000e+00
+  0.000000e+00
+  0.000000e+00
+  0.000000e+00
+  0.000000e+00
+  0.000000e+00
+  0.000000e+00
+  0.000000e+00
+  0.000000e+00
+  0.000000e+00
+  0.000000e+00
+  0.000000e+00
+  0.000000e+00
+  ]
+#
+#  Flux decomposition
+#  
+totstraintensor = [
+  1.716557e-09
+  3.190003e-09
+  2.138586e-02
+  8.259598e-06
+  6.058882e-06
+  2.340047e-09
+  ]
+totpStn = [
+  -1.013037e-02
+  -1.009504e-02
+  2.036850e-02
+  1.108749e-04
+  5.242309e-05
+  1.052998e-03
+  ]
+totpSpn = [
+  0.000000e+00
+  0.000000e+00
+  0.000000e+00
+  -3.862180e-04
+  -2.833117e-04
+  -1.438163e-05
+  ]
+Ltot = [
+  1.209846e+13
+  4.338516e+12
+  4.273384e+12
+  1.069399e+12
+  1.307629e+13
+  4.664165e+12
+  4.756322e+12
+  1.073140e+12
+  1.354682e+13
+  4.960374e+12
+  4.915966e+12
+  1.122868e+12
+  1.141853e+13
+  3.997811e+12
+  3.970721e+12
+  1.091366e+12
+  ]
+fluxtot = [
+  2.790308e-01
+  -2.585820e+01
+  2.486425e+01
+  1.890161e-01
+  -7.354512e+00
+  6.927620e+00
+  9.842069e-02
+  2.513156e-01
+  2.972581e+01
+  3.019436e+01
+  -3.591821e-01
+  7.932525e+00
+  7.991562e+00
+  1.108375e-02
+  2.883892e-01
+  -3.586314e+01
+  -3.549520e+01
+  -1.988013e-01
+  -8.950405e+00
+  -8.514326e+00
+  1.072206e-01
+  2.500394e-01
+  -2.214670e+01
+  2.247144e+01
+  5.890995e-02
+  -5.820790e+00
+  5.550966e+00
+  7.828676e-03
+  ]
+#
+#  Velocity statistics
+#  
+vAverage =   0.000000e+00  
+vStDev =   0.000000e+00  
+#
+#  I/O controls and parameters
+#  
+dirname =   "/p/lscratchb/mrhee/from.lscratchc/DD/five/amulti_junction_added/zmultijunctioncopied_bcc0"  
+skipIO =   0  
+numIOGroups =   1  
+armfile =   0  
+armfilefreq =   10  
+armfiledt =   -1.000000e+00  
+armfiletime =   0.000000e+00  
+armfilecounter =   1  
+fluxfile =   1  
+fluxfreq =   50  
+fluxdt =   -1.000000e+00  
+fluxtime =   0.000000e+00  
+fluxcounter =   1640  
+gnuplot =   1  
+gnuplotfreq =   1000  
+gnuplotdt =   -1.000000e+00  
+gnuplottime =   0.000000e+00  
+gnuplotcounter =   82  
+polefigfile =   0  
+polefigfreq =   100  
+polefigdt =   -1.000000e+00  
+polefigtime =   0.000000e+00  
+polefilecounter =   1  
+povray =   1  
+povrayfreq =   5000  
+povraydt =   -1.000000e+00  
+povraytime =   0.000000e+00  
+povraycounter =   17  
+psfile =   0  
+psfilefreq =   100  
+psfiledt =   -1.000000e+00  
+psfiletime =   0.000000e+00  
+savecn =   1  
+savecnfreq =   1000  
+savecndt =   -1.000000e+00  
+savecntime =   0.000000e+00  
+savecncounter =   82  
+saveprop =   1  
+savepropfreq =   10  
+savepropdt =   -1.000000e+00  
+saveproptime =   0.000000e+00  
+savetimers =   1  
+savetimersfreq =   5000  
+savetimersdt =   0.000000e+00  
+savetimerstime =   0.000000e+00  
+savetimerscounter =   16  
+tecplot =   1  
+tecplotfreq =   5000  
+tecplotdt =   -1.000000e+00  
+tecplottime =   0.000000e+00  
+tecplotcounter =   16  
+velfile =   1  
+velfilefreq =   5000  
+velfiledt =   -1.000000e+00  
+velfiletime =   0.000000e+00  
+velfilecounter =   16  
+winDefaultsFile =   "inputs/paradis.xdefaults"  
+savedensityspec = [
+  0
+  0
+  0
+  ]
+writetsbspec = [
+  0
+  0
+  0
+  ]
+tsbfile =   0  
+tsbfilefreq =   100  
+tsbfiledt =   -1.000000e+00  
+tsbfiletime =   0.000000e+00  
+tsbfilecounter =   1  
+#
+#  Miscellaneous parameters
+#  
+inclusionFile =   ""  
+enforceGlidePlanes =   0  
+TensionFactor =   1.000000e+00  
+elasticinteraction =   1  
+springConst =   1.000000e+02  
+mob_compute_escaig =   0  
+mob_cross_slip =   0  

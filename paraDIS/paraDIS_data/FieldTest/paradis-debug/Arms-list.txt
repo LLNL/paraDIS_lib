@@ -1,0 +1,36 @@
+Printout of all arms.
+Arm #0: (arm): number 0, Type 2
+Terminal Node 0: (FullNode address )0xb880b0 index 0 type 2
+(Node): NodeID: (domain id, node id) = (2, 0)
+(node): In bounds: true
+Location: (0, 100, 0)
+
+Terminal Segment 0: ArmSegment at 0x13535c0 number 1: 
+BurgersType: 3
+ep0: (FullNode address )0xb880b0 index 0 type 2
+(Node): NodeID: (domain id, node id) = (2, 0)
+(node): In bounds: true
+Location: (0, 100, 0)
+ep1: (FullNode address )0xaf1ee0 index 499 type 2
+(Node): NodeID: (domain id, node id) = (2, 499)
+(node): In bounds: true
+Location: (1.2566, 99.9921, 0)
+
+Terminal Segment 1: ArmSegment at 0x1353530 number 0: 
+BurgersType: 3
+ep0: (FullNode address )0xb880b0 index 0 type 2
+(Node): NodeID: (domain id, node id) = (2, 0)
+(node): In bounds: true
+Location: (0, 100, 0)
+ep1: (FullNode address )0x135df00 index 1 type 2
+(Node): NodeID: (domain id, node id) = (2, 1)
+(node): In bounds: true
+Location: (-1.2566, 99.9921, 0)
+
+
+******************************************************
+
+Number of arms: 1
+Total memory used by arms: 56
+Number of arm segments: 500
+Memory used by arm segments and their pointers: 32000

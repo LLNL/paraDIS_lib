@@ -1,0 +1,573 @@
+/usr/gapps/visit/1.11.1/linux-x86_64/bin/engine_ser -host 127.0.0.1 -timeout 480 -dir /usr/gapps/visit -port 5600 -key 80a1a1a58b5be88b9d24 
+ENGINE started
+Creating new VisWindow for id=0
+Succesfully loaded info about 20 plot plugins.
+Succesfully loaded info about 35 operator plugins.
+Succesfully loaded info about 89 database plugins.
+Executing DefineVirtualDatabaseRPC: db=/g/g0/rcook/current_projects/paraDIS/paraDIS_data/from_meijie/2009-02-23-crash-test/rs*.data database, path=/g/g0/rcook/current_projects/paraDIS/paraDIS_data/from_meijie/2009-02-23-crash-test/, time=0, numStates=16
+Loaded full database plugin paraDIS version 1.0a2
+avtDatabaseFactory: specifically told to use paraDIS_1.0a2
+Skipping already loaded database plugin paraDIS version 1.0a2
+Trying to open the file with the paraDIS file format.
+starting populateDatabaseMetaData
+avtparaDISFileFormat version 1.1a2, 2008-02-13
+GetParaDISMetaData called 
+The file is a ParaDIS-style file
+finishing populateDatabaseMetaData
+File open appears to be successful.
+NetworkManager::DefineDB: Added new virtual database definition for /g/g0/rcook/current_projects/paraDIS/paraDIS_data/from_meijie/2009-02-23-crash-test/rs*.data database
+LoadBalancer::AddDatabase - db=/g/g0/rcook/current_projects/paraDIS/paraDIS_data/from_meijie/2009-02-23-crash-test/rs*.data database
+    iohints=[]  
+Executing SetWinAnnotAttsRPC 1099x1040
+Executing DefineVirtualDatabaseRPC: db=/g/g0/rcook/current_projects/paraDIS/paraDIS_data/from_meijie/2009-02-23-crash-test/rs*.data database, path=/g/g0/rcook/current_projects/paraDIS/paraDIS_data/from_meijie/2009-02-23-crash-test/, time=0, numStates=16
+Skipping already loaded database plugin paraDIS version 1.0a2
+NetworkManager::DefineDB: No need to change virtual database definition for /g/g0/rcook/current_projects/paraDIS/paraDIS_data/from_meijie/2009-02-23-crash-test/rs*.data database
+Executing ReadRPC
+Skipping already loaded database plugin paraDIS version 1.0a2
+NetworkManager::AddDB: Adding Segment_Burgers_Type(segments) to the name stack
+Executing PreparePlotRPC: FilledBoundary_1.0
+Loaded full plot plugin FilledBoundary version 1.0
+Executing MakePlotRPC: FilledBoundary_1.0
+NetworkManager::MakePlot(): Leaving NetworkManager::MakePlot().
+Executing ExecuteRPC with respondWithNullDataObject = 1
+FilledBoundaryPlot: Did not hit target topological dimension: 3
+Unable to determine spatial extents -- dataset needs an update
+Guide function indicated that we should do the first Update on pipeline 1.
+Entered update for avtCurrentExtentFilter
+Entered update for avtCompactTreeFilter
+Entered update for avtVertexNormalsFilter
+Entered update for avtCondenseDatasetFilter
+Entered update for avtFilledBoundaryFilter
+Entered update for avtGhostZoneAndFacelistFilter
+Entered update for avtExpressionEvaluatorFilter
+EEF::ModifyContract: Checking candidates
+EEF::ModifyContract:     candidate: Segment_Burgers_Type(segments)
+EEF::ModifyContract:     not an expression
+Generic database instructing get for var = Segment_Burgers_Type(segments), timestep = 0 domain = 0
+GetMesh(segments)
+Starting GetParaDISMesh(segments)
+GetMesh: created 798 nodes  and 788 arm segments.
+Setting number of points to  798
+GetMesh: setting locations
+GetMesh: *** creating segment mesh ***
+GetMesh: Ending GetMesh
+GetAuxiliaryData(Segment_Burgers_Type, MATERIAL)
+mBurgersTypes.size(): 8
+mBurgersTypes[0] = 100 arm type
+mBurgersTypes[1] = 010 arm type
+mBurgersTypes[2] = 001 arm type
+mBurgersTypes[3] = +++ arm type
+mBurgersTypes[4] = ++- arm type
+mBurgersTypes[5] = +-+ arm type
+mBurgersTypes[6] = -++ arm type
+mBurgersTypes[7] = unknown arm type
+GetAuxiliaryData(segments, GLOBAL_NODE_IDS)
+GetAuxiliaryData(segments, SPATIAL_EXTENTS)
+Executing avtExpressionEvaluatorFilter
+Done executing avtExpressionEvaluatorFilter
+Done Updating avtExpressionEvaluatorFilter
+Executing avtGhostZoneAndFacelistFilter
+Entered update for avtFacelistFilter
+Executing avtFacelistFilter
+Done executing avtFacelistFilter
+Done Updating avtFacelistFilter
+Done executing avtGhostZoneAndFacelistFilter
+Done Updating avtGhostZoneAndFacelistFilter
+Executing avtFilledBoundaryFilter
+Done executing avtFilledBoundaryFilter
+Filter avtGhostZoneAndFacelistFilter releasing its data
+Filter avtGhostZoneFilter releasing its data
+A data object sink's current input was fed back into itself, ignoring...
+Filter avtFacelistFilter releasing its data
+Done Updating avtFilledBoundaryFilter
+Executing avtCondenseDatasetFilter
+Done executing avtCondenseDatasetFilter
+Filter avtFilledBoundaryFilter releasing its data
+Done Updating avtCondenseDatasetFilter
+Executing avtVertexNormalsFilter
+Done executing avtVertexNormalsFilter
+Filter avtCondenseDatasetFilter releasing its data
+Done Updating avtVertexNormalsFilter
+Executing avtCompactTreeFilter
+Done executing avtCompactTreeFilter
+Filter avtVertexNormalsFilter releasing its data
+Done Updating avtCompactTreeFilter
+Executing avtCurrentExtentFilter
+Done executing avtCurrentExtentFilter
+Filter avtCompactTreeFilter releasing its data
+Done Updating avtCurrentExtentFilter
+Memory after first execution was: size = 215580672, rss = 41467904
+Done with iterating Updates on pipeline 1
+Executing SetWinAnnotAttsRPC 1099x1040
+Executing PrepareUpdatePlotAttsRPC: FilledBoundary_1.0
+Skipping already loaded plot plugin FilledBoundary version 1.0
+Executing UpdatePlotAttsRPC: FilledBoundary_1.0
+Executing RenderRPC for the following plots
+   0, 
+A data object sink's current input was fed back into itself, ignoring...
+avtPlot::Execute Receiving Polygon Data
+No guide function registered with the originating sink, doing normal Update.
+Compositer outputting Z buffer.
+Data are not decomposed.  Skipping opaque composite.
+Executing SetWinAnnotAttsRPC 1099x1040
+Executing DefineVirtualDatabaseRPC: db=/g/g0/rcook/current_projects/paraDIS/paraDIS_data/from_meijie/2009-02-23-crash-test/rs*.data database, path=/g/g0/rcook/current_projects/paraDIS/paraDIS_data/from_meijie/2009-02-23-crash-test/, time=1, numStates=16
+Skipping already loaded database plugin paraDIS version 1.0a2
+NetworkManager::DefineDB: No need to change virtual database definition for /g/g0/rcook/current_projects/paraDIS/paraDIS_data/from_meijie/2009-02-23-crash-test/rs*.data database
+Executing ReadRPC
+Skipping already loaded database plugin paraDIS version 1.0a2
+NetworkManager::AddDB: Adding Segment_Burgers_Type(segments) to the name stack
+Executing ReleaseDataRPC: 0
+Releasing all data associated with network 0
+Filter avtExpressionEvaluatorFilter releasing its data
+Filter avtCondenseDatasetFilter releasing its data
+Filter avtGhostZoneAndFacelistFilter releasing its data
+Filter avtGhostZoneFilter releasing its data
+A data object sink's current input was fed back into itself, ignoring...
+Filter avtFacelistFilter releasing its data
+A data object sink's current input was fed back into itself, ignoring...
+Filter avtCompactTreeFilter releasing its data
+Filter avtCurrentExtentFilter releasing its data
+Filter avtMeshLogFilter releasing its data
+Filter avtVertexNormalsFilter releasing its data
+Filter avtFeatureEdgesFilter releasing its data
+Filter avtGhostZoneAndFacelistFilter releasing its data
+Filter avtGhostZoneFilter releasing its data
+A data object sink's current input was fed back into itself, ignoring...
+Filter avtFacelistFilter releasing its data
+A data object sink's current input was fed back into itself, ignoring...
+Filter avtGhostZoneFilter releasing its data
+Filter avtFacelistFilter releasing its data
+Filter avtFilledBoundaryFilter releasing its data
+Filter avtSmoothPolyDataFilter releasing its data
+Executing PreparePlotRPC: FilledBoundary_1.0
+Skipping already loaded plot plugin FilledBoundary version 1.0
+Executing MakePlotRPC: FilledBoundary_1.0
+NetworkManager::MakePlot(): Leaving NetworkManager::MakePlot().
+Executing ExecuteRPC with respondWithNullDataObject = 1
+FilledBoundaryPlot: Did not hit target topological dimension: 3
+Unable to determine spatial extents -- dataset needs an update
+Guide function indicated that we should do the first Update on pipeline 2.
+Entered update for avtCurrentExtentFilter
+Entered update for avtCompactTreeFilter
+Entered update for avtVertexNormalsFilter
+Entered update for avtCondenseDatasetFilter
+Entered update for avtFilledBoundaryFilter
+Entered update for avtGhostZoneAndFacelistFilter
+Entered update for avtExpressionEvaluatorFilter
+EEF::ModifyContract: Checking candidates
+EEF::ModifyContract:     candidate: Segment_Burgers_Type(segments)
+EEF::ModifyContract:     not an expression
+Generic database freeing up resources  (file descriptors, memory) for timestep 0
+Generic database instructing get for var = Segment_Burgers_Type(segments), timestep = 1 domain = 0
+GetMesh(segments)
+Starting GetParaDISMesh(segments)
+GetMesh: created 802 nodes  and 793 arm segments.
+Setting number of points to  802
+GetMesh: setting locations
+GetMesh: *** creating segment mesh ***
+GetMesh: Ending GetMesh
+GetAuxiliaryData(Segment_Burgers_Type, MATERIAL)
+mBurgersTypes.size(): 8
+mBurgersTypes[0] = 100 arm type
+mBurgersTypes[1] = 010 arm type
+mBurgersTypes[2] = 001 arm type
+mBurgersTypes[3] = +++ arm type
+mBurgersTypes[4] = ++- arm type
+mBurgersTypes[5] = +-+ arm type
+mBurgersTypes[6] = -++ arm type
+mBurgersTypes[7] = unknown arm type
+GetAuxiliaryData(segments, GLOBAL_NODE_IDS)
+GetAuxiliaryData(segments, SPATIAL_EXTENTS)
+Executing avtExpressionEvaluatorFilter
+Done executing avtExpressionEvaluatorFilter
+Done Updating avtExpressionEvaluatorFilter
+Executing avtGhostZoneAndFacelistFilter
+Entered update for avtFacelistFilter
+Executing avtFacelistFilter
+Done executing avtFacelistFilter
+Done Updating avtFacelistFilter
+Done executing avtGhostZoneAndFacelistFilter
+Done Updating avtGhostZoneAndFacelistFilter
+Executing avtFilledBoundaryFilter
+Done executing avtFilledBoundaryFilter
+Filter avtGhostZoneAndFacelistFilter releasing its data
+Filter avtGhostZoneFilter releasing its data
+A data object sink's current input was fed back into itself, ignoring...
+Filter avtFacelistFilter releasing its data
+Done Updating avtFilledBoundaryFilter
+Executing avtCondenseDatasetFilter
+Done executing avtCondenseDatasetFilter
+Filter avtFilledBoundaryFilter releasing its data
+Done Updating avtCondenseDatasetFilter
+Executing avtVertexNormalsFilter
+Done executing avtVertexNormalsFilter
+Filter avtCondenseDatasetFilter releasing its data
+Done Updating avtVertexNormalsFilter
+Executing avtCompactTreeFilter
+Done executing avtCompactTreeFilter
+Filter avtVertexNormalsFilter releasing its data
+Done Updating avtCompactTreeFilter
+Executing avtCurrentExtentFilter
+Done executing avtCurrentExtentFilter
+Filter avtCompactTreeFilter releasing its data
+Done Updating avtCurrentExtentFilter
+Memory after first execution was: size = 238600192, rss = 85180416
+Done with iterating Updates on pipeline 2
+Executing SetWinAnnotAttsRPC 1099x1040
+Executing PrepareUpdatePlotAttsRPC: FilledBoundary_1.0
+Skipping already loaded plot plugin FilledBoundary version 1.0
+Executing UpdatePlotAttsRPC: FilledBoundary_1.0
+Executing RenderRPC for the following plots
+   1, 
+A data object sink's current input was fed back into itself, ignoring...
+avtPlot::Execute Receiving Polygon Data
+No guide function registered with the originating sink, doing normal Update.
+Compositer outputting Z buffer.
+Data are not decomposed.  Skipping opaque composite.
+Executing SetWinAnnotAttsRPC 1099x1040
+Executing DefineVirtualDatabaseRPC: db=/g/g0/rcook/current_projects/paraDIS/paraDIS_data/from_meijie/2009-02-23-crash-test/rs*.data database, path=/g/g0/rcook/current_projects/paraDIS/paraDIS_data/from_meijie/2009-02-23-crash-test/, time=2, numStates=16
+Skipping already loaded database plugin paraDIS version 1.0a2
+NetworkManager::DefineDB: No need to change virtual database definition for /g/g0/rcook/current_projects/paraDIS/paraDIS_data/from_meijie/2009-02-23-crash-test/rs*.data database
+Executing ReadRPC
+Skipping already loaded database plugin paraDIS version 1.0a2
+NetworkManager::AddDB: Adding Segment_Burgers_Type(segments) to the name stack
+Executing ReleaseDataRPC: 1
+Releasing all data associated with network 1
+Filter avtExpressionEvaluatorFilter releasing its data
+Filter avtCondenseDatasetFilter releasing its data
+Filter avtGhostZoneAndFacelistFilter releasing its data
+Filter avtGhostZoneFilter releasing its data
+A data object sink's current input was fed back into itself, ignoring...
+Filter avtFacelistFilter releasing its data
+A data object sink's current input was fed back into itself, ignoring...
+Filter avtCompactTreeFilter releasing its data
+Filter avtCurrentExtentFilter releasing its data
+Filter avtMeshLogFilter releasing its data
+Filter avtVertexNormalsFilter releasing its data
+Filter avtFeatureEdgesFilter releasing its data
+Filter avtGhostZoneAndFacelistFilter releasing its data
+Filter avtGhostZoneFilter releasing its data
+A data object sink's current input was fed back into itself, ignoring...
+Filter avtFacelistFilter releasing its data
+A data object sink's current input was fed back into itself, ignoring...
+Filter avtGhostZoneFilter releasing its data
+Filter avtFacelistFilter releasing its data
+Filter avtFilledBoundaryFilter releasing its data
+Filter avtSmoothPolyDataFilter releasing its data
+Executing PreparePlotRPC: FilledBoundary_1.0
+Skipping already loaded plot plugin FilledBoundary version 1.0
+Executing MakePlotRPC: FilledBoundary_1.0
+NetworkManager::MakePlot(): Leaving NetworkManager::MakePlot().
+Executing ExecuteRPC with respondWithNullDataObject = 1
+FilledBoundaryPlot: Did not hit target topological dimension: 3
+Unable to determine spatial extents -- dataset needs an update
+Guide function indicated that we should do the first Update on pipeline 3.
+Entered update for avtCurrentExtentFilter
+Entered update for avtCompactTreeFilter
+Entered update for avtVertexNormalsFilter
+Entered update for avtCondenseDatasetFilter
+Entered update for avtFilledBoundaryFilter
+Entered update for avtGhostZoneAndFacelistFilter
+Entered update for avtExpressionEvaluatorFilter
+EEF::ModifyContract: Checking candidates
+EEF::ModifyContract:     candidate: Segment_Burgers_Type(segments)
+EEF::ModifyContract:     not an expression
+Generic database freeing up resources  (file descriptors, memory) for timestep 1
+Generic database instructing get for var = Segment_Burgers_Type(segments), timestep = 2 domain = 0
+GetMesh(segments)
+Starting GetParaDISMesh(segments)
+GetMesh: created 805 nodes  and 795 arm segments.
+Setting number of points to  805
+GetMesh: setting locations
+GetMesh: *** creating segment mesh ***
+GetMesh: Ending GetMesh
+GetAuxiliaryData(Segment_Burgers_Type, MATERIAL)
+mBurgersTypes.size(): 8
+mBurgersTypes[0] = 100 arm type
+mBurgersTypes[1] = 010 arm type
+mBurgersTypes[2] = 001 arm type
+mBurgersTypes[3] = +++ arm type
+mBurgersTypes[4] = ++- arm type
+mBurgersTypes[5] = +-+ arm type
+mBurgersTypes[6] = -++ arm type
+mBurgersTypes[7] = unknown arm type
+GetAuxiliaryData(segments, GLOBAL_NODE_IDS)
+GetAuxiliaryData(segments, SPATIAL_EXTENTS)
+Executing avtExpressionEvaluatorFilter
+Done executing avtExpressionEvaluatorFilter
+Done Updating avtExpressionEvaluatorFilter
+Executing avtGhostZoneAndFacelistFilter
+Entered update for avtFacelistFilter
+Executing avtFacelistFilter
+Done executing avtFacelistFilter
+Done Updating avtFacelistFilter
+Done executing avtGhostZoneAndFacelistFilter
+Done Updating avtGhostZoneAndFacelistFilter
+Executing avtFilledBoundaryFilter
+Done executing avtFilledBoundaryFilter
+Filter avtGhostZoneAndFacelistFilter releasing its data
+Filter avtGhostZoneFilter releasing its data
+A data object sink's current input was fed back into itself, ignoring...
+Filter avtFacelistFilter releasing its data
+Done Updating avtFilledBoundaryFilter
+Executing avtCondenseDatasetFilter
+Done executing avtCondenseDatasetFilter
+Filter avtFilledBoundaryFilter releasing its data
+Done Updating avtCondenseDatasetFilter
+Executing avtVertexNormalsFilter
+Done executing avtVertexNormalsFilter
+Filter avtCondenseDatasetFilter releasing its data
+Done Updating avtVertexNormalsFilter
+Executing avtCompactTreeFilter
+Done executing avtCompactTreeFilter
+Filter avtVertexNormalsFilter releasing its data
+Done Updating avtCompactTreeFilter
+Executing avtCurrentExtentFilter
+Done executing avtCurrentExtentFilter
+Filter avtCompactTreeFilter releasing its data
+Done Updating avtCurrentExtentFilter
+Memory after first execution was: size = 243171328, rss = 90267648
+Done with iterating Updates on pipeline 3
+Executing SetWinAnnotAttsRPC 1099x1040
+Executing PrepareUpdatePlotAttsRPC: FilledBoundary_1.0
+Skipping already loaded plot plugin FilledBoundary version 1.0
+Executing UpdatePlotAttsRPC: FilledBoundary_1.0
+Executing RenderRPC for the following plots
+   2, 
+A data object sink's current input was fed back into itself, ignoring...
+avtPlot::Execute Receiving Polygon Data
+No guide function registered with the originating sink, doing normal Update.
+Compositer outputting Z buffer.
+Data are not decomposed.  Skipping opaque composite.
+Executing SetWinAnnotAttsRPC 1099x1040
+Executing DefineVirtualDatabaseRPC: db=/g/g0/rcook/current_projects/paraDIS/paraDIS_data/from_meijie/2009-02-23-crash-test/rs*.data database, path=/g/g0/rcook/current_projects/paraDIS/paraDIS_data/from_meijie/2009-02-23-crash-test/, time=3, numStates=16
+Skipping already loaded database plugin paraDIS version 1.0a2
+NetworkManager::DefineDB: No need to change virtual database definition for /g/g0/rcook/current_projects/paraDIS/paraDIS_data/from_meijie/2009-02-23-crash-test/rs*.data database
+Executing ReadRPC
+Skipping already loaded database plugin paraDIS version 1.0a2
+NetworkManager::AddDB: Adding Segment_Burgers_Type(segments) to the name stack
+Executing ReleaseDataRPC: 2
+Releasing all data associated with network 2
+Filter avtExpressionEvaluatorFilter releasing its data
+Filter avtCondenseDatasetFilter releasing its data
+Filter avtGhostZoneAndFacelistFilter releasing its data
+Filter avtGhostZoneFilter releasing its data
+A data object sink's current input was fed back into itself, ignoring...
+Filter avtFacelistFilter releasing its data
+A data object sink's current input was fed back into itself, ignoring...
+Filter avtCompactTreeFilter releasing its data
+Filter avtCurrentExtentFilter releasing its data
+Filter avtMeshLogFilter releasing its data
+Filter avtVertexNormalsFilter releasing its data
+Filter avtFeatureEdgesFilter releasing its data
+Filter avtGhostZoneAndFacelistFilter releasing its data
+Filter avtGhostZoneFilter releasing its data
+A data object sink's current input was fed back into itself, ignoring...
+Filter avtFacelistFilter releasing its data
+A data object sink's current input was fed back into itself, ignoring...
+Filter avtGhostZoneFilter releasing its data
+Filter avtFacelistFilter releasing its data
+Filter avtFilledBoundaryFilter releasing its data
+Filter avtSmoothPolyDataFilter releasing its data
+Executing PreparePlotRPC: FilledBoundary_1.0
+Skipping already loaded plot plugin FilledBoundary version 1.0
+Executing MakePlotRPC: FilledBoundary_1.0
+NetworkManager::MakePlot(): Leaving NetworkManager::MakePlot().
+Executing ExecuteRPC with respondWithNullDataObject = 1
+FilledBoundaryPlot: Did not hit target topological dimension: 3
+Unable to determine spatial extents -- dataset needs an update
+Guide function indicated that we should do the first Update on pipeline 4.
+Entered update for avtCurrentExtentFilter
+Entered update for avtCompactTreeFilter
+Entered update for avtVertexNormalsFilter
+Entered update for avtCondenseDatasetFilter
+Entered update for avtFilledBoundaryFilter
+Entered update for avtGhostZoneAndFacelistFilter
+Entered update for avtExpressionEvaluatorFilter
+EEF::ModifyContract: Checking candidates
+EEF::ModifyContract:     candidate: Segment_Burgers_Type(segments)
+EEF::ModifyContract:     not an expression
+Generic database freeing up resources  (file descriptors, memory) for timestep 2
+Generic database instructing get for var = Segment_Burgers_Type(segments), timestep = 3 domain = 0
+GetMesh(segments)
+Starting GetParaDISMesh(segments)
+GetMesh: created 792 nodes  and 783 arm segments.
+Setting number of points to  792
+GetMesh: setting locations
+GetMesh: *** creating segment mesh ***
+GetMesh: Ending GetMesh
+GetAuxiliaryData(Segment_Burgers_Type, MATERIAL)
+mBurgersTypes.size(): 8
+mBurgersTypes[0] = 100 arm type
+mBurgersTypes[1] = 010 arm type
+mBurgersTypes[2] = 001 arm type
+mBurgersTypes[3] = +++ arm type
+mBurgersTypes[4] = ++- arm type
+mBurgersTypes[5] = +-+ arm type
+mBurgersTypes[6] = -++ arm type
+mBurgersTypes[7] = unknown arm type
+GetAuxiliaryData(segments, GLOBAL_NODE_IDS)
+GetAuxiliaryData(segments, SPATIAL_EXTENTS)
+Executing avtExpressionEvaluatorFilter
+Done executing avtExpressionEvaluatorFilter
+Done Updating avtExpressionEvaluatorFilter
+Executing avtGhostZoneAndFacelistFilter
+Entered update for avtFacelistFilter
+Executing avtFacelistFilter
+Done executing avtFacelistFilter
+Done Updating avtFacelistFilter
+Done executing avtGhostZoneAndFacelistFilter
+Done Updating avtGhostZoneAndFacelistFilter
+Executing avtFilledBoundaryFilter
+Done executing avtFilledBoundaryFilter
+Filter avtGhostZoneAndFacelistFilter releasing its data
+Filter avtGhostZoneFilter releasing its data
+A data object sink's current input was fed back into itself, ignoring...
+Filter avtFacelistFilter releasing its data
+Done Updating avtFilledBoundaryFilter
+Executing avtCondenseDatasetFilter
+Done executing avtCondenseDatasetFilter
+Filter avtFilledBoundaryFilter releasing its data
+Done Updating avtCondenseDatasetFilter
+Executing avtVertexNormalsFilter
+Done executing avtVertexNormalsFilter
+Filter avtCondenseDatasetFilter releasing its data
+Done Updating avtVertexNormalsFilter
+Executing avtCompactTreeFilter
+Done executing avtCompactTreeFilter
+Filter avtVertexNormalsFilter releasing its data
+Done Updating avtCompactTreeFilter
+Executing avtCurrentExtentFilter
+Done executing avtCurrentExtentFilter
+Filter avtCompactTreeFilter releasing its data
+Done Updating avtCurrentExtentFilter
+Memory after first execution was: size = 248053760, rss = 95084544
+Done with iterating Updates on pipeline 4
+Executing SetWinAnnotAttsRPC 1099x1040
+Executing PrepareUpdatePlotAttsRPC: FilledBoundary_1.0
+Skipping already loaded plot plugin FilledBoundary version 1.0
+Executing UpdatePlotAttsRPC: FilledBoundary_1.0
+Executing RenderRPC for the following plots
+   3, 
+A data object sink's current input was fed back into itself, ignoring...
+avtPlot::Execute Receiving Polygon Data
+No guide function registered with the originating sink, doing normal Update.
+Compositer outputting Z buffer.
+Data are not decomposed.  Skipping opaque composite.
+Executing SetWinAnnotAttsRPC 1099x1040
+Executing DefineVirtualDatabaseRPC: db=/g/g0/rcook/current_projects/paraDIS/paraDIS_data/from_meijie/2009-02-23-crash-test/rs*.data database, path=/g/g0/rcook/current_projects/paraDIS/paraDIS_data/from_meijie/2009-02-23-crash-test/, time=4, numStates=16
+Skipping already loaded database plugin paraDIS version 1.0a2
+NetworkManager::DefineDB: No need to change virtual database definition for /g/g0/rcook/current_projects/paraDIS/paraDIS_data/from_meijie/2009-02-23-crash-test/rs*.data database
+Executing ReadRPC
+Skipping already loaded database plugin paraDIS version 1.0a2
+NetworkManager::AddDB: Adding Segment_Burgers_Type(segments) to the name stack
+Executing ReleaseDataRPC: 3
+Releasing all data associated with network 3
+Filter avtExpressionEvaluatorFilter releasing its data
+Filter avtCondenseDatasetFilter releasing its data
+Filter avtGhostZoneAndFacelistFilter releasing its data
+Filter avtGhostZoneFilter releasing its data
+A data object sink's current input was fed back into itself, ignoring...
+Filter avtFacelistFilter releasing its data
+A data object sink's current input was fed back into itself, ignoring...
+Filter avtCompactTreeFilter releasing its data
+Filter avtCurrentExtentFilter releasing its data
+Filter avtMeshLogFilter releasing its data
+Filter avtVertexNormalsFilter releasing its data
+Filter avtFeatureEdgesFilter releasing its data
+Filter avtGhostZoneAndFacelistFilter releasing its data
+Filter avtGhostZoneFilter releasing its data
+A data object sink's current input was fed back into itself, ignoring...
+Filter avtFacelistFilter releasing its data
+A data object sink's current input was fed back into itself, ignoring...
+Filter avtGhostZoneFilter releasing its data
+Filter avtFacelistFilter releasing its data
+Filter avtFilledBoundaryFilter releasing its data
+Filter avtSmoothPolyDataFilter releasing its data
+Executing PreparePlotRPC: FilledBoundary_1.0
+Skipping already loaded plot plugin FilledBoundary version 1.0
+Executing MakePlotRPC: FilledBoundary_1.0
+NetworkManager::MakePlot(): Leaving NetworkManager::MakePlot().
+Executing ExecuteRPC with respondWithNullDataObject = 1
+FilledBoundaryPlot: Did not hit target topological dimension: 3
+Unable to determine spatial extents -- dataset needs an update
+Guide function indicated that we should do the first Update on pipeline 5.
+Entered update for avtCurrentExtentFilter
+Entered update for avtCompactTreeFilter
+Entered update for avtVertexNormalsFilter
+Entered update for avtCondenseDatasetFilter
+Entered update for avtFilledBoundaryFilter
+Entered update for avtGhostZoneAndFacelistFilter
+Entered update for avtExpressionEvaluatorFilter
+EEF::ModifyContract: Checking candidates
+EEF::ModifyContract:     candidate: Segment_Burgers_Type(segments)
+EEF::ModifyContract:     not an expression
+Generic database freeing up resources  (file descriptors, memory) for timestep 3
+Generic database instructing get for var = Segment_Burgers_Type(segments), timestep = 4 domain = 0
+GetMesh(segments)
+Starting GetParaDISMesh(segments)
+GetMesh: created 800 nodes  and 790 arm segments.
+Setting number of points to  800
+GetMesh: setting locations
+GetMesh: *** creating segment mesh ***
+GetMesh: Ending GetMesh
+GetAuxiliaryData(Segment_Burgers_Type, MATERIAL)
+mBurgersTypes.size(): 8
+mBurgersTypes[0] = 100 arm type
+mBurgersTypes[1] = 010 arm type
+mBurgersTypes[2] = 001 arm type
+mBurgersTypes[3] = +++ arm type
+mBurgersTypes[4] = ++- arm type
+mBurgersTypes[5] = +-+ arm type
+mBurgersTypes[6] = -++ arm type
+mBurgersTypes[7] = unknown arm type
+GetAuxiliaryData(segments, GLOBAL_NODE_IDS)
+GetAuxiliaryData(segments, SPATIAL_EXTENTS)
+Executing avtExpressionEvaluatorFilter
+Done executing avtExpressionEvaluatorFilter
+Done Updating avtExpressionEvaluatorFilter
+Executing avtGhostZoneAndFacelistFilter
+Entered update for avtFacelistFilter
+Executing avtFacelistFilter
+Done executing avtFacelistFilter
+Done Updating avtFacelistFilter
+Done executing avtGhostZoneAndFacelistFilter
+Done Updating avtGhostZoneAndFacelistFilter
+Executing avtFilledBoundaryFilter
+Done executing avtFilledBoundaryFilter
+Filter avtGhostZoneAndFacelistFilter releasing its data
+Filter avtGhostZoneFilter releasing its data
+A data object sink's current input was fed back into itself, ignoring...
+Filter avtFacelistFilter releasing its data
+Done Updating avtFilledBoundaryFilter
+Executing avtCondenseDatasetFilter
+Done executing avtCondenseDatasetFilter
+Filter avtFilledBoundaryFilter releasing its data
+Done Updating avtCondenseDatasetFilter
+Executing avtVertexNormalsFilter
+Done executing avtVertexNormalsFilter
+Filter avtCondenseDatasetFilter releasing its data
+Done Updating avtVertexNormalsFilter
+Executing avtCompactTreeFilter
+Done executing avtCompactTreeFilter
+Filter avtVertexNormalsFilter releasing its data
+Done Updating avtCompactTreeFilter
+Executing avtCurrentExtentFilter
+Done executing avtCurrentExtentFilter
+Filter avtCompactTreeFilter releasing its data
+Done Updating avtCurrentExtentFilter
+Memory after first execution was: size = 252735488, rss = 100335616
+Done with iterating Updates on pipeline 5
+Executing SetWinAnnotAttsRPC 1099x1040
+Executing PrepareUpdatePlotAttsRPC: FilledBoundary_1.0
+Skipping already loaded plot plugin FilledBoundary version 1.0
+Executing UpdatePlotAttsRPC: FilledBoundary_1.0
+Executing RenderRPC for the following plots
+   4, 
+A data object sink's current input was fed back into itself, ignoring...
+avtPlot::Execute Receiving Polygon Data
+No guide function registered with the originating sink, doing normal Update.
+Compositer outputting Z buffer.
+Data are not decomposed.  Skipping opaque composite.
+Executing QuitRPC
+ENGINE exited.
