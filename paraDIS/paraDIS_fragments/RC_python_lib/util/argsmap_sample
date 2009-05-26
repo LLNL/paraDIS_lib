@@ -1,0 +1,39 @@
+#$Id: argsmap_sample,v 1.6 2006/04/25 03:52:48 rcook Exp $
+# programs in my world can have lists of "variable descriptions", which contain user preferences for program behaviors that are passed in via preference files, environment variables, and command line options.  The file is parsed first, then the environment, then command line options, with any new values discovered replacing or being appended to the variable depending on its type.  
+# An argsmap file is a way to specify the argument mapping for a program by giving a list of variable descriptions, one per line, SPACE DELIMITED (make sure not to put spaces in lists!!!).  It is also easy to do this in the program itself.  This file is here for flexibility, so a program can be made with user-configurable preference choices!  See the TestingInfrastructure for such a use, where the infrastructure is policy agnostic, and passes its preferences into its subcomponents without understanding them. 
+# Note again that command line args supercede environment vars which in turn override values in the init file (which is by default ascivis_source/testing/init/testing.ini).
+# Also note that any variable either has one or zero arguments (if zero, then it's boolean). If you wish to pass multiple values to a single variable, then use python notation for a list:
+# export MY_VARIABLE='[1,2,3]'
+# or
+# setenv CRAZY_THING '["fast", "girls", "ride", "harleys"]'
+# 
+# Lines beginning with # or blank lines are ignored
+# Otherwise, on each line are four tokens:
+# 	Key	Env	Arg	Num 	(Clobber,Append)
+# Key -- The name given in the testing.ini file, which is the actual program variable being set, BTW. 
+# Env -- the name of the variable when specified as an environment variable 
+# Arg -- the name of the variable when given as a command-line arg to run_TSB_tests.py
+# Mode -- defines the behavior of how a new value found for a variable affects a previously stored value.  The following modes are possible:
+#     append -- first value is placed in a list if it's not already one.  subsequent values or lists of values are appended to the old list.  
+#     prepend -- first value is placed in a list if it's not already one.  subsequent values or lists of values are prepended to the old list. 
+#     and -- each value is logically anded with previous values
+#     or -- each value is logically ored with previous values 
+#     overwrite -- each value overwrites any previous values (good for strings)
+#     bool -- if the variable is in the arglist, or if the corresponsing environment variable is set to any value, or the variable shows up in the init file with no argument, it is true.  Otherwise, it is false. 
+#
+# (Probably, most vars will be appendable (e.g., directory lists), overwrite (e.g., strings). and bool (e.g., switches to turn on non-default behavior)
+#--------------------------------------------------------------------
+# example:
+# ---------------------------------------------------------------------
+# var name		environment variable	argument	mode 
+# ----------------------------------------------------------------------
+Verbosity		PREFS_VERBOSE		-v			overwrite
+AppendableDummy 	DUMMY_APPENDABLE 	-appvar			append
+PrependableDummy 	DUMMY_PREPENDABLE 	-prevar			prepend
+AndableDummy 		DUMMY_ANDABLE	 	-andvar	  		and
+OrableDummy 		DUMMY_ORABLE 		-orvar	  		or
+OverwriteDummy 		DUMMY_OVERWRITE	  	-doverwritev   		overwrite
+BoolDummy 		DUMMY_BOOL	  	-boolvar   		bool
+# for this variable, the given switches and environment variables all modify the AliasedVariable variable in the program itself
+AliasedVariable 	[ALIAS1,ALIAS2]		[-switch,-s,--switch]	append
+

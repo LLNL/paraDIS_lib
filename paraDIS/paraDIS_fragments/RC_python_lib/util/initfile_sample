@@ -1,0 +1,11 @@
+# This is a sample init file to exercise the GetPrefs module
+
+argsmap argsmap_sample
+include initfile_include_test
+AppendableDummy		["append", "to", "me"]
+PrependableDummy 	["prepend", "to", "me"]
+AndableDummy 		true
+OrableDummy 		false
+ClobberDummy 		123456.789
+StringDummy 		Notice how there are no quotes around this string!
+AliasedVariable		Value from init file

@@ -1,0 +1,47 @@
+********************************
+This is Prefs.ModuleTest()
+
+If called as Prefs.py -switch "blah blah", the expected output is:
+who knows?
+
+Getting preferences from initfile_sample, environment and program flags.
+gVarMap[Verbosity]=[overwrite, ['PREFS_VERBOSE'], ['-v']]
+gEnvMap[PREFS_VERBOSE]=[Verbosity, overwrite]
+gArgMap[-v]=[Verbosity, mode]
+gVarMap[AppendableDummy]=[append, ['DUMMY_APPENDABLE'], ['-appvar']]
+gEnvMap[DUMMY_APPENDABLE]=[AppendableDummy, append]
+gArgMap[-appvar]=[AppendableDummy, mode]
+gVarMap[PrependableDummy]=[prepend, ['DUMMY_PREPENDABLE'], ['-prevar']]
+gEnvMap[DUMMY_PREPENDABLE]=[PrependableDummy, prepend]
+gArgMap[-prevar]=[PrependableDummy, mode]
+gVarMap[AndableDummy]=[and, ['DUMMY_ANDABLE'], ['-andvar']]
+gEnvMap[DUMMY_ANDABLE]=[AndableDummy, and]
+gArgMap[-andvar]=[AndableDummy, mode]
+gVarMap[OrableDummy]=[or, ['DUMMY_ORABLE'], ['-orvar']]
+gEnvMap[DUMMY_ORABLE]=[OrableDummy, or]
+gArgMap[-orvar]=[OrableDummy, mode]
+gVarMap[OverwriteDummy]=[overwrite, ['DUMMY_OVERWRITE'], ['-doverwritev']]
+gEnvMap[DUMMY_OVERWRITE]=[OverwriteDummy, overwrite]
+gArgMap[-doverwritev]=[OverwriteDummy, mode]
+gVarMap[BoolDummy]=[bool, ['DUMMY_BOOL'], ['-boolvar']]
+gEnvMap[DUMMY_BOOL]=[BoolDummy, bool]
+gArgMap[-boolvar]=[BoolDummy, mode]
+gVarMap[AliasedVariable]=[append, ['ALIAS1', 'ALIAS2'], ['-switch', '-s', '--switch']]
+gEnvMap[ALIAS1]=[AliasedVariable, append]
+gEnvMap[ALIAS1]=[AliasedVariable, append]
+gEnvMap[ALIAS1]=[AliasedVariable, append]
+gEnvMap[ALIAS2]=[AliasedVariable, append]
+gEnvMap[ALIAS2]=[AliasedVariable, append]
+gEnvMap[ALIAS2]=[AliasedVariable, append]
+gArgMap[-switch]=[AliasedVariable, mode]
+gArgMap[-s]=[AliasedVariable, mode]
+gArgMap[--switch]=[AliasedVariable, mode]
+gVarMap[include_var]=[overwrite, ['INC_VARIABLE'], ['-ivar']]
+gEnvMap[INC_VARIABLE]=[include_var, overwrite]
+gArgMap[-ivar]=[include_var, mode]
+After initfile_sample, env, and args, gPrefs is:
+	{'AndableDummy': False, 'ClobberDummy': 123456.789, 'StringDummy': 'Notice how there are no quotes around this string!', 'AliasedVariable': ['Value from init file', 'blah blah'], 'PrependableDummy': ['prepend', 'to', 'me'], 'include_var': 'I am an include variable', 'OrableDummy': False, 'AppendableDummy': ['append', 'to', 'me']}
+
+
+get_prefs() done.
+********************************

@@ -1,0 +1,15 @@
+Tried rendering with all sorts of goodies turned on, including media and shadows and antialiasing and it is ridiculously slow at 1280x960;  after 6:56:36 Rendering line 407 of 1280, 35171 supersamples!  
+
+So I will shrink the image and eliminated media rendering. Vasily is happy to get the quality and resolution we used for family day movie, so I'll remove media and use a 2-color scheme and we should be good to go. 
+
+famiy-day was 640x480, which is actually the default for my movie script anyhow.  Probably not a coincidence.
+
+Finished movie on 11/9/05.  The wormparams.inc file I used is in the pov directory, and the version of makewormmovie.sh I used is also here in ./bin.
+
+I used restartConvert.C version 1.92 with header 1.47 current as of 11/9/05 to convert the restart files to povray.  
+
+All logfiles and init files etc. are preserved in the images-excellent directory. The actual command used to make the final movie was as follows: 
+
+ pscript.sh -n 62 -t 168h -k -d -c "/g/g0/rcook/current_projects/paraDIS_hts/movie/makewormmovie.sh -datadir /nfs/tmp0/rcook/paradis/2005-11/data  -moviedir /nfs/tmp0/rcook/paradis/2005-11/images -v 5 -padlength 4  -povname converted_restart   -prologframes 0 -epilogframes 0  -height 480 -width 640   -parallel -backdrop -povstep 2 -povfirst 75 -povlast 1674 -animstart 0.0 -animend 1.0"
+
+Rendering seems to have taken between 3 and 25 minutes per frame.  Total rendering time on 62 sphere nodes (124 CPU's) was 1:42 hours for cpu 0, 1:27 for the 50th cpu, and 1:39 for the 120th CPU.  
