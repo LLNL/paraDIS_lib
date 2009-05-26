@@ -1,0 +1,80 @@
+$Id: README_RESTARTCONVERT,v 1.6 2007/07/02 19:03:54 rcook Exp $
+=============================================================================
+INSTALLATION
+Installation is clunky but manageable.  restartConvert depends on three  libraries: RC_c_lib, RC_cpp_lib, and the ascivis_source distribution.  These three libraries should be included in this distribution.  If not, ask Rich Cook where to get them.  Symlinks to RC_c_lib and RC_cpp_lib must exist in the top-level paraDIS_hts directory.  Set ASCIVIZ_HOME to the complete path of ascivis_source before building.  
+
+To install, simply type "make" in the top level directory and all components will be compiled.  When you are done, restartConvert will be in bin/$SYS_TYPE/.  On non-LC linux machines, this will be bin/Linux/restartConvert.  
+
+
+==============================================================================
+USAGE
+This documents the restartConvert utility.  This code was invented to convert paraDIS restart files into either povray input files for beautiful 3D scene creation or HTS triangle files that the ascivis TSB tool was able to use.  The HTS functionality is deprecated now, since VisIt is the vis tool of choice.  
+
+The basic usage is 
+restartConvert  rs0224.data <more files...> 
+
+To do multiple files, you can do this: 
+restartConvert -first 1 -last 50 -template rs%04d.data 
+
+The %04d part of the template means the files have four digits in their names, padded with zeroes. For example, if you wanted statistics about three files, rs090.data, rs097.data and rs104.data, (note that here that we have 3 digit numbers), you would use this: 
+
+restartConvert -first 90 -last 104 -step 7 -template rs%03d.data
+
+Again, the "%03d" indicates that we are using 3-digit numbers, which are padded with zeroes.  We start on 090, we step by 7 to 104.  
+
+There is a  help menu built into restartConvert. See the output of restartConvert -help for what is possible.  
+
+restartConvert operates under three different modes.  
+1)  HTS -- generate HTS files for TSB (OBSOLETE AND PROBABLY BROKEN -- DO NOT USE)
+2)  Povray -- generat povray scene files (EXPERT USE ONLY)
+3)  Stats only.  If neither -hts or -pov are used, then just parse the data file and generate intersting statistics.  
+
+In HTS and Povray modes, various filters can be applied.  Again, see restartConvert -help.  
+
+//==========================================================================
+// ALGORITHM DESCRIPTION
+
+Here is the way the algorithm proceeds to classify nodes and arms discovered in a paraDIS restart file.  
+See restartConvert.C DumpFile::WriteArmStats() for exact definitions of the various arm types and node types.  This is also written out into each armstats file. I will not duplicate those definitions here to avoid discrepancies.  The description in restartConvert.C is authoritative and accurately should reflect what the code does. 
+
+
+//==========================================================================
+main: 
+//parse filters to see if there are restrictions on which nodes to parse
+  filt.ParseFilterFile(filterfile); 
+
+//parse the dumpfile
+  DumpFile df;
+  df.Parse(infilename, oldstyle);  // Collect all nodes and segments. 
+  df.CreateArms(); //create arms and categorize all nodes and segments
+	theArm->BuildArm(*segpos) // for each segment:  make a new arm if needed.  No categorization is done here. 
+	FindFourArmedMonsters()
+	FindButterflies()
+	then for each arm:  
+		(*armpos)->Weight(); // this is where the characterization is done of nodes and arms
+		(*armpos)->ComputeSegmentMonstrosities();
+
+//for povray:
+  df.FilterArms(filt); 
+  df.DumpToPovray(outfile, filt.drawspheres);
+
+//for hts:
+	//first do neighborfilter stuff, then: 
+  df.UndrawArms();
+  df.UnfilterArms();
+  df.FilterArms(filt); 
+  df.DumpToHTS(hflags);
+
+//for both:
+  df.WriteArmStats(armstatsname);
+
+exit main
+//==========================================================================
+(*armpos)->Weight() // to get arm weight, called in CreateArms()
+	calls arm::ArmType() // to figure 
+		ArmType() calls arm::MN()
+			MN() calls CheckForButterflyBody() 
+				when determining -33 nodes, we call isTypeM() on the end nodes
+				IsTypeM() // checks if previously found to be a butterfly end (PROBLEM! circular!), or butterfly monster, and updates whether the end is a four-armed monster.
+			then 
+			MN() calls isTypeM() for each node

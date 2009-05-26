@@ -1,0 +1,8 @@
+#!/bin/sh
+povray worms -K0.5 +SR1    +ER300  -D +Oworms0 +Ft &
+povray worms -K0.5 +SR301  +ER600  -D +Oworms1 +Ft &
+povray worms -K0.5 +SR601  +ER900  -D +Oworms2 +Ft &
+povray worms -K0.5 +SR901  +ER1200 -D +Oworms3 +Ft &
+wait
+convert -draw 'image Over 0,0 1600,1200 worms0.tga' -draw 'image Over 0,300 1600,1200 worms1.tga' -draw 'image Over 0,600 1600,1200 worms2.tga' -draw 'image over 0,900 1600,1200 worms3.tga' base.pbm out.png
+display out.png
