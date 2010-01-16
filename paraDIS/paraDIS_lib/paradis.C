@@ -11,8 +11,11 @@
 #include "stringutil.h"
 #include "timer.h"
 #include <algorithm>
-#include <ext/hash_set>
-#include <dirent.h>
+#ifndef WIN32
+#  include <dirent.h>
+#else
+#  include <direct.h>
+#endif
 #include <sys/stat.h>
 #include <errno.h>
 using namespace RC_Math; 
@@ -304,54 +307,54 @@ namespace paraDIS {
     if (mTerminalNodes.size() == 1) {
       mArmType = ARM_LOOP; 
     } else {
-	  if (mTerminalNodes[0]->IsTypeM() && mTerminalNodes[1]->IsTypeM()) {
-		mArmType = ARM_MM_111; 
-	  } else if (mTerminalNodes[0]->IsTypeM() || mTerminalNodes[1]->IsTypeM()){
-		mArmType = ARM_MN_111; 
-	  } else {
-		mArmType = ARM_NN_111; 
-	  }
-	  
-	  // This changes _111 to _100 by definition
-	  int btype = mTerminalSegments[0]->GetBurgersType(); 
-	  if (btype <= 3) {
-		mArmType += 3; 
-	  }
-	}
-	
-	/*!
-	  Now set every segment in this arm to the same type...
-	*/ 
-	ArmSegment *currentSegment = const_cast<ArmSegment*>(mTerminalSegments[0]);
-	FullNode *currentNode;  
-	if (currentSegment->GetEndpoint(0) == mTerminalNodes[0] ||
-		currentSegment->GetEndpoint(1) == mTerminalNodes[0]) {
-	  currentNode = mTerminalNodes[0];
-	} else if (mTerminalNodes.size() == 2 && 
-			   ( currentSegment->GetEndpoint(0) == mTerminalNodes[1] ||
-				 currentSegment->GetEndpoint(1) == mTerminalNodes[1])) {
-	  currentNode = mTerminalNodes[1];
-	} else {
-	  throw string("Cannot find matching terminal node in arm for either segment endpoint"); 
-	} 
+      if (mTerminalNodes[0]->IsTypeM() && mTerminalNodes[1]->IsTypeM()) {
+        mArmType = ARM_MM_111; 
+      } else if (mTerminalNodes[0]->IsTypeM() || mTerminalNodes[1]->IsTypeM()){
+        mArmType = ARM_MN_111; 
+      } else {
+        mArmType = ARM_NN_111; 
+      }
+      
+      // This changes _111 to _100 by definition
+      int btype = mTerminalSegments[0]->GetBurgersType(); 
+      if (btype <= 3) {
+        mArmType += 3; 
+      }
+    }
+    
+    /*!
+      Now set every segment in this arm to the same type...
+    */ 
+    ArmSegment *currentSegment = const_cast<ArmSegment*>(mTerminalSegments[0]);
+    FullNode *currentNode;  
+    if (currentSegment->GetEndpoint(0) == mTerminalNodes[0] ||
+        currentSegment->GetEndpoint(1) == mTerminalNodes[0]) {
+      currentNode = mTerminalNodes[0];
+    } else if (mTerminalNodes.size() == 2 && 
+               ( currentSegment->GetEndpoint(0) == mTerminalNodes[1] ||
+                 currentSegment->GetEndpoint(1) == mTerminalNodes[1])) {
+      currentNode = mTerminalNodes[1];
+    } else {
+      throw string("Cannot find matching terminal node in arm for either segment endpoint"); 
+    } 
 
-	ArmSegment *lastSegment; 
+    ArmSegment *lastSegment; 
     uint32_t numSeen = 0; 
-	if (mTerminalSegments.size() == 1)  lastSegment = currentSegment; 
-	else lastSegment = const_cast<ArmSegment*>(mTerminalSegments[1]); 
-	while (true) {
+    if (mTerminalSegments.size() == 1)  lastSegment = currentSegment; 
+    else lastSegment = const_cast<ArmSegment*>(mTerminalSegments[1]); 
+    while (true) {
       dbprintf(5, "Classifying segment %s\n", currentSegment->Stringify().c_str()); 
-	  currentSegment->SetMNType(mArmType); 
+      currentSegment->SetMNType(mArmType); 
       gNumClassified++; 
       numSeen ++; 
-	  if (currentSegment == lastSegment) {
+      if (currentSegment == lastSegment) {
         break; 
       }
       currentNode = currentSegment->GetOtherEndpoint(currentNode); 
-      currentSegment = currentNode->GetOtherNeighbor(currentSegment); 	  
-	}
+      currentSegment = currentNode->GetOtherNeighbor(currentSegment);       
+    }
 #ifdef DEBUG
-	if (numSeen != mNumSegments) {
+    if (numSeen != mNumSegments) {
       throw string("Error in Arm ")+doubleToString(mArmID)+":  classified "+doubleToString(numSeen)+" segments, but expected "+ doubleToString(mNumSegments); 
     }
 #endif
@@ -360,38 +363,38 @@ namespace paraDIS {
 
   //===========================================================================
   double Arm::GetLength(void) {
-	ArmSegment *currentSegment = const_cast<ArmSegment*>(mTerminalSegments[0]);
+    ArmSegment *currentSegment = const_cast<ArmSegment*>(mTerminalSegments[0]);
     double length = 0; 
-	FullNode *currentNode = NULL, *lastNode=NULL;  
-	if (*currentSegment->GetEndpoint(0) == *mTerminalNodes[0] ||
-		*currentSegment->GetEndpoint(1) == *mTerminalNodes[0]) {
-	  currentNode = mTerminalNodes[0];
+    FullNode *currentNode = NULL, *lastNode=NULL;  
+    if (*currentSegment->GetEndpoint(0) == *mTerminalNodes[0] ||
+        *currentSegment->GetEndpoint(1) == *mTerminalNodes[0]) {
+      currentNode = mTerminalNodes[0];
       if (mTerminalNodes.size() == 2) {
         lastNode = mTerminalNodes[1];    
       } else {
         lastNode = currentNode; 
       }
-	} else if (mTerminalNodes.size() == 2 && 
-			   ( *currentSegment->GetEndpoint(0) == *mTerminalNodes[1] ||
-				 *currentSegment->GetEndpoint(1) == *mTerminalNodes[1])) {
-	  currentNode = mTerminalNodes[1];
+    } else if (mTerminalNodes.size() == 2 && 
+               ( *currentSegment->GetEndpoint(0) == *mTerminalNodes[1] ||
+                 *currentSegment->GetEndpoint(1) == *mTerminalNodes[1])) {
+      currentNode = mTerminalNodes[1];
       lastNode = mTerminalNodes[0]; 
-	} else {
-	  throw string("Cannot find matching terminal node in arm for either segment endpoint"); 
-	}
+    } else {
+      throw string("Cannot find matching terminal node in arm for either segment endpoint"); 
+    }
 
     /*!
       Compute the arm length in a loop
     */
-	ArmSegment *firstSegment = currentSegment, *lastSegment = currentSegment; 
+    ArmSegment *firstSegment = currentSegment, *lastSegment = currentSegment; 
     uint32_t numMeasured = 0; 
-	if (mTerminalSegments.size() == 2)  {
+    if (mTerminalSegments.size() == 2)  {
       lastSegment = const_cast<ArmSegment*>(mTerminalSegments[1]); 
     }
     dbprintf(5, "firstSegment is %s\n", firstSegment->Stringify().c_str()); 
     dbprintf(5, "lastSegment is %s\n", lastSegment->Stringify().c_str()); 
-	while (1) {
-	  length += currentSegment->GetLength(); 
+    while (1) {
+      length += currentSegment->GetLength(); 
       gNumArmSegmentsMeasured++; 
       numMeasured ++; 
       dbprintf(5, "Added length to arm %d: segment %d, length %.2f\n", mArmID, currentSegment->GetID(), currentSegment->GetLength()); 
@@ -434,7 +437,7 @@ namespace paraDIS {
         }
         
       }     
-	} 
+    } 
 #ifdef DEBUG
     if (numMeasured != mNumSegments) {
       throw string("Error in GetLength: arm ")+doubleToString(mArmID)+" has "+doubleToString(mNumSegments)+" but we only measured "+doubleToString(numMeasured); 
@@ -448,7 +451,7 @@ namespace paraDIS {
       There must be two terminal nodes else give up
     */ 
     if (mTerminalNodes.size() != 2 )  return; 
-	
+    
     /*! 
       The arm must be type 100, else give up. 
     */ 
@@ -809,9 +812,9 @@ namespace paraDIS {
     
     //------------------------------------------------
     // done reading neighbor information
-	theNode.SetFileOrderIndex(mMinimalNodes.size()); 
+    theNode.SetFileOrderIndex(mMinimalNodes.size()); 
     mMinimalNodes.push_back(theNode); 
-	dbprintf(5, "pushed back new Minimal Node: %s\n", theNode.Stringify().c_str()); 
+    dbprintf(5, "pushed back new Minimal Node: %s\n", theNode.Stringify().c_str()); 
     return; 
   }
   
@@ -896,8 +899,8 @@ namespace paraDIS {
       
       double theTime=theTimer.elapsed_time(), thePercent=0;
       while (datafile.good() && nodenum++ < mTotalDumpNodes) {
-		if (dbg_isverbose()) 
-		  Progress(theTimer, nodenum, mTotalDumpNodes, thePercent, 5, theTime, 60, "Reading datafile"); 
+        if (dbg_isverbose()) 
+          Progress(theTimer, nodenum, mTotalDumpNodes, thePercent, 5, theTime, 60, "Reading datafile"); 
         ReadMinimalNodeFromFile(lineno, datafile);  
         
       }
@@ -912,6 +915,7 @@ namespace paraDIS {
   //===========================================================================
   bool DataSet::Mkdir(const char *dirname) {
     dbprintf(3, "Mkdir(%s)",dirname); 
+#ifndef WIN32
     DIR *dir = opendir(dirname); 
     if (!dir) {
       if (mkdir(dirname, S_IRWXU | S_IRWXG | S_IRWXO )) {
@@ -925,6 +929,15 @@ namespace paraDIS {
     }else {
       closedir(dir); 
     }
+#else
+    if (_mkdir(dirname) != 0)
+    {
+        string errmsg = string("Warning:  could not create debug output directory: ") + mDebugOutputDir+ ". Stats will not be written." ; 
+        cerr << errmsg << endl; 
+        dbprintf(1, errmsg.c_str()); 
+        return false; 
+    }
+#endif
     return true; 
   }
   //===========================================================================
@@ -1020,34 +1033,34 @@ namespace paraDIS {
   void DataSet::ClassifyMinimalNodes(void){ 
     /* Look at each node.  If it's in bounds, it is FULL, and each neighbor is alos full.  If the neibhbor is out of bounds and unmarked, then you must call MarkOOBNodeChain on it to capture PARTIAL and FULL out of bounds nodes. */
     dbprintf(2, "ClassifyMinimalNodes started...\n"); 
-	
-	sort(mMinimalNodes.begin(), mMinimalNodes.end()); 
+    
+    sort(mMinimalNodes.begin(), mMinimalNodes.end()); 
     std::vector<MinimalNode>::iterator node_pos = mMinimalNodes.begin(), node_endpos = mMinimalNodes.end(); 
-	int nodenum = 0; 
-	try {
-	  while (node_pos != node_endpos) {
-		if (node_pos->GetKeep() || !  node_pos->InBounds()) {
-		  /* At the top level, we only inspect nodes that are inbounds, that we have not seen before.  OOB neighbors are caught in CollapseNodeChain */ 
-		  ++node_pos; 
-		  continue;  
-		}
-		node_pos->SetKeep(); /* We need it, yes, my Precious */ 
-		std::vector<MinimalNode *> neighborNodes = 
-		  GetNeighborMinimalNodes(*node_pos); 
-		std::vector<MinimalNode *>::iterator neighbor = neighborNodes.begin();
-		while (neighbor != neighborNodes.end()) {
-		  if (!(*neighbor)->InBounds() && !(*neighbor)->GetKeep()) {
-			MarkOOBNodeChain(*(*neighbor), *node_pos); 
-		  }
-		  ++neighbor; 
-		}
-		++node_pos; 
-		++nodenum; 
-	  } 
-	} catch (string err) {
-	  err = string("Error in ClassifyMinimalNodes, node ") + doubleToString(nodenum) + ": " + err; 
-	  throw err; 
-	}
+    int nodenum = 0; 
+    try {
+      while (node_pos != node_endpos) {
+        if (node_pos->GetKeep() || !  node_pos->InBounds()) {
+          /* At the top level, we only inspect nodes that are inbounds, that we have not seen before.  OOB neighbors are caught in CollapseNodeChain */ 
+          ++node_pos; 
+          continue;  
+        }
+        node_pos->SetKeep(); /* We need it, yes, my Precious */ 
+        std::vector<MinimalNode *> neighborNodes = 
+          GetNeighborMinimalNodes(*node_pos); 
+        std::vector<MinimalNode *>::iterator neighbor = neighborNodes.begin();
+        while (neighbor != neighborNodes.end()) {
+          if (!(*neighbor)->InBounds() && !(*neighbor)->GetKeep()) {
+            MarkOOBNodeChain(*(*neighbor), *node_pos); 
+          }
+          ++neighbor; 
+        }
+        ++node_pos; 
+        ++nodenum; 
+      } 
+    } catch (string err) {
+      err = string("Error in ClassifyMinimalNodes, node ") + doubleToString(nodenum) + ": " + err; 
+      throw err; 
+    }
     dbprintf(2, "ClassifyMinimalNodes ended...\n\n");     
     return; 
   }
@@ -1059,10 +1072,10 @@ namespace paraDIS {
   
   //===========================================================================
   /*!
-	for use in CullAndResortMinimalNodes
+    for use in CullAndResortMinimalNodes
    */
   bool FileOrderPredicate(const MinimalNode &n1, const MinimalNode &n2) {
-	return n1.ComesBeforeInFile(n2); 
+    return n1.ComesBeforeInFile(n2); 
   }
 
   //===========================================================================
@@ -1072,10 +1085,10 @@ namespace paraDIS {
       remove_if(mMinimalNodes.begin(), mMinimalNodes.end(), cullminimalnode); 
     mMinimalNodes.erase(last, mMinimalNodes.end()); 
 
-	/*!
-	  Re-sort in file order to make finding full node counterparts go quicker
-	*/ 
-	sort(mMinimalNodes.begin(), mMinimalNodes.end(), FileOrderPredicate); 
+    /*!
+      Re-sort in file order to make finding full node counterparts go quicker
+    */ 
+    sort(mMinimalNodes.begin(), mMinimalNodes.end(), FileOrderPredicate); 
     
     dbprintf(2, "CullMinimalNodes ended...\n\n"); 
     return; 
@@ -1194,6 +1207,7 @@ namespace paraDIS {
           
           currentSegment->ComputeBurgersType(burgers); 
           
+#ifdef __GNUC__
           ArmSegmentSet::iterator foundSegment = mQuickFindArmSegments.find(currentSegment); 
           if (foundSegment == mQuickFindArmSegments.end()) {
             currentSegment->SetID(); 
@@ -1203,6 +1217,7 @@ namespace paraDIS {
             (*foundSegment)->ReplacePlaceholder(fullNode);             
           }
           fullNode->AddNeighbor((*foundSegment)); 
+#endif
          
           ++neighbornum; 
         }; // done reading neighbor information
@@ -1257,8 +1272,8 @@ namespace paraDIS {
       std::vector<MinimalNode>::reverse_iterator rpos = mMinimalNodes.rbegin(), rend = mMinimalNodes.rend(); 
       //dbprintf(2, "\n"); 
       while (datafile.good() && nodenum < nodelimit && rpos != rend) {
-		if (dbg_isverbose()) 
-		  Progress( theTimer, nodenum, nodelimit, thePercent, 5, theTime, 60, "Reading datafile"); 
+        if (dbg_isverbose()) 
+          Progress( theTimer, nodenum, nodelimit, thePercent, 5, theTime, 60, "Reading datafile"); 
         ReadFullNodeFromFile(datafile, *rpos++);  
         /*!
           We have "used up" the last node in the vector, delete it to save memory
@@ -1303,8 +1318,8 @@ namespace paraDIS {
 
   //===========================================================================
   void DataSet::DebugPrintFullNodes(char *name) {
-	uint32_t monsterTypes[5] = {0}; /* types: -44, -4, -3, -33, sum of monsters */ 
-	
+    uint32_t monsterTypes[5] = {0}; /* types: -44, -4, -3, -33, sum of monsters */ 
+    
     string basename="FullNodes-list.txt";
     if (name)  basename = name; 
     std::string filename = mDebugOutputDir + "/" + basename; 
@@ -1320,24 +1335,24 @@ namespace paraDIS {
     while (nodepos != endnodepos) {
       debugfile << "FullNode " << nodenum++ <<":\n" << (*nodepos)->Stringify(true ) << endl; 
       debugfile << "**************************************************************" << endl << endl; 
-	  int nodetype = (*nodepos)->GetNodeType(); 
-	  if (nodetype == -44) monsterTypes[0]++; 
-	  else if (nodetype == -4) monsterTypes[1]++;
-	  else if (nodetype == -3) {
-		debugfile << "Butterfly Node: " << (*nodepos)->GetNodeID().Stringify() << endl;
-		monsterTypes[2]++;
-	  }
-	  else if (nodetype == -33) monsterTypes[3]++;
-	  if (nodetype < 0) monsterTypes[4]++; 
-	  
+      int nodetype = (*nodepos)->GetNodeType(); 
+      if (nodetype == -44) monsterTypes[0]++; 
+      else if (nodetype == -4) monsterTypes[1]++;
+      else if (nodetype == -3) {
+        debugfile << "Butterfly Node: " << (*nodepos)->GetNodeID().Stringify() << endl;
+        monsterTypes[2]++;
+      }
+      else if (nodetype == -33) monsterTypes[3]++;
+      if (nodetype < 0) monsterTypes[4]++; 
+      
       ++nodepos; 
     }
     debugfile <<"Total full nodes: " << nodenum << endl; 
-	debugfile << monsterTypes[0] << " type -44 nodes" << endl; 
-	debugfile << monsterTypes[1] << " type -4 nodes" << endl; 
-	debugfile << monsterTypes[2] << " type -3 nodes" << endl; 
-	debugfile << monsterTypes[3] << " type -33 nodes" << endl; 
-	debugfile << monsterTypes[4] << " monster nodes" << endl; 
+    debugfile << monsterTypes[0] << " type -44 nodes" << endl; 
+    debugfile << monsterTypes[1] << " type -4 nodes" << endl; 
+    debugfile << monsterTypes[2] << " type -3 nodes" << endl; 
+    debugfile << monsterTypes[3] << " type -33 nodes" << endl; 
+    debugfile << monsterTypes[4] << " monster nodes" << endl; 
     debugfile <<"Total memory for nodes and their pointers: " << mFullNodes.size() * (sizeof(FullNode) + sizeof(FullNode *)) << endl; 
     return;  
   }
@@ -1401,85 +1416,85 @@ namespace paraDIS {
     /*!
       If you start from an out of bounds node, you will often trace out arms that have no nodes in them!  That would be segfault fodder. 
     */ 
-	try {
-	  while (nodepos != nodeend) {
-		if (!(*nodepos)->InBounds()) {
-		  ++nodepos; 
-		  continue;
-		}
-		int neighbornum = 0, numneighbors = (*nodepos)->GetNumNeighbors();       
-		
-		FullNode *endNode0, *endNode1; 
-		const ArmSegment *endSegment0 = NULL, *endSegment1 = NULL, 
-		  *startSegment0 = NULL, *startSegment1 = NULL; 
-		if (numneighbors == 2) {
-		  startSegment0 = dynamic_cast<const ArmSegment*>((*nodepos)->GetNeighbor(0));
-		  if (!startSegment0->Seen()) {
+    try {
+      while (nodepos != nodeend) {
+        if (!(*nodepos)->InBounds()) {
+          ++nodepos; 
+          continue;
+        }
+        int neighbornum = 0, numneighbors = (*nodepos)->GetNumNeighbors();       
+        
+        FullNode *endNode0, *endNode1; 
+        const ArmSegment *endSegment0 = NULL, *endSegment1 = NULL, 
+          *startSegment0 = NULL, *startSegment1 = NULL; 
+        if (numneighbors == 2) {
+          startSegment0 = dynamic_cast<const ArmSegment*>((*nodepos)->GetNeighbor(0));
+          if (!startSegment0->Seen()) {
 #ifdef DEBUG
             dbprintf(5, "Starting in middle of arm\n"); 
 #endif
-			theArm.Clear();
-			theArm.SetID(); 
-			FindEndOfArm(nodepos, &endNode0, startSegment0, endSegment0 
+            theArm.Clear();
+            theArm.SetID(); 
+            FindEndOfArm(nodepos, &endNode0, startSegment0, endSegment0 
 #ifdef DEBUG
                          , theArm
 #endif
                          ); 
-			theArm.mTerminalNodes.push_back(endNode0); 
-			theArm.mTerminalSegments.push_back(endSegment0); 
-			
-			startSegment1 = dynamic_cast<const ArmSegment*>((*nodepos)->GetNeighbor(1));
-			FindEndOfArm(nodepos, &endNode1,startSegment1, endSegment1
+            theArm.mTerminalNodes.push_back(endNode0); 
+            theArm.mTerminalSegments.push_back(endSegment0); 
+            
+            startSegment1 = dynamic_cast<const ArmSegment*>((*nodepos)->GetNeighbor(1));
+            FindEndOfArm(nodepos, &endNode1,startSegment1, endSegment1
 #ifdef DEBUG
                          , theArm
 #endif
                          ); 
-			
-			if (endNode0 != endNode1) {
-			  theArm.mTerminalNodes.push_back(endNode1); 
-			}
-			if (endSegment0 != endSegment1) {
-			  theArm.mTerminalSegments.push_back(endSegment1); 
-			}
-			dbprintf(5, "(1) Pushing back arm %d: %s\n", armnum++, theArm.Stringify().c_str()); 
-			mArms.push_back(theArm);
-		  }
-		} else {
-		  while (neighbornum < numneighbors) {
-			startSegment0 = 
-			  dynamic_cast<const ArmSegment*>((*nodepos)->GetNeighbor(neighbornum));
-			if (!startSegment0->Seen()) {
+            
+            if (endNode0 != endNode1) {
+              theArm.mTerminalNodes.push_back(endNode1); 
+            }
+            if (endSegment0 != endSegment1) {
+              theArm.mTerminalSegments.push_back(endSegment1); 
+            }
+            dbprintf(5, "(1) Pushing back arm %d: %s\n", armnum++, theArm.Stringify().c_str()); 
+            mArms.push_back(theArm);
+          }
+        } else {
+          while (neighbornum < numneighbors) {
+            startSegment0 = 
+              dynamic_cast<const ArmSegment*>((*nodepos)->GetNeighbor(neighbornum));
+            if (!startSegment0->Seen()) {
 #ifdef DEBUG
               dbprintf(5, "Starting at one end of arm\n"); 
 #endif
-			  theArm.Clear();
-			  theArm.SetID(); 
-			  FindEndOfArm(nodepos, &endNode0, startSegment0, endSegment0
+              theArm.Clear();
+              theArm.SetID(); 
+              FindEndOfArm(nodepos, &endNode0, startSegment0, endSegment0
 #ifdef DEBUG
                            , theArm
 #endif
                            ); 
-			  theArm.mTerminalNodes.push_back(*nodepos); 
-			  if (endNode0 != *nodepos ) {
-				theArm.mTerminalNodes.push_back(endNode0); 
-			  }
-			  theArm.mTerminalSegments.push_back(startSegment0); 
-			  if (endSegment0 != startSegment0) {
-				theArm.mTerminalSegments.push_back(endSegment0); 
-			  }
-			  dbprintf(5, "(2) Pushing back arm %d: %s\n", armnum++, theArm.Stringify().c_str()); 
-			  mArms.push_back(theArm);          
-			}
-			++neighbornum; 
-		  }
-		}
-		++nodepos; 
-		++nodenum; 
-		
-	  }   
-	} catch (string err) {
-	  throw string("Arm #")+doubleToString(armnum)+": "+err;
-	}
+              theArm.mTerminalNodes.push_back(*nodepos); 
+              if (endNode0 != *nodepos ) {
+                theArm.mTerminalNodes.push_back(endNode0); 
+              }
+              theArm.mTerminalSegments.push_back(startSegment0); 
+              if (endSegment0 != startSegment0) {
+                theArm.mTerminalSegments.push_back(endSegment0); 
+              }
+              dbprintf(5, "(2) Pushing back arm %d: %s\n", armnum++, theArm.Stringify().c_str()); 
+              mArms.push_back(theArm);          
+            }
+            ++neighbornum; 
+          }
+        }
+        ++nodepos; 
+        ++nodenum; 
+        
+      }   
+    } catch (string err) {
+      throw string("Arm #")+doubleToString(armnum)+": "+err;
+    }
     dbprintf(2, "BuildArms ended; %d arms created.\n", armnum); 
     return; 
   }
@@ -1518,7 +1533,7 @@ namespace paraDIS {
     vector<Arm>::iterator armpos = mArms.begin(), armend = mArms.end(); 
     while (armpos != armend) {
 
-      armpos->CheckForButterfly();	  
+      armpos->CheckForButterfly();      
       ++armnum; 
       ++armpos; 
     }
@@ -1807,7 +1822,7 @@ namespace paraDIS {
       BuildArms(); 
 
       FindButterflies(); 
-	  
+      
       ClassifyArms(); 
 
       //PrintArmStats(); 

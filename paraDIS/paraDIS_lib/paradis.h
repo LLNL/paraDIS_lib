@@ -73,7 +73,11 @@
 #define DEBUG 1
 
 /* now for the API */  
+#ifndef WIN32
 #include <stdint.h>
+#else
+#include <msc_stdint.h>
+#endif
 #include <stdio.h>
 #include <vector>
 #include <set>
@@ -81,7 +85,6 @@
 #include <fstream>
 #include <iostream>
 #include <ostream> 
-#include <ext/hash_set>
 #include <math.h>
 
 #include "Point.h"
@@ -118,7 +121,7 @@ namespace paraDIS {
       mNodeID = node; 
     }
     /*! 
-      for ordering hash_sets and hash lookups 
+      for ordering sets and hash lookups 
     */ 
     bool operator == (const NodeID &other) const {
       return mDomainID == other.mDomainID && mNodeID == other.mNodeID;
@@ -176,7 +179,7 @@ namespace paraDIS {
 
 
   //===========================================================================
-  struct Neighbor; // forward declaration
+  class Neighbor; // forward declaration
   
   /*! class Node
     \brief Abstract base class
@@ -259,7 +262,7 @@ namespace paraDIS {
   }; 
    
   //=============================================
-  /*!  struct Neighbor
+  /*!  class Neighbor
     Concrete base class 
     Contains no burgers information to save memory. 
     
@@ -357,22 +360,22 @@ namespace paraDIS {
       mKeep = tf; 
     }
 
-	/*!
-	  Accessor
-	*/ 
-	uint32_t GetFileOrderIndex(void) const { return mFileOrderIndex; }
+    /*!
+      Accessor
+    */ 
+    uint32_t GetFileOrderIndex(void) const { return mFileOrderIndex; }
 
-	/*!
-	  Accessor
-	*/ 
-	void SetFileOrderIndex(uint32_t index) { mFileOrderIndex = index; }
+    /*!
+      Accessor
+    */ 
+    void SetFileOrderIndex(uint32_t index) { mFileOrderIndex = index; }
 
-	/*!
-	  For sorting by file order
-	*/ 
-	bool ComesBeforeInFile(const MinimalNode &other) const {
-	  return mFileOrderIndex < other.GetFileOrderIndex(); 
-	}
+    /*!
+      For sorting by file order
+    */ 
+    bool ComesBeforeInFile(const MinimalNode &other) const {
+      return mFileOrderIndex < other.GetFileOrderIndex(); 
+    }
 
 
     /*! 
@@ -428,10 +431,10 @@ namespace paraDIS {
       if mKeep is false, full node info is not needed for any reason
     */ 
     bool mKeep ; 
-	/*!
-	  Nodes must be sorted to find while classifying, then resorted in "file order" to most quickly load the full nodes later.  So we keep an index into the file.  
-	*/ 
-	uint32_t mFileOrderIndex; 
+    /*!
+      Nodes must be sorted to find while classifying, then resorted in "file order" to most quickly load the full nodes later.  So we keep an index into the file.  
+    */ 
+    uint32_t mFileOrderIndex; 
 
     /*! 
       The neighbors for this particular node
@@ -568,12 +571,12 @@ namespace paraDIS {
       throw string("Error: segment to replace is not a neighbor of this node\n"); 
     }
 
-	/*!
-	  Assuming we two neighbors or less, return the neighbor not passed to us
-	*/ 
-	ArmSegment *GetOtherNeighbor (const ArmSegment* n);
-	
-	  
+    /*!
+      Assuming we two neighbors or less, return the neighbor not passed to us
+    */ 
+    ArmSegment *GetOtherNeighbor (const ArmSegment* n);
+    
+      
     /*!
       For each neighbor armsegment, ask it to confirm that we are one of its endpoints.  Yet another piece of bookkeeping from wrapping nodes
     */ 
@@ -732,7 +735,7 @@ namespace paraDIS {
     }
     
     /*!
-      operator ==() is required for hash_set ordering.  It tests equality of endpoints, which is done by NodeID, not by location.  
+      operator ==() is required for set ordering.  It tests equality of endpoints, which is done by NodeID, not by location.  
     */ 
     bool operator == (const ArmSegment &other) const {
       return 
@@ -762,9 +765,9 @@ namespace paraDIS {
     
     int8_t GetBurgersType(void) const { return mBurgersType; } 
 
-	/*! 
-	  Accessors for MN type values (set by parent arm)
-	*/ 
+    /*! 
+      Accessors for MN type values (set by parent arm)
+    */ 
     int8_t GetMNType(void) const { return mMNType; } 
 
     void SetMNType(int8_t val)  {  mMNType=val; } 
@@ -1014,12 +1017,12 @@ namespace paraDIS {
     */ 
     int8_t mBurgersType; 
     
-	/*! 
-	  The MN_type of the segment is set by its parent arm.  See Arm struct for definitions, but it describes whether the segment is 100 or 111 and whether its parent arm has any monsters at either end. 
-	*/ 
-	int8_t mMNType; 
-	 
-	  
+    /*! 
+      The MN_type of the segment is set by its parent arm.  See Arm struct for definitions, but it describes whether the segment is 100 or 111 and whether its parent arm has any monsters at either end. 
+    */ 
+    int8_t mMNType; 
+     
+      
     /*!
       Marker used for "once-through" operations like building arms that must look at every segment, but which will usually discover echo particular segment more than once 
     */ 
@@ -1039,7 +1042,7 @@ namespace paraDIS {
  
   // ==============================================
   /*!
-    A wrapper class to enable me to store ArmSegment *'s in a hash_set.  If I just use pointers, it does not work properly with operator ==() in that it compares the pointers for equality,  which is not what I want.  Using this class allows me to overload operator ==() so that the pointers are dereferenced before they are compared.  I also provide unary operator *() for convenience of notation. 
+    A wrapper class to enable me to store ArmSegment *'s.  If I just use pointers, it does not work properly with operator ==() in that it compares the pointers for equality,  which is not what I want.  Using this class allows me to overload operator ==() so that the pointers are dereferenced before they are compared.  I also provide unary operator *() for convenience of notation. 
   */ 
   class ArmSegmentSetElement {
   public:
@@ -1060,7 +1063,7 @@ namespace paraDIS {
         
    //=============================================
   /*!
-    This is a unary function object to be used with the hash_set in the DataSet.  operator () must return a size_t... 
+    This is a unary function object to be used with the hash in the DataSet.  operator () must return a size_t... 
   */ 
   class ArmSegmentHash {
   public: 
@@ -1520,7 +1523,6 @@ s      Tell the data set which file to read
     /*!
       set:  always sorted so fast, but in order to modify, must remove an element, modify it, and reinsert it... or use const_cast<> 
     */ 
-    //__gnu_cxx::hash_set<ArmSegmentSetElement, ArmSegmentHash> mQuickFindArmSegments; 
     set<ArmSegment *, CompareSegPtrs> mQuickFindArmSegments; 
     /*!
       The QuickFind array does not allow duplicates, so put wrapped arm segments here 
