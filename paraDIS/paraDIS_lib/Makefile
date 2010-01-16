@@ -12,7 +12,7 @@ export SYS_TYPE = $(shell uname)
 endif
 CWD = $(shell pwd)
 MF-INCLUDE ?= $(CWD)/mf-include
-include $(MF-INCLUDE)/mf-include.$(SYS_TYPE)
+include $(MF-INCLUDE)/mf-include.common
 
 SFILES = paradis.C paradis_c_interface.C paradisStreaming.C paradisTest.C analyzeParaDIS.C
 
