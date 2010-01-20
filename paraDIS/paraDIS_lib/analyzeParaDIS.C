@@ -22,7 +22,7 @@ int main(int argc, char *argv[]) {
       {BOOL_TYPE, "-help", 1, &help}, 
       {LONG_TYPE, "-v", 1, &verbosity}, 
       {LONG_TYPE, "-verbose", 1, &verbosity}, 
-    };
+    }; 
     arg_expect_args(args, 3);
     arg_ignore_bad_args(1); 
     if (!arg_parse_args(&argc, argv)) {

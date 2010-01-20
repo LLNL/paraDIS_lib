@@ -684,7 +684,8 @@ namespace paraDIS {
   class ArmSegment {
 
   public: 
-    ArmSegment():mBurgersType(0), mMNType(ARM_UNKNOWN), mSeen(0){ init(); }
+    ArmSegment():mBurgersType(0), mMNType(ARM_UNKNOWN), mSeen(0), 
+      mParentArm(NULL){ init(); }
     ArmSegment(const ArmSegment &other){
       init(); 
       *this = other; 
@@ -1031,7 +1032,15 @@ namespace paraDIS {
       Pointers to actual nodes, as opposed to just NodeID's as in Neighbors.  
     */ 
     FullNode * mEndpoints[2]; 
+
+
   public:
+    /*!
+      Back reference to parent Arm, needed for discovering linked loops.
+      Note forward declaration of struct Arm. 
+    */
+    struct Arm *mParentArm; 
+
     /*!
       We usually need two slots for endpoints, but may need extra slots for "ghost endpoints" created when nodes are wrapped.  When this segment is deleted, it goes through its endpoints and tells all of them they are gone.  But wrapping causes some segments to be the neighbor of 3 or even (very rarely) more nodes. So we need to track those special cases. 
     */ 
@@ -1086,7 +1095,7 @@ namespace paraDIS {
     Arms are used just for classifying nodes and segments and are not expected to be useful to the user of this library; 
   */ 
   struct Arm { 
-    Arm():mArmType(0)
+    Arm():mArmType(0), mPartOfLinkedLoop(false), mCheckedForLinkedLoop(false)
     {return; }
     /*!
       Clear all data from the Arm for reuse
@@ -1114,7 +1123,27 @@ namespace paraDIS {
       return; 
     }
 
-    /*!
+    /*! 
+      After an arm has been pushed into the array, you need to set
+      up the back-pointers so you can find it from the terminal segments. 
+    */
+    void SetSegmentBackPointers(void) {
+      int numsegs = mTerminalSegments.size(); 
+      while (numsegs--) {
+        mTerminalSegments[numsegs]->mParentArm = this; 
+      } 
+      return;
+    }
+
+    /*! 
+      A linked loop is defined as:
+      A) Two arms which have the same four-armed terminal nodes 
+      OR
+      B) Three arms which all have the same three-armed terminal nodes.
+    */
+    void CheckForLinkedLoops(void); 
+
+   /*!
       Classify the arm as one of NN, MN or MM, combined with 100 or 111...
     */ 
     void Classify(void) ; 
@@ -1153,10 +1182,10 @@ namespace paraDIS {
       This is a necessary component to CheckForButterfly, broken out for readability in the code. 
     */ 
     bool HaveFourUniqueType111ExternalArms(void); 
-    vector <const ArmSegment *> mTerminalSegments; // At least one, but not more than two
+    vector < ArmSegment *> mTerminalSegments; // At least one, but not more than two
     vector <FullNode *> mTerminalNodes;  // At least one, but not more than two
     int8_t mArmType; 
-
+    bool mPartOfLinkedLoop, mCheckedForLinkedLoop; 
 #ifdef DEBUG
     /*! 
       purely for debugging
@@ -1460,7 +1489,7 @@ s      Tell the data set which file to read
     This will be where we actually discriminate between node types, etc.  But as mentioned for BuildArms, we don't do that yet.  
   */ 
     void FindEndOfArm(FullNodeIterator &firstNode, FullNode **oFoundEndNode, 
-                      const ArmSegment *firstSegment, const ArmSegment *&foundEndSegment
+                      ArmSegment *firstSegment,  ArmSegment *&foundEndSegment
 #ifdef DEBUG
 , Arm &theArm
 #endif
