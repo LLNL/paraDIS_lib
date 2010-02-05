@@ -631,9 +631,9 @@ namespace paraDIS {
     //if (!dbg_isverbose()) return;
     //dbprintf(3, "Beginning PrintArmStats()"); 
     double armLengths[9] = {0}, 
-      totalArmLength=0,   shortNN_111_length=0, shortNN_100_length=0; 
+      totalArmLength=0, shortNN_111_length=0, shortNN_100_length=0; 
       uint32_t numArms[9] = {0},  // number of arms of each type
-        totalArms=0, shortNN_111=0, shortNN_100=0;
+        totalArms=0, numShortNN_111=0, numShortNN_100=0;
 #if LINKED_LOOPS
     double linkedLoopLength = 0; 
     uint32_t numLinkedLoops = 0; 
@@ -646,11 +646,11 @@ namespace paraDIS {
       totalArmLength += length; 
       numArms[armpos->mArmType]++; 
       if (mNN111_threshold > 0 && armpos->mArmType == 5 && length < mNN111_threshold) {
-        shortNN_111++;
+        numShortNN_111++;
         shortNN_111_length += length; 
       }
       if (mNN100_threshold > 0 && armpos->mArmType == 8 && length < mNN100_threshold) {
-        shortNN_100++;
+        numShortNN_100++;
         shortNN_100_length += length; 
       }
         
@@ -705,12 +705,12 @@ namespace paraDIS {
 #endif
     
     if (mNN111_threshold > 0.0) {
-      printf("ARM_NN_111 shorter than %.2f: total number of arms = %d\n", mNN111_threshold, shortNN_111); 
+      printf("ARM_NN_111 shorter than %.2f: total number of arms = %d\n", mNN111_threshold, numShortNN_111); 
       printf("ARM_NN_111 (shorter than %.2f: total length of arms = %.2f\n", mNN111_threshold, shortNN_111_length); 
     }
     
     if (mNN100_threshold > 0.0) {
-      printf("ARM_NN_100 shorter than %.2f: total number of arms = %d\n", mNN100_threshold, shortNN_100); 
+      printf("ARM_NN_100 shorter than %.2f: total number of arms = %d\n", mNN100_threshold, numShortNN_100); 
       printf("ARM_NN_100 shorter than %.2f: total length of arms = %.2f\n", mNN100_threshold, shortNN_100_length); 
     } 
     
