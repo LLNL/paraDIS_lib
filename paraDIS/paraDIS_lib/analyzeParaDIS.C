@@ -10,6 +10,8 @@ void usage(void) {
   fprintf(stderr, "options:  \n"); 
   fprintf(stderr, " -debugfiles:  dump out detailed analysis in files\n"); 
   fprintf(stderr, " -v (or -verbose) num:  set verbosity level to num (scale of 0-5, 5 is very verbose, 0 is strangely quiet)\n"); 
+  fprintf(stderr, " -NN100_threshold num:  report on number of type ARM_NN_100 arms which have length less than the given threshold\n"); 
+  fprintf(stderr, " -NN111_threshold num:  report on number of type ARM_NN_111 arms which have length less than the given threshold\n"); 
   return; 
 }
 
