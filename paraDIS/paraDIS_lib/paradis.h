@@ -1256,6 +1256,12 @@ namespace paraDIS {
       dbg_setverbose(level); 
     }
 
+    void SetThresholds(double NN111_threshold, double NN100_threshold) {
+      mNN111_threshold = NN111_threshold;
+      mNN100_threshold = NN100_threshold;
+      return; 
+    }
+
     /*!
       Print out arm statistics
     */
@@ -1393,6 +1399,8 @@ s      Tell the data set which file to read
       Initialize things to virginal values. 
     */ 
     void init(void) {    
+      mNN111_threshold = -1.0;
+      mNN100_threshold = -1.0;
       mFileVersion = 0; 
       mMinimalNodes.clear(); 
       mMinimalNeighbors.clear(); 
@@ -1617,6 +1625,12 @@ s      Tell the data set which file to read
       number of processors for parallelism.  If zero or one, then serial. 
     */ 
     int mNumProcs; 
+    /*!
+      A hack to get at some interesting linked loops for Moono Rhee. 
+      If an NN111 or NN_100 arm is less than a certain length, then he assumes
+      it is part of a particular loop configuration I call a "linked loop."  
+    */ 
+    double mNN111_threshold, mNN100_threshold; 
   };
 
 

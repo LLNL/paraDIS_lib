@@ -630,8 +630,10 @@ namespace paraDIS {
   void DataSet::PrintArmStats(void) {
     //if (!dbg_isverbose()) return;
     //dbprintf(3, "Beginning PrintArmStats()"); 
-    double armLengths[9] = {0}, totalArmLength=0; 
-    uint32_t numArms[9] = {0}, totalArms=0;  // number of arms of each type
+    double armLengths[9] = {0}, 
+      totalArmLength=0,   shortNN_111_length=0, shortNN_100_length=0; 
+      uint32_t numArms[9] = {0},  // number of arms of each type
+        totalArms=0, shortNN_111=0, shortNN_100=0;
 #if LINKED_LOOPS
     double linkedLoopLength = 0; 
     uint32_t numLinkedLoops = 0; 
@@ -643,6 +645,15 @@ namespace paraDIS {
       armLengths[armpos->mArmType] += length;
       totalArmLength += length; 
       numArms[armpos->mArmType]++; 
+      if (mNN111_threshold > 0 && armpos->mArmType == 5 && length < mNN111_threshold) {
+        shortNN_111++;
+        shortNN_111_length += length; 
+      }
+      if (mNN100_threshold > 0 && armpos->mArmType == 8 && length < mNN100_threshold) {
+        shortNN_100++;
+        shortNN_100_length += length; 
+      }
+        
       totalArms++; 
 #if LINKED_LOOPS
       if (armpos->mPartOfLinkedLoop) {
@@ -677,23 +688,32 @@ namespace paraDIS {
     printf("ARM_MN_111: total length of arms = %.2f\n", armLengths[4]); 
     printf("----------------------\n"); 
     printf("ARM_NN_111: total number of arms = %d\n", numArms[5]); 
-    printf("ARM_NN_111: total length of arms = %.2f\n", armLengths[5]); 
+    printf("ARM_NN_111: total length of arms = %.2f\n", armLengths[5]);   
     printf("--------------------------------------------\n"); 
     printf("ARM_MM_100: total number of arms = %d\n", numArms[6]); 
-    printf("ARM_MM_100: total length of arms = %.2f\n", armLengths[6]); 
+    printf("ARM_MM_100: total length of arms = %.2f\n", armLengths[6]);     
     printf("----------------------\n"); 
     printf("ARM_MN_100: total number of arms = %d\n", numArms[7]); 
     printf("ARM_MN_100: total length of arms = %.2f\n", armLengths[7]); 
     printf("----------------------\n"); 
     printf("ARM_NN_100: total number of arms = %d\n", numArms[8]); 
     printf("ARM_NN_100: total length of arms = %.2f\n", armLengths[8]); 
-
 #if LINKED_LOOPS
     printf("----------------------\n"); 
     printf("LINKED LOOPS: total number of arms = %d\n", numLinkedLoops); 
     printf("LINKED LOOPS: total length of arms = %.2f\n", linkedLoopLength); 
 #endif
-
+    
+    if (mNN111_threshold > 0.0) {
+      printf("ARM_NN_111 shorter than %.2f: total number of arms = %d\n", mNN111_threshold, shortNN_111); 
+      printf("ARM_NN_111 (shorter than %.2f: total length of arms = %.2f\n", mNN111_threshold, shortNN_111_length); 
+    }
+    
+    if (mNN100_threshold > 0.0) {
+      printf("ARM_NN_100 shorter than %.2f: total number of arms = %d\n", mNN100_threshold, shortNN_100); 
+      printf("ARM_NN_100 shorter than %.2f: total length of arms = %.2f\n", mNN100_threshold, shortNN_100_length); 
+    } 
+    
     printf("\n\n");
     
     // check against segment lengths: 
