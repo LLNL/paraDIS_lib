@@ -69,6 +69,8 @@
 #ifndef PARADIS_H
 #define PARADIS_H
 
+// set this to 1 to re-enable linked loops code
+#define LINKED_LOOPS 0
 
 #define DEBUG 1
 
@@ -684,8 +686,12 @@ namespace paraDIS {
   class ArmSegment {
 
   public: 
-    ArmSegment():mBurgersType(0), mMNType(ARM_UNKNOWN), mSeen(0), 
-      mParentArm(NULL){ init(); }
+    ArmSegment():mBurgersType(0), mMNType(ARM_UNKNOWN), mSeen(0)
+#if LINKED_LOOPS
+      , mParentArm(NULL)
+#endif
+
+{ init(); }
     ArmSegment(const ArmSegment &other){
       init(); 
       *this = other; 
@@ -1035,12 +1041,13 @@ namespace paraDIS {
 
 
   public:
+#if LINKED_LOOPS
     /*!
       Back reference to parent Arm, needed for discovering linked loops.
       Note forward declaration of struct Arm. 
     */
     struct Arm *mParentArm; 
-
+#endif 
     /*!
       We usually need two slots for endpoints, but may need extra slots for "ghost endpoints" created when nodes are wrapped.  When this segment is deleted, it goes through its endpoints and tells all of them they are gone.  But wrapping causes some segments to be the neighbor of 3 or even (very rarely) more nodes. So we need to track those special cases. 
     */ 
@@ -1095,7 +1102,10 @@ namespace paraDIS {
     Arms are used just for classifying nodes and segments and are not expected to be useful to the user of this library; 
   */ 
   struct Arm { 
-    Arm():mArmType(0), mPartOfLinkedLoop(false), mCheckedForLinkedLoop(false)
+    Arm():mArmType(0)
+#if LINKED_LOOPS
+         , mPartOfLinkedLoop(false), mCheckedForLinkedLoop(false) 
+#endif
     {return; }
     /*!
       Clear all data from the Arm for reuse
@@ -1123,6 +1133,7 @@ namespace paraDIS {
       return; 
     }
 
+#if LINKED_LOOPS
     /*! 
       After an arm has been pushed into the array, you need to set
       up the back-pointers so you can find it from the terminal segments. 
@@ -1142,6 +1153,7 @@ namespace paraDIS {
       B) Three arms which all have the same three-armed terminal nodes.
     */
     void CheckForLinkedLoops(void); 
+#endif
 
    /*!
       Classify the arm as one of NN, MN or MM, combined with 100 or 111...
@@ -1185,7 +1197,10 @@ namespace paraDIS {
     vector < ArmSegment *> mTerminalSegments; // At least one, but not more than two
     vector <FullNode *> mTerminalNodes;  // At least one, but not more than two
     int8_t mArmType; 
+#if LINKED_LOOPS
     bool mPartOfLinkedLoop, mCheckedForLinkedLoop; 
+#endif
+
 #ifdef DEBUG
     /*! 
       purely for debugging

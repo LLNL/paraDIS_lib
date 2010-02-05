@@ -302,15 +302,17 @@ namespace paraDIS {
     return true;  
   }/* end HaveFourUniqueType111ExternalArms */ 
 
+#if LINKED_LOOPS
   //===========================================================================
   void Arm::CheckForLinkedLoops(void) {
     if (mCheckedForLinkedLoop) return; 
     mCheckedForLinkedLoop = true; 
-
+    
     /*!
       Iff we have one terminal node with four arms and one neighbor, or two terminal nodes with three arms and num neighbors == 2, then we are part of a linked loop.   
       Note that it's not true that if you have two terminal nodes with N arms and number of arms on each terminal node == N-1 that it's necessarily a linked loop, although it certainly is an interesting beast.  
     */     
+    
     bool notPartOfLoop = false; //set for early termination
     int numTerminalNodeArms = 0; // all terminal nodes must have the same number of arms. 
     // Count the number of distinct neighboring arms to this one
@@ -330,12 +332,14 @@ namespace paraDIS {
         bool knownNeighbor = (neighbor == this); 
         if (!knownNeighbor && 
             neighbor->mCheckedForLinkedLoop) {
+   
           /*!
             Since this neighbor has been checked, we cannot be 
             part of a linked loop, or we would already be marked as such.
             Just a quick reality check to confirm it and we're done.
           */
-          if (neighbor->mPartOfLinkedLoop) {
+  
+    if (neighbor->mPartOfLinkedLoop) {
             dbprintf(0, "Impossible -- neighbor is part of linked loop but we are not!\n"); 
             exit(1); 
           }
@@ -355,11 +359,12 @@ namespace paraDIS {
         }// found a new neighbor
       }// looking at all neighbors of terminal node
     } // looking at both terminal nodes
-    
+  
     /*! 
       Are we part of a linked loop? See definition above -- it's tricky.
     */ 
-    if (!notPartOfLoop) {
+     
+       if (!notPartOfLoop) {
       if ((myNeighbors.size() ==  2 && mTerminalNodes.size() == 2 && numTerminalNodeArms == 3) ||  
           (myNeighbors.size() == 1 && mTerminalNodes.size() == 1 && numTerminalNodeArms == 4)) {
         mPartOfLinkedLoop = true; 
@@ -379,10 +384,14 @@ namespace paraDIS {
     return; 
     
   }
+#endif // LINKED_LOOPS
   
   //===========================================================================
   void Arm::Classify(void) {
+#if LINKED_LOOPS
     CheckForLinkedLoops(); 
+#endif
+
     if (mTerminalNodes.size() == 1) {
       mArmType = ARM_LOOP; 
     } else {
@@ -586,11 +595,13 @@ namespace paraDIS {
       ", numSegments = " +doubleToString(mNumSegments) +
 #endif
       ", Type " +  doubleToString(mArmType);
+#if LINKED_LOOPS
     if (mPartOfLinkedLoop) {
       s += ", is part of linked loop.\n"; 
     } else {
       s += ", is NOT part of linked loop.\n"; 
     }
+#endif 
 
     int num = 0, max = mTerminalNodes.size(); 
     while (num < max) {
@@ -621,8 +632,10 @@ namespace paraDIS {
     //dbprintf(3, "Beginning PrintArmStats()"); 
     double armLengths[9] = {0}, totalArmLength=0; 
     uint32_t numArms[9] = {0}, totalArms=0;  // number of arms of each type
+#if LINKED_LOOPS
     double linkedLoopLength = 0; 
     uint32_t numLinkedLoops = 0; 
+#endif
 
     vector<Arm>::iterator armpos = mArms.begin(), armend = mArms.end(); 
     while (armpos != armend) { 
@@ -631,10 +644,12 @@ namespace paraDIS {
       totalArmLength += length; 
       numArms[armpos->mArmType]++; 
       totalArms++; 
+#if LINKED_LOOPS
       if (armpos->mPartOfLinkedLoop) {
         numLinkedLoops ++; 
         linkedLoopLength += length; 
       }
+#endif
       ++armpos; 
     }
 
@@ -672,9 +687,12 @@ namespace paraDIS {
     printf("----------------------\n"); 
     printf("ARM_NN_100: total number of arms = %d\n", numArms[8]); 
     printf("ARM_NN_100: total length of arms = %.2f\n", armLengths[8]); 
+
+#if LINKED_LOOPS
     printf("----------------------\n"); 
     printf("LINKED LOOPS: total number of arms = %d\n", numLinkedLoops); 
     printf("LINKED LOOPS: total length of arms = %.2f\n", linkedLoopLength); 
+#endif
 
     printf("\n\n");
     
@@ -1589,11 +1607,13 @@ namespace paraDIS {
     } catch (string err) {
       throw string("Arm #")+doubleToString(armnum)+": "+err;
     }
+#if LINKED_LOOPS
     int armNum = mArms.size(); 
     while (armNum--) {
       mArms[armNum].SetSegmentBackPointers(); 
     } 
-   dbprintf(2, "BuildArms ended; %d arms created.\n", armnum); 
+#endif
+    dbprintf(2, "BuildArms ended; %d arms created.\n", armnum); 
     return; 
   }
 
