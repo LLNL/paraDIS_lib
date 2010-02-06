@@ -4,8 +4,8 @@
 #
 # Makefile for paraDIS library
 #
-DEBUG ?= -g
-INSTALL_DIR ?= $(HOME)/$(SYS_TYPE)
+export DEBUG ?= -g
+export INSTALL_DIR ?= $(HOME)/$(SYS_TYPE)
 
 ifndef SYS_TYPE
 export SYS_TYPE = $(shell uname)
@@ -39,6 +39,8 @@ debug:
 install: all
 	mkdir -p $(INSTALL_DIR)/bin && cp $(TARGETS) $(INSTALL_DIR)/bin
 
+install-debug: 
+	DEBUG=-g $(MAKE) install
 
 libparadis: $(PARADISLIB) 
 
