@@ -28,7 +28,7 @@ int main(int argc, char *argv[]) {
       {DOUBLE_TYPE, "-NN111_threshold", 1, &NN111_threshold}, 
       {DOUBLE_TYPE, "-NN100_threshold", 1, &NN100_threshold}
     }; 
-    arg_expect_args(args, 3);
+    arg_expect_args(args, 6);
     arg_ignore_bad_args(1); 
     if (!arg_parse_args(&argc, argv)) {
       fprintf(stderr, "****************************************\n"); 
