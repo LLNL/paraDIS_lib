@@ -19,10 +19,6 @@
 #include <sys/stat.h>
 #include <errno.h>
 using namespace RC_Math; 
- 
-
-
-
 using namespace std; 
 namespace paraDIS {
   
@@ -705,16 +701,17 @@ namespace paraDIS {
 #endif
     
     if (mNN111_threshold > 0.0) {
+      printf("----------------------\n"); 
       printf("ARM_NN_111 shorter than %.2f: total number of arms = %d\n", mNN111_threshold, numShortNN_111); 
       printf("ARM_NN_111 (shorter than %.2f: total length of arms = %.2f\n", mNN111_threshold, shortNN_111_length); 
     }
     
     if (mNN100_threshold > 0.0) {
+      printf("----------------------\n"); 
       printf("ARM_NN_100 shorter than %.2f: total number of arms = %d\n", mNN100_threshold, numShortNN_100); 
       printf("ARM_NN_100 shorter than %.2f: total length of arms = %.2f\n", mNN100_threshold, shortNN_100_length); 
     } 
-    
-    printf("\n\n");
+    printf("----------------------\n\n\n"); 
     
     // check against segment lengths: 
     uint32_t numSegments[9] = {0}, totalSegments=0, culledSegments=0;  // number of arms of each type
