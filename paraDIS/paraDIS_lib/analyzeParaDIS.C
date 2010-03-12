@@ -10,8 +10,7 @@ void usage(void) {
   fprintf(stderr, "options:  \n"); 
   fprintf(stderr, " -debugfiles:  dump out detailed analysis in files\n"); 
   fprintf(stderr, " -v (or -verbose) num:  set verbosity level to num (scale of 0-5, 5 is very verbose, 0 is strangely quiet)\n"); 
-  fprintf(stderr, " -NN100_threshold num:  report on number of type ARM_NN_100 arms which have length less than the given threshold\n"); 
-  fprintf(stderr, " -NN111_threshold num:  report on number of type ARM_NN_111 arms which have length less than the given threshold\n"); 
+  fprintf(stderr, " -threshold num:  report on number of arms of various types which have length less than the given threshold\n"); 
   return; 
 }
 
@@ -19,16 +18,15 @@ int main(int argc, char *argv[]) {
 
   try {
     long debugfiles = 0, verbosity=0, help=false; 
-    double NN111_threshold=-1.0, NN100_threshold=-1.0; 
-    argt args[7] = {
+    double threshold=-1.0; 
+    argt args[5] = {
       {BOOL_TYPE, "-debugfiles", 1, &debugfiles}, 
       {BOOL_TYPE, "-help", 1, &help}, 
       {LONG_TYPE, "-v", 1, &verbosity}, 
       {LONG_TYPE, "-verbose", 1, &verbosity}, 
-      {DOUBLE_TYPE, "-NN111_threshold", 1, &NN111_threshold}, 
-      {DOUBLE_TYPE, "-NN100_threshold", 1, &NN100_threshold}
+      {DOUBLE_TYPE, "-threshold", 1, &threshold}      
     }; 
-    arg_expect_args(args, 6);
+    arg_expect_args(args, 5);
     arg_ignore_bad_args(1); 
     if (!arg_parse_args(&argc, argv)) {
       fprintf(stderr, "****************************************\n"); 
@@ -51,7 +49,7 @@ int main(int argc, char *argv[]) {
     if (verbosity) {
       gDataSet->SetVerbosity(verbosity, "analyzeParaDIS-debug.txt"); 
     }
-    gDataSet->SetThresholds(NN111_threshold, NN100_threshold);
+    gDataSet->SetThreshold(threshold);
 
     gDataSet->SetDataFile(argv[1]); 
     

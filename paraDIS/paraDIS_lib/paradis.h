@@ -1124,6 +1124,17 @@ namespace paraDIS {
     std::string Stringify(void) const ; 
 
     /*!
+      Give the exact Burgers type of its segments. 
+      Return 0 is no terminal segments. 
+    */
+    int8_t GetBurgersType(void) {
+      if (!mTerminalSegments.size())  {
+        return 0; 
+      }
+      return mTerminalSegments[0]->GetBurgersType(); 
+    }
+
+    /*!
       to set the arm ID for debugging.  In Debug code, this will do nothing
     */ 
     void SetID(void) { 
@@ -1256,9 +1267,8 @@ namespace paraDIS {
       dbg_setverbose(level); 
     }
 
-    void SetThresholds(double NN111_threshold, double NN100_threshold) {
-      mNN111_threshold = NN111_threshold;
-      mNN100_threshold = NN100_threshold;
+    void SetThreshold(double threshold) {
+      mThreshold = threshold;
       return; 
     }
 
@@ -1399,8 +1409,7 @@ s      Tell the data set which file to read
       Initialize things to virginal values. 
     */ 
     void init(void) {    
-      mNN111_threshold = -1.0;
-      mNN100_threshold = -1.0;
+      mThreshold = -1.0;
       mFileVersion = 0; 
       mMinimalNodes.clear(); 
       mMinimalNeighbors.clear(); 
@@ -1627,10 +1636,10 @@ s      Tell the data set which file to read
     int mNumProcs; 
     /*!
       A hack to get at some interesting linked loops for Moono Rhee. 
-      If an NN111 or NN_100 arm is less than a certain length, then he assumes
+      If an arm is less than a certain length, then he assumes
       it is part of a particular loop configuration I call a "linked loop."  
     */ 
-    double mNN111_threshold, mNN100_threshold; 
+    double mThreshold; 
   };
 
 

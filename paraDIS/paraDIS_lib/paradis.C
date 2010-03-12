@@ -626,14 +626,28 @@ namespace paraDIS {
   void DataSet::PrintArmStats(void) {
     //if (!dbg_isverbose()) return;
     //dbprintf(3, "Beginning PrintArmStats()"); 
-    double armLengths[9] = {0}, 
-      totalArmLength=0, shortNN_111_length=0, shortNN_100_length=0; 
-      uint32_t numArms[9] = {0},  // number of arms of each type
-        totalArms=0, numShortNN_111=0, numShortNN_100=0;
+    double armLengths[9] = {0}, totalArmLength=0; 
+    
+   
+    uint32_t numArms[9] = {0},  // number of arms of each type
+      totalArms=0;
 #if LINKED_LOOPS
-    double linkedLoopLength = 0; 
-    uint32_t numLinkedLoops = 0; 
+      double linkedLoopLength = 0; 
+      uint32_t numLinkedLoops = 0; 
 #endif
+      
+    char *armTypes[7] = {
+      "NN_100", 
+      "NN_010", 
+      "NN_001", 
+      "NN_+++",
+      "NN_++-",
+      "NN_+-+",
+      "NN_-++"
+    };
+    
+    double shortLengths[7] = {0}, longLengths[7]={0}; 
+    uint32_t numShortArms[7]={0}, numLongArms[7]={0}; 
 
     vector<Arm>::iterator armpos = mArms.begin(), armend = mArms.end(); 
     while (armpos != armend) { 
@@ -641,15 +655,23 @@ namespace paraDIS {
       armLengths[armpos->mArmType] += length;
       totalArmLength += length; 
       numArms[armpos->mArmType]++; 
-      if (mNN111_threshold > 0 && armpos->mArmType == 5 && length < mNN111_threshold) {
-        numShortNN_111++;
-        shortNN_111_length += length; 
+      if (mThreshold >= 0 &&
+          (armpos->mArmType == 5 || armpos->mArmType == 8 )) {
+        int8_t btype = armpos->GetBurgersType(); 
+        if (!btype) {
+          printf("Error:  armpos has no terminal segments!\n"); 
+        }
+        if (length < mThreshold) {
+          numShortArms[btype-1]++;
+          shortLengths[btype-1] += length; 
+        }
+        else {
+          numLongArms[btype-1]++;
+          longLengths[btype-1] += length; 
+        }       
       }
-      if (mNN100_threshold > 0 && armpos->mArmType == 8 && length < mNN100_threshold) {
-        numShortNN_100++;
-        shortNN_100_length += length; 
-      }
-        
+      
+      
       totalArms++; 
 #if LINKED_LOOPS
       if (armpos->mPartOfLinkedLoop) {
@@ -659,7 +681,7 @@ namespace paraDIS {
 #endif
       ++armpos; 
     }
-
+    
     printf("\n"); 
     printf("===========================================\n"); 
     printf("total Number of arms: %d\n", totalArms); 
@@ -699,20 +721,52 @@ namespace paraDIS {
     printf("LINKED LOOPS: total number of arms = %d\n", numLinkedLoops); 
     printf("LINKED LOOPS: total length of arms = %.2f\n", linkedLoopLength); 
 #endif
+
+    // write a row of non-threshold arm lengths to make analysis via spreadsheet easier
+    printf("----------------------\n"); 
+    printf("Key: UNKNOWN\tUNINTRSTNG\tLOOP\tMM_111\tMN_111\tNN_111\tMM_100\tMN_100\tNN_100\n"); 
+    int n = 0; 
+    while (n<9) {
+      printf("%.2f\t",  armLengths[n]); 
+      ++n;
+    }
+
+           
     
-    if (mNN111_threshold > 0.0) {
-      printf("----------------------\n"); 
-      printf("ARM_NN_111 shorter than %.2f: total number of arms = %d\n", mNN111_threshold, numShortNN_111); 
-      printf("ARM_NN_111 (shorter than %.2f: total length of arms = %.2f\n", mNN111_threshold, shortNN_111_length); 
+    if (mThreshold >= 0.0) {
+      printf("\n\n----------------------\n"); 
+      printf("THRESHOLD data.  Threshold = %.2f\n", mThreshold); 
+      int n = 0; 
+      for (n=0; n<7; n++) {       
+        printf("----------------------\n"); 
+        printf("Total number of %s arms: %d\n", armTypes[n], numShortArms[n] + numLongArms[n]); 
+        printf("Total length of %s arms: %.2f\n", armTypes[n], shortLengths[n] + longLengths[n]); 
+        printf("Number of %s arms SHORTER than threshold = %d\n", armTypes[n], numShortArms[n]); 
+        printf("Total length of %s arms longer than threshold = %.2f\n", armTypes[n], shortLengths[n]); 
+        printf("Number of %s arms LONGER than threshold = %d\n", armTypes[n], numLongArms[n]); 
+        printf("Total length of %s arms longer than threshold = %.2f\n", armTypes[n], longLengths[n]); 
+        printf("\n"); 
+      }
     }
     
-    if (mNN100_threshold > 0.0) {
-      printf("----------------------\n"); 
-      printf("ARM_NN_100 shorter than %.2f: total number of arms = %d\n", mNN100_threshold, numShortNN_100); 
-      printf("ARM_NN_100 shorter than %.2f: total length of arms = %.2f\n", mNN100_threshold, shortNN_100_length); 
-    } 
+    // write a row of non-threshold arm lengths to make analysis via spreadsheet easier
+    printf("----------------------\n"); 
+    printf("Key: NN_100\tNN_010\tNN_001\tNN_+++\tNN_++-\tNN_+-+\tNN_-++\n"); 
+    printf("SHORT ARM LENGTHS:\n"); 
+    n=0; while (n<7) {
+      printf("%.2f\t",  shortLengths[n]); 
+      ++n;
+    }
+    printf("\nLONG ARM LENGTHS:\n"); 
+    n = 0; while (n<7) {
+      printf("%.2f\t",  longLengths[n]); 
+      ++n;
+    }
+    printf("\n"); 
+
     printf("----------------------\n\n\n"); 
-    
+
+#ifdef DEBUG_SEGMENTS
     // check against segment lengths: 
     uint32_t numSegments[9] = {0}, totalSegments=0, culledSegments=0;  // number of arms of each type
     double segmentLengths[9] = {0}, totalSegmentLength=0, culledLength=0; 
@@ -732,8 +786,7 @@ namespace paraDIS {
       }
       ++segpos; 
     }
-        
-    
+
     printf("===========================================\n"); 
     printf("REALITY CHECK:  total length of all segments, skipping wrapped segments\n"); 
     printf("total Number of segments: %d\n", totalSegments); 
@@ -771,6 +824,8 @@ namespace paraDIS {
     printf("CULLED length = %.2f\n", culledLength); 
 
     printf("Wrapped lengths: %.2f\n", gSegLen); 
+     printf("----------------------\n\n\n"); 
+#endif
    return; 
   }
 
