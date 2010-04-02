@@ -42,6 +42,9 @@ install: all
 install-debug: 
 	DEBUG=-g $(MAKE) install
 
+global: all
+	INSTALL_DIR=/usr/global/tools/IMG_private/paraDIS/$$SYS_TYPE $(MAKE) install
+
 libparadis: $(PARADISLIB) 
 
 $(SYS_TYPE)/paradis.o: paradis.C
