@@ -1,8 +1,13 @@
 #include "paradis.h"
 #include "Prefs.h"
 #include "RC_c_lib/args.h"
+#include "paradis_version.h"
 paraDIS::DataSet *gDataSet = NULL; 
 
+void print_version(const char *progname) {
+  fprintf(stderr, "%s: version %0.1f (%s)\n", progname, RC_PARADIS_VERSION, RC_PARADIS_VERSION_DATE); 
+  return; 
+}
 void usage(void) {
   fprintf(stderr, "=========================================================\n"); 
   fprintf(stderr, "usage:  analyzeParaDIS [options] inputfile\n"); 
@@ -11,22 +16,24 @@ void usage(void) {
   fprintf(stderr, " -debugfiles:  dump out detailed analysis in files\n"); 
   fprintf(stderr, " -v (or -verbose) num:  set verbosity level to num (scale of 0-5, 5 is very verbose, 0 is strangely quiet)\n"); 
   fprintf(stderr, " -threshold num:  report on number of arms of various types which have length less than the given threshold\n"); 
+  fprintf(stderr, " -version: report version and exit\n");
   return; 
 }
 
 int main(int argc, char *argv[]) {
 
   try {
-    long debugfiles = 0, verbosity=0, help=false; 
+    long debugfiles = 0, verbosity=0, help=false, version=false; 
     double threshold=-1.0; 
-    argt args[5] = {
+    argt args[6] = {
       {BOOL_TYPE, "-debugfiles", 1, &debugfiles}, 
       {BOOL_TYPE, "-help", 1, &help}, 
       {LONG_TYPE, "-v", 1, &verbosity}, 
       {LONG_TYPE, "-verbose", 1, &verbosity}, 
-      {DOUBLE_TYPE, "-threshold", 1, &threshold}      
+      {DOUBLE_TYPE, "-threshold", 1, &threshold},
+      {BOOL_TYPE, "-version", 1, &version}
     }; 
-    arg_expect_args(args, 5);
+    arg_expect_args(args, 6);
     arg_ignore_bad_args(1); 
     if (!arg_parse_args(&argc, argv)) {
       fprintf(stderr, "****************************************\n"); 
@@ -35,8 +42,13 @@ int main(int argc, char *argv[]) {
       exit(1); 
     }
     if (help) {
+      print_version(argv[0]); 
       usage(); 
       exit(0); 
+    }
+    if (version) {
+      print_version(argv[0]); 
+      exit(0);
     }
     if (argc < 2) {
       fprintf(stderr, "Error:  need a filename\n"); 
