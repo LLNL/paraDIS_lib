@@ -1,0 +1,4 @@
+#ifndef RC_PARADIS_VERSION
+#define RC_PARADIS_VERSION  1.0 
+#define RC_PARADIS_VERSION_DATE "April 1, 2010"
+#endif
