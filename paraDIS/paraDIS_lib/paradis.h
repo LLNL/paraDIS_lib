@@ -174,9 +174,9 @@ namespace paraDIS {
     */ 
     std::string Stringify(void) const {
       std::string s("NodeID: (domain id, node id) = (");
-      s += doubleToString(mDomainID);
+      s += intToString(mDomainID);
       s +=  ", ";
-      s += doubleToString(mNodeID);
+      s += intToString(mNodeID);
       s += ")";
       return s; 
     }
@@ -392,11 +392,11 @@ namespace paraDIS {
     */ 
     virtual std::string Stringify(bool showneighbors=false) const {
       std::string s =std::string("MinimalNode: ")+Node::Stringify() + string("\nClassification: ") + string(mKeep?"KEEP":"DON'T KEEP") + string("\n");  
-      s += (doubleToString(mNeighbors.size()) + " neighbors --------------:\n");
+      s += (intToString(mNeighbors.size()) + " neighbors --------------:\n");
       uint32_t n = 0; 
       if (showneighbors) {
         while (n < mNeighbors.size()) {
-          s += "neighbor " + doubleToString(n) + ": "; 
+          s += "neighbor " + intToString(n) + ": "; 
           if (mNeighbors[n]) {
             s += mNeighbors[n]->Stringify() + "\n"; 
           } else {
@@ -803,7 +803,7 @@ namespace paraDIS {
 
     /*!
       Return the distance between the endpoints
-    */
+    */ 
     double GetLength(void) const { 
       return mEndpoints[0]->Distance(*mEndpoints[1]); 
     } 
@@ -858,17 +858,17 @@ namespace paraDIS {
     std::string Stringify(void) const {
       string s(string("ArmSegment at ") + pointerToString(this) +  
 #ifdef DEBUG
-               " number " + doubleToString(mSegmentID) + 
+               " number " + intToString(mSegmentID) + 
 #endif
-               ": \nBurgersType: " + doubleToString(mBurgersType)+", length: "+doubleToString(GetLength())+"\n");
+               ": \nBurgersType: " + intToString(mBurgersType)+", length: "+doubleToString(GetLength())+"\n");
       uint32_t epnum = 0; while (epnum < 2) {
-        s+= "ep"+doubleToString(epnum)+": "; 
+        s+= "ep "+intToString(epnum)+": "; 
         if (mEndpoints[epnum]) s+= mEndpoints[epnum]->Stringify(); 
         else s+= "(NULL)"; 
         epnum++; 
       }
       epnum = 0; while (epnum < mGhostEndpoints.size()) {
-        s+= "GHOST ep"+doubleToString(epnum)+": ";
+        s+= "GHOST ep "+intToString(epnum)+": ";
         if (mGhostEndpoints[epnum]) {
           s+=mGhostEndpoints[epnum]->Stringify(); 
         } else {
