@@ -1662,6 +1662,7 @@ namespace paraDIS {
     Unary predicate for using STL to remove all useless nodes in a range
   */ 
    bool NodeIsUseless(FullNode *node) {
+     return false; 
     return node->GetNodeType() == USELESS_NODE; 
   }
 
@@ -1692,7 +1693,7 @@ namespace paraDIS {
     bool deletable = false; 
     vector<FullNode *>::iterator nodepos = mFullNodes.begin(), 
       nodeend = mFullNodes.end(); 
-    while (nodepos != nodeend) {      
+    /*    while (nodepos != nodeend) {      
       if ((*nodepos)->GetNodeType() != USELESS_NODE && 
           !(*nodepos)->InBounds()) {
 
@@ -1709,18 +1710,18 @@ namespace paraDIS {
       }
       ++nodepos; 
     }   
-
+    */
     /*!
       Next find all arms that have a useless node as either endpoint.  Delete them.  
     */ 
-    dbprintf(2, "Identifying and deleting useless arms...\n"); 
+    /*  dbprintf(2, "Identifying and deleting useless arms...\n"); 
     numdeleted = mArms.size(); 
     vector<Arm>::iterator armpos = mArms.begin(), armend = mArms.end(); 
     armpos = remove_if(armpos, armend, ArmIsUseless); 
     mArms.erase(armpos, mArms.end()); 
     numdeleted -= mArms.size(); 
     dbprintf(2, "Deleted %d arms.\n", numdeleted); 
-
+    */
     /*!
       Useless arm segments are arm segments that have a useless node as either endpoint, or two out of bounds endpoints.  Delete those while copying non-useless arm segments into the final vector.
     */ 
@@ -1936,6 +1937,9 @@ namespace paraDIS {
 #endif
       /* this used to go before BuildArms() */ 
       WrapBoundarySegments();  
+
+      /*  We can now compute arm lengths properly */
+      ComputeArmLengths(); 
       
       DeleteUselessNodesAndSegments(); 
 
