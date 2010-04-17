@@ -133,7 +133,7 @@ namespace paraDIS {
       for ordering sets and hash lookups 
     */ 
     bool operator == (const NodeID &other) const {
-      return mDomainID == other.mDomainID && mNodeID == other.mNodeID;
+      return (mDomainID == other.mDomainID && mNodeID == other.mNodeID);
     }
 
     /*!
@@ -530,12 +530,22 @@ namespace paraDIS {
     /*!
       Compute the distance to another node
     */
-    double Distance(const FullNode &other) { 
-      double dx = mLocation[0]-other.mLocation[0],  
+    double Distance(const FullNode &other, bool wrap=false) { 
+      double dist[3] = {0}, sum=0; 
+      int i=3; while (i--) {
+        dist[i] = mLocation[i] - other.mLocation[i]; 
+        if (wrap && fabs(dist[i]) > mBoundsSize[i]/2.0) {
+          dist[i] = mBoundsSize[i] - fabs(dist[i]); 
+        }
+        sum += dist[i]*dist[i]; 
+      }
+      return sqrt(sum); 
+      /*
+        double dx = mLocation[0]-other.mLocation[0],  
         dy = mLocation[1]-other.mLocation[1],        
         dz = mLocation[2]-other.mLocation[2];         
-      
-      return sqrt(dx*dx + dy*dy + dz*dz); 
+        return sqrt(dx*dx + dy*dy + dz*dz); 
+      */ 
     } 
     /*!
       Accessor function.  
@@ -614,6 +624,7 @@ namespace paraDIS {
     static void SetBounds(rclib::Point<float> &min, rclib::Point<float> &max) {
       mBoundsMin = min; 
       mBoundsMax = max; 
+      mBoundsSize = max-min; 
     }
 
     /*!
@@ -672,7 +683,7 @@ namespace paraDIS {
     /*!
       Static member to keep track of subspace bounds for checking if we are in bounds or not
     */ 
-    static rclib::Point<float> mBoundsMin, mBoundsMax; 
+    static rclib::Point<float> mBoundsMin, mBoundsMax, mBoundsSize; 
 
   }; /* end FullNode */  
   
@@ -804,8 +815,8 @@ namespace paraDIS {
     /*!
       Return the distance between the endpoints
     */ 
-    double GetLength(void) const { 
-      return mEndpoints[0]->Distance(*mEndpoints[1]); 
+    double GetLength(bool wrap=false) const { 
+      return mEndpoints[0]->Distance(*mEndpoints[1], wrap); 
     } 
       
     /*!
@@ -1194,6 +1205,8 @@ namespace paraDIS {
     void CheckForLinkedLoops(void); 
 #endif
 
+    void ComputeLength(void); 
+
    /*!
       Classify the arm as one of NN, MN or MM, combined with 100 or 111...
     */ 
@@ -1225,7 +1238,7 @@ namespace paraDIS {
     /*! 
       Return the sum of the length of all segments in the arm
     */ 
-    double GetLength(void) { 
+    double GetLength(void) const { 
       return mArmLength; 
     }
 
@@ -1572,7 +1585,9 @@ s      Tell the data set which file to read
     */ 
     void ClassifyArms(void); 
 
-    /*!
+    void ComputeArmLengths(void); 
+
+   /*!
       Identify all useless nodes, which are out of bounds and have no in-bounds neighbors.  Then delete all segments connecting two useless nodes.  Finally, delete all useless nodes.  
     */ 
     void DeleteUselessNodesAndSegments(void); 

@@ -26,7 +26,7 @@ namespace paraDIS {
 #ifdef DEBUG
   int32_t ArmSegment::mNextID = 0; 
   int32_t Arm::mNextID = 0; 
-  rclib::Point<float> FullNode::mBoundsMin, FullNode::mBoundsMax; 
+  rclib::Point<float> FullNode::mBoundsMin, FullNode::mBoundsMax, FullNode::mBoundsSize; 
 #endif
   double gSegLen = 0 ;
   uint32_t gNumClassified = 0, gNumWrapped = 0, gNumArmSegmentsMeasured=0; 
@@ -189,7 +189,7 @@ namespace paraDIS {
     bool wrap = false;
     int i=3; while (i--) {
       float dist = fabs(loc0[i] - loc1[i]); 
-      if (dataSize[i] - dist < dist) {
+      if (dataSize[i]/2.0 < dist) {
         wrap = true; 
         shift_amt[i] = dataSize[i]; 
       }
@@ -385,6 +385,43 @@ namespace paraDIS {
 #endif // LINKED_LOOPS
   
   //===========================================================================
+  void Arm::ComputeLength(void) {
+    mArmLength = 0; 
+    // first figure out how to iterate.
+    ArmSegment *startSegment = const_cast<ArmSegment*>(mTerminalSegments[0]);
+    FullNode *startNode = NULL;  
+    if (startSegment->GetEndpoint(0) == mTerminalNodes[0] ||
+        startSegment->GetEndpoint(1) == mTerminalNodes[0]) {
+      startNode = mTerminalNodes[0];
+    } else if (mTerminalNodes.size() == 2 && 
+               ( startSegment->GetEndpoint(0) == mTerminalNodes[1] ||
+                 startSegment->GetEndpoint(1) == mTerminalNodes[1])) {
+      startNode = mTerminalNodes[1];
+    } else {
+      throw string("Cannot find matching terminal node in arm for either segment endpoint"); 
+    } 
+    ArmSegment *lastSegment = NULL; 
+    uint32_t numSeen = 0; 
+    if (mTerminalSegments.size() == 1)  lastSegment = startSegment; 
+    else lastSegment = const_cast<ArmSegment*>(mTerminalSegments[1]); 
+    
+    // now compute the length of the arm
+    FullNode *currentNode = startNode; 
+    ArmSegment *currentSegment = startSegment; 
+    while (true) {
+      dbprintf(5, "Adding length for %s\n", currentSegment->Stringify().c_str()); 
+      mArmLength += currentSegment->GetLength(true); 
+      if (currentSegment == lastSegment) {
+        break; 
+      }
+      currentNode = currentSegment->GetOtherEndpoint(currentNode); 
+      currentSegment = currentNode->GetOtherNeighbor(currentSegment);       
+    }
+    return; 
+  }
+    
+  
+  //===========================================================================
   void Arm::Classify(void) {
 #if LINKED_LOOPS
     CheckForLinkedLoops(); 
@@ -433,7 +470,7 @@ namespace paraDIS {
     FullNode *currentNode = startNode; 
     ArmSegment *currentSegment = startSegment; 
     while (true) {
-      dbprintf(5, "Classifying segment %s\n", currentSegment->Stringify().c_str()); 
+      dbprintf(5, "Adding length for %s\n", currentSegment->Stringify().c_str()); 
       mArmLength += currentSegment->GetLength(); 
       if (currentSegment == lastSegment) {
         break; 
@@ -531,6 +568,7 @@ namespace paraDIS {
 #ifdef DEBUG
       "number " + intToString(mArmID) + 
       ", numSegments = " +intToString(mNumSegments) +
+      ", length = " +doubleToString(GetLength()) +
 #endif
       ", Type " +  intToString(mArmType);
 #if LINKED_LOOPS
@@ -1646,14 +1684,24 @@ namespace paraDIS {
   //===========================================================================
   void DataSet::ClassifyArms(void) {
     dbprintf(2, "ClassifyArms starting...\n");
-    int armnum=0; 
     vector<Arm>::iterator armpos = mArms.begin(), armend = mArms.end(); 
     while (armpos != armend) {      
       armpos->Classify(); 
-      ++armnum; 
       ++armpos; 
     }
     dbprintf(2, "ClassifyArms ended.\n");
+    return; 
+  }
+  
+  //===========================================================================
+  void DataSet::ComputeArmLengths(void) {
+    dbprintf(2, "ComputeArmLengths starting...\n");
+    vector<Arm>::iterator armpos = mArms.begin(), armend = mArms.end(); 
+    while (armpos != armend) {      
+      armpos->ComputeLength(); 
+      ++armpos; 
+    }
+    dbprintf(2, "ComputeArmLengths ended.\n");
     return; 
   }
   
@@ -1935,12 +1983,13 @@ namespace paraDIS {
         DebugPrintFullNodes("NodesBeforeDeletion");       
       }
 #endif
+      /*  We can now compute arm lengths properly */
+      ComputeArmLengths(); 
+ 
       /* this used to go before BuildArms() */ 
       WrapBoundarySegments();  
 
-      /*  We can now compute arm lengths properly */
-      //ComputeArmLengths(); 
-      
+     
       DeleteUselessNodesAndSegments(); 
 
       RenumberNodes(); 
