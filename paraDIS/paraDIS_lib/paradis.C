@@ -761,30 +761,15 @@ namespace paraDIS {
       printf("BINS:  \n"); 
       long totalArms = 0; // reality check
       double totalLength = 0;  // reality check
-      string bins = "Bin:", binNums = "Num Arms:", binLengths = "Lengths:"; 
-      int fieldwidth = 12; 
-      bins.resize(fieldwidth, ' '); 
-      binNums.resize(fieldwidth, ' '); 
-      binLengths.resize(fieldwidth, ' '); 
-
+      string line; 
       int binNum = 0; 
+      printf("%-12s%-12s%-12s\n", "Bin", "Arms", "Lengths"); 
       for (binNum = 0; binNum < mNumBins; ++binNum) {
-        bins += intToString(binNum); 
-        bins.resize(fieldwidth*(binNum+2), ' '); 
-
-        binNums += intToString(armBins[binNum]);
-        binNums.resize(fieldwidth*(binNum+2), ' '); 
-        totalArms += armBins[binNum]; 
-
-        binLengths += doubleToString(armLengthBins[binNum], 2); 
-        binLengths.resize(fieldwidth*(binNum+2), ' '); 
-        totalLength += armLengthBins[binNum]; 
+        printf("%-12d%-12ld%-12.3f\n", binNum, armBins[binNum], armLengthBins[binNum]); 
+        totalArms += armBins[binNum];
+        totalLength += armLengthBins[binNum];
       }
-      bins += "TOTAL"; 
-      binNums += intToString(totalArms); 
-      binLengths += doubleToString(totalLength, 2); 
-
-      cout << bins << endl << binNums << endl << binLengths << endl; 
+      printf("%-12s%-12ld%-12.3f\n", "TOTAL", totalArms, totalLength); 
     }
 
 #ifdef DEBUG_SEGMENTS
