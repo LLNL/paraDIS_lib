@@ -758,7 +758,9 @@ namespace paraDIS {
 
     if (mNumBins) {
       // print a row of bin values
-      printf("BINS:  \n"); 
+      printf("BINS: \n");
+      printf("max length = %.3f\n", Arm::mLongestLength); 
+      
       long totalArms = 0; // reality check
       double totalLength = 0;  // reality check
       string line; 
