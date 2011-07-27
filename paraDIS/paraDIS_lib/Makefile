@@ -11,13 +11,14 @@ ifndef SYS_TYPE
 export SYS_TYPE = $(shell uname)
 endif
 CWD = $(shell pwd)
-MF-INCLUDE ?= $(CWD)/mf-include
+MF-INCLUDE ?= $(projdir)/mf-include
 include $(MF-INCLUDE)/mf-include.common
 
 SFILES = paradis.C paradis_c_interface.C paradisStreaming.C paradisTest.C analyzeParaDIS.C
 
-
-INCLUDES =  -I$(CWD)/RC_c_lib -I$(CWD)/RC_cpp_lib
+CPPLIBDIR=$(projdir)/RC_cpp_lib
+CLIBDIR=$(CPPLIBDIR)/RC_c_lib
+INCLUDES =  -I$(CLIBDIR) -I$(CPPLIBDIR)
 LDFLAGS+=-lstdc++
 #ELECTRIC_FENCE = libefence.a -lpthread
 #CXX = purify g++-3.2.3
@@ -83,27 +84,27 @@ $(CWD)/$(SYS_TYPE)/bin/paradisStreamingTest: $(SYS_TYPE)/paradisStreamingTest.o 
 .DUMMY: 
 
 $(RCCLIB): .DUMMY
-	cd RC_c_lib;  $(MAKE) depend; $(MAKE) install
+	cd $(CLIBDIR);  $(MAKE) depend; $(MAKE) install
 
 $(RCCPPLIB): .DUMMY
-	cd RC_cpp_lib;  $(MAKE) depend; $(MAKE) install
+	cd $(CPPLIBDIR);  $(MAKE) depend; $(MAKE) install
 
 
 clean: undepend
 	rm -rf $(PROGNAME) makeworms *.o $(SYS_TYPE)/* *~ $(SYS_TYPE)/lib/*o $(SYS_TYPE)/lib/*a 
 
 realclean: clean
-	cd RC_cpp_lib;  $(MAKE) undepend; $(MAKE) clean;
-	cd RC_c_lib;  $(MAKE) undepend; $(MAKE) clean;
+	cd $(CPPLIBDIR);  $(MAKE) undepend; $(MAKE) clean;
+	cd $(CLIBDIR);  $(MAKE) undepend; $(MAKE) clean;
 
 undepend: 
 	makedepend -Y $(SFILES)
-	for dir in `pwd`/RC_c_lib `pwd`/RC_cpp_lib ; do cd $$dir; $(MAKE) undepend; done
+	for dir in `pwd`/$(CLIBDIR) `pwd`/$(CPPLIBDIR) ; do cd $$dir; $(MAKE) undepend; done
 
 # DO NOT DELETE
 
 paradis.o: paradis.h
 paradis_c_interface.o: paradis.h paradis_c_interface.h
 paradisStreaming.o: paradisStreaming.h paradis.h
-paradisTest.o: paradis.h RC_c_lib/debugutil.h RC_c_lib/args.h
-analyzeParaDIS.o: paradis.h RC_c_lib/args.h paradis_version.h
+paradisTest.o: paradis.h $(CLIBDIR)/debugutil.h $(CLIBDIR)/args.h
+analyzeParaDIS.o: paradis.h $(CLIBDIR)/args.h paradis_version.h
