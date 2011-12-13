@@ -13,6 +13,7 @@ void usage(void) {
   fprintf(stderr, "usage:  analyzeParaDIS [options] inputfile\n"); 
   fprintf(stderr, "---------------------------------------\n"); 
   fprintf(stderr, "options:  \n"); 
+  fprintf(stderr, " -armlist filename:  print a simple list of arms into given filename\n"); 
   fprintf(stderr, " -debugfiles:  dump out detailed analysis in files\n"); 
   fprintf(stderr, " -v (or -verbose) num:  set verbosity level to num (scale of 0-5, 5 is very verbose, 0 is strangely quiet)\n"); 
   fprintf(stderr, " -numbins num: during report, divide total arms into num bins by length and report on the total length in each bin\n"); 
@@ -26,7 +27,9 @@ int main(int argc, char *argv[]) {
   try {
     long debugfiles = 0, verbosity=0, numbins=0, help=false, version=false; 
     double threshold=-1.0; 
-    argt args[7] = {
+    char armfilename[1024] = ""; 
+    argt args[8] = {
+      {STRING_TYPE, "-armlist", 1, armfilename}, 
       {BOOL_TYPE, "-debugfiles", 1, &debugfiles}, 
       {BOOL_TYPE, "-help", 1, &help}, 
       {LONG_TYPE, "-numbins", 1, &numbins}, 
@@ -35,7 +38,7 @@ int main(int argc, char *argv[]) {
       {DOUBLE_TYPE, "-threshold", 1, &threshold},
       {BOOL_TYPE, "-version", 1, &version}
     }; 
-    arg_expect_args(args, 7);
+    arg_expect_args(args, 8);
     arg_ignore_bad_args(1); 
     if (!arg_parse_args(&argc, argv)) {
       fprintf(stderr, "****************************************\n"); 
@@ -74,6 +77,8 @@ int main(int argc, char *argv[]) {
     gDataSet->ReadData(); 
     
     gDataSet->PrintArmStats();
+    
+    if (*armfilename) gDataSet->PrintArmFile(armfilename); 
 
   } catch (string err) {
     cerr << "Error: " << err << endl; 

@@ -1329,6 +1329,10 @@ namespace paraDIS {
     */
     void PrintArmStats(void); 
       
+    /*!
+      Print all arms in a simple format into a file for analysis
+    */
+    void PrintArmFile(char*filename);
 
     /*!
       Parse the input file just for the data bounds. 

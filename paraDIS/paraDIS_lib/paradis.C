@@ -580,6 +580,8 @@ namespace paraDIS {
     } else {
       s += ", is NOT part of linked loop.\n"; 
     }
+#else 
+    s += "\n";
 #endif 
 
     int num = 0, max = mTerminalNodes.size(); 
@@ -605,7 +607,7 @@ namespace paraDIS {
      return s; 
   }
   //===========================================================================
-  // see also DebugPrintArms() -- this just tabulates a summary
+  // see also DebugPrintArms() and PrintArmFile() -- this just tabulates a summary
   void DataSet::PrintArmStats(void) {
     //if (!dbg_isverbose()) return;
     //dbprintf(3, "Beginning PrintArmStats()"); 
@@ -658,7 +660,7 @@ namespace paraDIS {
         }       
       }
       if (mNumBins) {
-        int binNum = length/Arm::mLongestLength * mNumBins; 
+        int binNum = (int)((double)length/Arm::mLongestLength * mNumBins); 
         if (binNum == mNumBins) binNum = mNumBins-1; 
         if (binNum > mNumBins || binNum < 0) {
           printf("Error:  binNum %d is invalid (num bins is %d)\n", binNum, mNumBins); 
@@ -1679,7 +1681,10 @@ namespace paraDIS {
   void DataSet::DebugPrintArms(void) {
     std::string filename = mDebugOutputDir + string("/Arms-list.txt"); 
     dbprintf(1, "Writing arms to debug file %s\n", filename.c_str()); 
-    if (!Mkdir (mDebugOutputDir.c_str())) return; 
+    if (!Mkdir (mDebugOutputDir.c_str())) {
+      cerr << "Error: Cannot create output directory for arm file"; 
+      return; 
+    }
 
     ofstream debugfile (filename.c_str()); 
     
@@ -1700,8 +1705,49 @@ namespace paraDIS {
     debugfile << "Memory used by arm segments and their pointers: " << mFinalArmSegments.size() * (sizeof(ArmSegment) + sizeof(ArmSegmentSetElement)) << endl; 
     return; 
   }
-
   
+  
+  //===========================================================================
+  // Print out all arms in a simple format in a file for analysis, just for Meijie
+  void DataSet::PrintArmFile(char *armfilename) {
+
+    if (!*armfilename) return;
+
+    dbprintf(0, "Writing arms to arm file %s\n", armfilename); 
+
+    FILE *armfile = fopen (armfilename, "w"); 
+    if (!armfile) {
+      cerr << "ERROR:  Cannot open output file to write out arms" << endl;
+      return;
+    }
+
+    fprintf(armfile, "Printout of all arms, just for Mei Ji.  Number of arms: %d\n",  (int)(mArms.size())); 
+    vector<Arm>::iterator pos = mArms.begin(), endpos = mArms.end(); 
+    uint32_t armnum = 0; 
+    while (pos != endpos) {
+      double eplength = 0.0; 
+      float loc0[3], loc1[3]; 
+      pos->mTerminalNodes[0]->GetLocation(loc0);
+      int numtermnodes = pos->mTerminalNodes.size();
+      if (numtermnodes > 1) {
+        if (numtermnodes != 2) {
+          cerr << "Warning:  arm #"<<armnum<< ": I don't know how to calculate the distance between " << numtermnodes << " terminal nodes." << endl;
+        } else {
+          eplength = pos->mTerminalNodes[0]->Distance(*( pos->mTerminalNodes[1]), true); 
+          pos->mTerminalNodes[1]->GetLocation(loc1);
+        }
+      } else {
+        pos->mTerminalNodes[0]->GetLocation(loc1);
+      }
+      
+      fprintf(armfile, "Arm #%d: Type = %d, Length = %0.2f, EP Distance = %0.2f, Endpoint 1 = (%0.2f, %0.2f, %0.2f), Endpoint 2 = (%0.2f, %0.2f, %0.2f)\n", 
+              armnum, pos->mArmType, pos->mArmLength, eplength, loc0[0], loc0[1], loc0[2], loc1[0], loc1[1], loc1[2]); 
+      ++armnum; 
+      ++pos; 
+    }
+    return; 
+  }
+
   //===========================================================================
   void DataSet::FindButterflies(void) {
     dbprintf(2, "FindButterflies starting...\n");
@@ -1774,7 +1820,6 @@ namespace paraDIS {
       First identify every node that is out of bounds and has no inbound neighbor -- these are useless nodes.  
     */ 
     dbprintf(2, "Identifying useless nodes...\n "); 
-    bool deletable = false; 
     vector<FullNode *>::iterator nodepos = mFullNodes.begin(), 
       nodeend = mFullNodes.end(); 
     /*    while (nodepos != nodeend) {      
