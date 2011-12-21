@@ -1721,13 +1721,16 @@ namespace paraDIS {
       return;
     }
 
-    fprintf(armfile, "Printout of all arms, just for Mei Ji.  Number of arms: %d\n",  (int)(mArms.size())); 
+    fprintf(armfile, "Number of arms: %d\n",  (int)(mArms.size())); 
+    fprintf(armfile, "%-12s%-6s%-13s%-13s%-42s%-42s\n", "Arm #", "Type",  "Length", "EP Distance", "(----  EP 1: Type (X, Y, Z) ----)", "(----  EP 2: Type (X, Y, Z)  ----)");
     vector<Arm>::iterator pos = mArms.begin(), endpos = mArms.end(); 
     uint32_t armnum = 0; 
     while (pos != endpos) {
       double eplength = 0.0; 
-      float loc0[3], loc1[3]; 
+      float loc0[3]={0}, loc1[3]={0};
+      char ntypes[2]={'X'}; 
       pos->mTerminalNodes[0]->GetLocation(loc0);
+      ntypes[0] = pos->mTerminalNodes[0]->IsTypeM()? 'M':'N';
       int numtermnodes = pos->mTerminalNodes.size();
       if (numtermnodes > 1) {
         if (numtermnodes != 2) {
@@ -1735,13 +1738,15 @@ namespace paraDIS {
         } else {
           eplength = pos->mTerminalNodes[0]->Distance(*( pos->mTerminalNodes[1]), true); 
           pos->mTerminalNodes[1]->GetLocation(loc1);
+          ntypes[1] = pos->mTerminalNodes[1]->IsTypeM()? 'M':'N';
         }
       } else {
         pos->mTerminalNodes[0]->GetLocation(loc1);
+        ntypes[1] = ntypes[0];
       }
       
-      fprintf(armfile, "Arm #%d: Type = %d, Length = %0.2f, EP Distance = %0.2f, Endpoint 1 = (%0.2f, %0.2f, %0.2f), Endpoint 2 = (%0.2f, %0.2f, %0.2f)\n", 
-              armnum, pos->mArmType, pos->mArmLength, eplength, loc0[0], loc0[1], loc0[2], loc1[0], loc1[1], loc1[2]); 
+      fprintf(armfile, "%-12d%-6d%-13.2f%-13.2f%-6c%-12.2f%-12.2f%-12.2f%-6c%-12.2f%-12.2f%-12.2f\n", 
+              armnum, pos->mArmType, pos->mArmLength, eplength, ntypes[0], loc0[0], loc0[1], loc0[2], ntypes[1], loc1[0], loc1[1], loc1[2]); 
       ++armnum; 
       ++pos; 
     }
