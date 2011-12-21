@@ -1721,35 +1721,41 @@ namespace paraDIS {
       return;
     }
 
-    fprintf(armfile, "Number of arms: %d\n",  (int)(mArms.size())); 
-    fprintf(armfile, "%-12s%-6s%-13s%-13s%-42s%-42s\n", "Arm #", "Type",  "Length", "EP Distance", "(----  EP 1: Type (X, Y, Z) ----)", "(----  EP 2: Type (X, Y, Z)  ----)");
+    fprintf(armfile, "This file is a printout of all NON-LOOPING arms.\n"); 
+    fprintf(armfile, "%-12s%-6s%-15s%-15s%-10s%-10s%-15s%-15s%-15s%-10s%-10s%-15s%-15s%-15s\n", "Arm-ID", "Type", "Length", "EP-Distance", "EP1-Type", "EP1-Nbrs", "EP1-X", "EP1-Y", "EP1-Z", "EP2-Type", "EP2-Nbrs", "EP2-X", "EP2-Y", "EP2-Z");
     vector<Arm>::iterator pos = mArms.begin(), endpos = mArms.end(); 
     uint32_t armnum = 0; 
     while (pos != endpos) {
-      double eplength = 0.0; 
-      float loc0[3]={0}, loc1[3]={0};
-      char ntypes[2]={'X'}; 
-      pos->mTerminalNodes[0]->GetLocation(loc0);
-      ntypes[0] = pos->mTerminalNodes[0]->IsTypeM()? 'M':'N';
-      int numtermnodes = pos->mTerminalNodes.size();
-      if (numtermnodes > 1) {
-        if (numtermnodes != 2) {
-          cerr << "Warning:  arm #"<<armnum<< ": I don't know how to calculate the distance between " << numtermnodes << " terminal nodes." << endl;
-        } else {
-          eplength = pos->mTerminalNodes[0]->Distance(*( pos->mTerminalNodes[1]), true); 
-          pos->mTerminalNodes[1]->GetLocation(loc1);
-          ntypes[1] = pos->mTerminalNodes[1]->IsTypeM()? 'M':'N';
+      int numtermnodes = pos->mTerminalNodes.size(), numNeighbors[2] = {0};
+      if (numtermnodes == 2) {
+        double eplength = 0.0; 
+        float loc0[3]={0}, loc1[3]={0};
+        char ntypes[2]={'X'}; 
+        pos->mTerminalNodes[0]->GetLocation(loc0);
+        ntypes[0] = pos->mTerminalNodes[0]->IsTypeM()? 'M':'N';
+        numNeighbors[0] = pos->mTerminalNodes[0]->GetNumNeighbors();
+        eplength = pos->mTerminalNodes[0]->Distance(*( pos->mTerminalNodes[1]), true); 
+        pos->mTerminalNodes[1]->GetLocation(loc1);
+        ntypes[1] = pos->mTerminalNodes[1]->IsTypeM()? 'M':'N';
+        numNeighbors[1] = pos->mTerminalNodes[1]->GetNumNeighbors();        
+        
+        //fprintf(armfile, "%-12d%-6d%-13.2f%-13.2f%-6c%-12.2f%-12.2f%-12.2f%-6c%-12.2f%-12.2f%-12.2f\n", 
+        fprintf(armfile, "%-12d%-6d%-15f%-15f%-10c%-10d%-15f%-15f%-15f%-10c%-10d%-15f%-15f%-15f\n",
+                armnum, pos->mArmType, pos->mArmLength, eplength, ntypes[0], numNeighbors[0], loc0[0], loc0[1], loc0[2], ntypes[1], numNeighbors[1], loc1[0], loc1[1], loc1[2]); 
+      } else  {  // LOOP, or something weird:  
+        if (numtermnodes == 1) {
+          ; // skip, it's a loop
         }
-      } else {
-        pos->mTerminalNodes[0]->GetLocation(loc1);
-        ntypes[1] = ntypes[0];
+        else {  // that's no moon...
+          // numtermnodes is neither 1 nor 2: 
+          cerr << "WARNING:  arm #"<<armnum<< ": I don't know how to calculate the distance between " << numtermnodes << " terminal nodes." << endl;
+        }
       }
-      
-      fprintf(armfile, "%-12d%-6d%-13.2f%-13.2f%-6c%-12.2f%-12.2f%-12.2f%-6c%-12.2f%-12.2f%-12.2f\n", 
-              armnum, pos->mArmType, pos->mArmLength, eplength, ntypes[0], loc0[0], loc0[1], loc0[2], ntypes[1], loc1[0], loc1[1], loc1[2]); 
       ++armnum; 
       ++pos; 
     }
+    fprintf(armfile, "Total arms: %d\n",  (int)(mArms.size())); 
+    fprintf(armfile, "Total NON-LOOPING arms: %d\n",  armnum); 
     return; 
   }
 

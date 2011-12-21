@@ -1,0 +1,5 @@
+To build: 
+make
+
+To install: 
+INSTALL_DIR=/usr/global/tools/IMG_private/paraDIS/chaos_4_x86_64 make install
