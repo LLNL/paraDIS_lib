@@ -84,10 +84,10 @@ $(CWD)/$(SYS_TYPE)/bin/paradisStreamingTest: $(SYS_TYPE)/paradisStreamingTest.o 
 .DUMMY: 
 
 $(RCCLIB): .DUMMY
-	cd $(CLIBDIR);  $(MAKE) depend; $(MAKE) install
+	cd $(CLIBDIR);  $(MAKE) install
 
 $(RCCPPLIB): .DUMMY
-	cd $(CPPLIBDIR);  $(MAKE) depend; $(MAKE) install
+	cd $(CPPLIBDIR);  $(MAKE) install
 
 
 clean: undepend
@@ -101,10 +101,15 @@ undepend:
 	makedepend -Y $(SFILES)
 	for dir in `pwd`/$(CLIBDIR) `pwd`/$(CPPLIBDIR) ; do cd $$dir; $(MAKE) undepend; done
 
+depend: 	
+	makedepend -Y $(SFILES)
+	cd $(CLIBDIR);  $(MAKE) depend
+	cd $(CPPLIBDIR);  $(MAKE) depend	
+
 # DO NOT DELETE
 
 paradis.o: paradis.h
 paradis_c_interface.o: paradis.h paradis_c_interface.h
 paradisStreaming.o: paradisStreaming.h paradis.h
-paradisTest.o: paradis.h $(CLIBDIR)/debugutil.h $(CLIBDIR)/args.h
-analyzeParaDIS.o: paradis.h $(CLIBDIR)/args.h paradis_version.h
+paradisTest.o: paradis.h
+analyzeParaDIS.o: paradis.h paradis_version.h
