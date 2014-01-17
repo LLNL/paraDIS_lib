@@ -1,897 +1,0 @@
-$Id: example-makewormmovie.sh.log,v 1.2 2006/01/20 18:30:47 rcook Exp $
-This is an example output from makewormmovie.sh, generated for the 480x360 frames made for the 2005-11 paraDIS run. 
-
-echo Begin logging at `date`
-date
-++ date
-+ echo Begin logging at Tue Nov 15 18:03:17 PST 2005
-Begin logging at Tue Nov 15 18:03:17 PST 2005
-echo $0 run with args $*
-+ echo /g/g0/rcook/current_projects/paraDIS_hts/movie/makewormmovie.sh run with args -datadir /nfs/tmp0/rcook/paradis/2005-11/movie/pov -moviedir /nfs/tmp0/rcook/paradis/2005-11/movie/480-360 -v 5 -padlength 4 -povname converted_restart -prologframes 0 -epilogframes 0 -width 480 -height 360 -backdrop -povstep 4 -povfirst 75 -povlast 5487 -animstart 0.0 -animend 1.0 -parallel -firstframe 569
-/g/g0/rcook/current_projects/paraDIS_hts/movie/makewormmovie.sh run with args -datadir /nfs/tmp0/rcook/paradis/2005-11/movie/pov -moviedir /nfs/tmp0/rcook/paradis/2005-11/movie/480-360 -v 5 -padlength 4 -povname converted_restart -prologframes 0 -epilogframes 0 -width 480 -height 360 -backdrop -povstep 4 -povfirst 75 -povlast 5487 -animstart 0.0 -animend 1.0 -parallel -firstframe 569
-
-numfiles=`expr \( $povlast '-' $povfirst + 1 \) / $povstep`
-expr \( $povlast '-' $povfirst + 1 \) / $povstep
-++ expr '(' 5487 - 75 + 1 ')' / 4
-+ numfiles=1353
-echo Global file range is from $povfirst to $povlast with step $povstep, making $numfiles povray files
-+ echo Global file range is from 75 to 5487 with step 4, making 1353 povray files
-Global file range is from 75 to 5487 with step 4, making 1353 povray files
-
-if [ $procnum = '0' ] ; then
-    echo 'running in serial'
-else
-    echo I am proc number \"$procnum\" out of \"$numprocs\" total procs
-fi
-+ '[' 191 = 0 ']'
-+ echo I am proc number '"191"' out of '"200"' total procs
-I am proc number "191" out of "200" total procs
-
-# =====================================================
-if [ $animstart = $animend ] ; then
-    animframes=0
-else
-    animframes=$numfiles
-fi
-+ '[' 0.0 = 1.0 ']'
-+ animframes=1353
-
-numframes=`expr $prologframes + $animframes + $epilogframes`
-expr $prologframes + $animframes + $epilogframes
-++ expr 0 + 1353 + 0
-+ numframes=1353
-
-if [ x$lastframe = x ] ; then lastframe=$numframes; fi
-+ '[' x = x ']'
-+ lastframe=1353
-
-echo "There are $numframes frames overall including $prologframes prolog frames and $epilogframes epilog frames and $animframes animation frames (one per file during animation sequence).  The last frame rendered with be number $lastframe."
-+ echo 'There are 1353 frames overall including 0 prolog frames and 0 epilog frames and 1353 animation frames (one per file during animation sequence).  The last frame rendered with be number 1353.'
-There are 1353 frames overall including 0 prolog frames and 0 epilog frames and 1353 animation frames (one per file during animation sequence).  The last frame rendered with be number 1353.
-firstframe=`expr $firstframe + $procnum`
-expr $firstframe + $procnum
-++ expr 569 + 191
-+ firstframe=760
-echo "First frame for me is number $firstframe."
-+ echo 'First frame for me is number 760.'
-First frame for me is number 760.
-
-
-# =====================================================
-# set up the spline
-# divide into three pieces: 
-
-# [ 0,  $animstart )
-prologstep=0.0
-+ prologstep=0.0
-if [ $prologframes -gt 0 ] ; then
-    # divide [ 0,  $animstart ) into $prologframes sections:
-    prologstep=`$python -c "print ($animstart)/$prologframes"`
-fi
-+ '[' 0 -gt 0 ']'
-echo "prologstep is $prologstep"
-+ echo 'prologstep is 0.0'
-prologstep is 0.0
-
-# [ $animstart, $animend ]
-animstep=0.0
-+ animstep=0.0
-if [ $animframes -gt 0 ] ; then
-    # divide into n-1 sections to get n frames
-    if [ $animframes -gt 1 ] ; then 
-	animstep=`$python -c "print ($animend-$animstart)/($animframes-1)"`
-fi
-    else 
-	animstep=0
-    fi
-+ '[' 1353 -gt 0 ']'
-+ '[' 1353 -gt 1 ']'
-$python -c "print ($animend-$animstart)/($animframes-1)"
-++ /usr/bin/python -c 'print (1.0-0.0)/(1353-1)'
-+ animstep=0.000739644970414
-echo "animstep is $animstep"
-+ echo 'animstep is 0.000739644970414'
-animstep is 0.000739644970414
-
-# ( $animend , 1.0 ]
-epilogstep=0.0
-+ epilogstep=0.0
-if [ $epilogframes -gt 0 ] ; then
-    # divide   into $prologframes sections:
-    epilogstep=`$python -c "print (1.0-$animend)/$epilogframes"`
-    epilogstart=`$python -c "print $animend+$epilogstep"`
-fi
-+ '[' 0 -gt 0 ']'
-echo "epilogstep is $epilogstep"
-+ echo 'epilogstep is 0.0'
-epilogstep is 0.0
-
-currentframe=$firstframe 
-+ currentframe=760
-currentpov=$povfirst
-+ currentpov=75
-if [ x$spline != x ] ; then 
-    currentspline=$spline
-else
-    currentspline=0.0
-    if [ $firstframe -le $prologframes ] ; then
-	currentspline=`$python -c "print (${firstframe}-1) '*' $prologstep"`     
-    elif [ $firstframe -le `expr $prologframes + $animframes` ] ; then
-	currentpov=`expr $povfirst + \( $currentframe - 1 - $prologframes \) '*' $povstep`
-	if [ $currentpov -gt $povlast ] ; then 
-	    currentpov=$povlast
-	fi
-	currentspline=`$python -c "print $animstart + ($firstframe - 1 - $prologframes) * $animstep"`    
-    else
-	currentpov=$povlast
-	currentspline=`$python -c "print $animend + ($firstframe - $prologframes - $animframes) * $epilogstep"`
-    fi
-fi
-+ '[' x '!=' x ']'
-+ currentspline=0.0
-+ '[' 760 -le 0 ']'
-expr $prologframes + $animframes
-++ expr 0 + 1353
-+ '[' 760 -le 1353 ']'
-expr $povfirst + \( $currentframe - 1 - $prologframes \) '*' $povstep
-++ expr 75 + '(' 760 - 1 - 0 ')' '*' 4
-+ currentpov=3111
-+ '[' 3111 -gt 5487 ']'
-$python -c "print $animstart + ($firstframe - 1 - $prologframes) * $animstep"
-++ /usr/bin/python -c 'print 0.0 + (760 - 1 - 0) * 0.000739644970414'
-+ currentspline=0.561390532544
-echo "Starting spline at $currentspline"
-+ echo 'Starting spline at 0.561390532544'
-Starting spline at 0.561390532544
-
-
-# =====================================================
-# now render each frame at the current spline value
-tilestart=0.0
-+ tilestart=0.0
-tileend=1.0
-+ tileend=1.0
-#set -x
-#set -v 
-#set -e
-while [ $currentframe -le $lastframe ] ; do
-
-    echo "*********** Beginning frame number $currentframe **************"
-    if [ $currentframe -le $prologframes ] ; then
-	if [ x$spline = x ] ; then 
-	    currentspline=`$python -c "print (${currentframe}-1) * $prologstep"` 
-	fi
-    else
-	if [ $currentpov -lt $povlast ] ; then
-	    currentpov=`expr $povfirst + \( $currentframe - $prologframes - 1 \) '*' $povstep `
-	    if [ $currentpov -gt $povlast ] ; then
-		currentpov=$povlast
-	    fi
-	fi
-	if [ x$spline = x ] && [ $currentframe -le `expr $prologframes + $animframes` ] ; then
-	    currentspline=`$python -c "print $animstart + ($currentframe - 1 - $prologframes) * $animstep"`
-	else
-	    currentspline=`$python -c "print $animend + ($currentframe - $prologframes - $animframes) * $epilogstep"`
-	fi
-    fi
-
-    echo "Current spline is $currentspline, current pov file is $currentpov"
-    cd $basedir
-    #echo I am tile $tilenum of $numtiles tiles
-    #tilestart=`$python -c "print ${tilenum}.0/${numtiles}.0"`
-    #tileend=`$python -c "print (${tilenum}.0+1.0)/${numtiles}.0"`
-    #echo "My tile range is from $tilestart to $tileend"
-    povnum=`pad2length $currentpov $padlength`
-    framenum=`padzeros $currentframe $numframes`
-
-    # make the combined pov file:
-    combined_pov_file="${moviedir}/${povname}_frame${framenum}_combined.pov"
-    source_pov_file=${datadir}/${povname}_${povnum}.pov
-    cp ${datadir}/$incfile $combined_pov_file
-    sed 's/#include "wormparams.inc"//' $source_pov_file >> $combined_pov_file
-
-    # make the povray init file that will tell povray what to do
-    povinifile=${moviedir}/worms_${framenum}.ini
-    echo povray init file is $povinifile
-    echo "# povray file for creating image" > $povinifile
-    echo "# another comment " >> $povinifile
-    echo scriptname is $scriptname
-    if [ x$scriptname = x ] ; then 
-	echo no script supplied
-	    cat >> $povinifile <<EOF
-	if [ $axes = true ] ; then
-	    echo 'Declare=axes=1' >>$povinifile
-	fi
-	if [ $box = true ] ; then
-	    echo 'Declare=box=1' >>$povinifile
-	fi
-	if [ $backdrop = true ] ; then
-	    echo 'Declare=backdrop=1' >>$povinifile
-	fi
-	if [ $campath = true ] ; then
-	    echo 'Declare=camPath=1' >>$povinifile
-	fi
-	if [ $media = true ] ; then
-	    echo 'Declare=media=1' >>$povinifile
-	fi
-	if [ $fog = true ] ; then
-	    echo 'Declare=fog=1' >>$povinifile 
-	fi
-	if [ $renderoffscreen = true ] ; then
-	    echo 'Display=Off' >> $povinifile
-	else 
-	    if [ $preview = true ] ; then 
-    cat >> $povinifile <<EOF
-	    fi		
-	fi
-	echo lowquality is $lowquality
-	if [ x$lowquality != xtrue ] ; then 
-	    cat >> $povinifile <<EOF
-	else
-	    cat >> $povinifile <<EOF	
-	fi
-    else
-	cat $scriptname >> $povinifile
-    fi
-    echo "Declare=cameraSpline=$currentspline" >>$povinifile
-    echo ''>>$povinifile
-    cd $datadir
-    cmd="/usr/global/tools/povray/3.6.1/${SYS_TYPE}/bin/povray ${povinifile}"
-    date
-    echo $cmd
-    if ${cmd} ; then
-	echo image ${current} finished without error
-    else
-	echo Error while processing image $current
-	break
-    fi
-
-    # assign next according to round-robin scheme
-    currentframe=`expr $currentframe + $numprocs`
-    
-
-    if [ $debug != 1 ] ; then 
-	rm -f $povinifile
-    fi
-done
-+ '[' 760 -le 1353 ']'
-+ echo '*********** Beginning frame number 760 **************'
-*********** Beginning frame number 760 **************
-+ '[' 760 -le 0 ']'
-+ '[' 3111 -lt 5487 ']'
-expr $povfirst + \( $currentframe - $prologframes - 1 \) '*' $povstep 
-++ expr 75 + '(' 760 - 0 - 1 ')' '*' 4
-+ currentpov=3111
-+ '[' 3111 -gt 5487 ']'
-+ '[' x = x ']'
-expr $prologframes + $animframes
-++ expr 0 + 1353
-+ '[' 760 -le 1353 ']'
-$python -c "print $animstart + ($currentframe - 1 - $prologframes) * $animstep"
-++ /usr/bin/python -c 'print 0.0 + (760 - 1 - 0) * 0.000739644970414'
-+ currentspline=0.561390532544
-+ echo 'Current spline is 0.561390532544, current pov file is 3111'
-Current spline is 0.561390532544, current pov file is 3111
-+ cd /g/g0/rcook
-pad2length $currentpov $padlength
-++ pad2length 3111 4
-++ output=3111
-length $1
-+++ length 3111
-echo $1 | wc -m
-++++ echo 3111
-++++ wc -m
-+++ len=5
-+++ expr 5 - 1
-++ shortlen=4
-++ longlen=4
-++ '[' 4 -lt 4 ']'
-++ echo 3111
-+ povnum=3111
-padzeros $currentframe $numframes
-++ padzeros 760 1353
-length $2
-+++ length 1353
-echo $1 | wc -m
-++++ echo 1353
-++++ wc -m
-+++ len=5
-+++ expr 5 - 1
-++ longlen=4
-++ pad2length 760 4
-++ output=760
-length $1
-+++ length 760
-echo $1 | wc -m
-++++ echo 760
-++++ wc -m
-+++ len=4
-+++ expr 4 - 1
-++ shortlen=3
-++ longlen=4
-++ '[' 3 -lt 4 ']'
-++ output=0760
-expr $shortlen + 1
-+++ expr 3 + 1
-++ shortlen=4
-++ '[' 4 -lt 4 ']'
-++ echo 0760
-+ framenum=0760
-+ combined_pov_file=/nfs/tmp0/rcook/paradis/2005-11/movie/480-360/converted_restart_frame0760_combined.pov
-+ source_pov_file=/nfs/tmp0/rcook/paradis/2005-11/movie/pov/converted_restart_3111.pov
-+ cp /nfs/tmp0/rcook/paradis/2005-11/movie/pov/wormparams.inc /nfs/tmp0/rcook/paradis/2005-11/movie/480-360/converted_restart_frame0760_combined.pov
-+ sed 's/#include "wormparams.inc"//' /nfs/tmp0/rcook/paradis/2005-11/movie/pov/converted_restart_3111.pov
-+ povinifile=/nfs/tmp0/rcook/paradis/2005-11/movie/480-360/worms_0760.ini
-+ echo povray init file is /nfs/tmp0/rcook/paradis/2005-11/movie/480-360/worms_0760.ini
-povray init file is /nfs/tmp0/rcook/paradis/2005-11/movie/480-360/worms_0760.ini
-+ echo '# povray file for creating image'
-+ echo '# another comment '
-+ echo scriptname is
-scriptname is
-+ '[' x = x ']'
-+ echo no script supplied
-no script supplied
-+ cat
-+ '[' false = true ']'
-+ '[' false = true ']'
-+ '[' true = true ']'
-+ echo Declare=backdrop=1
-+ '[' false = true ']'
-+ '[' false = true ']'
-+ '[' false = true ']'
-+ '[' true = true ']'
-+ echo Display=Off
-+ echo lowquality is false
-lowquality is false
-+ '[' xfalse '!=' xtrue ']'
-+ cat
-+ echo Declare=cameraSpline=0.561390532544
-+ echo ''
-+ cd /nfs/tmp0/rcook/paradis/2005-11/movie/pov
-+ cmd='/usr/global/tools/povray/3.6.1/chaos_3_x86_64_ib/bin/povray /nfs/tmp0/rcook/paradis/2005-11/movie/480-360/worms_0760.ini'
-+ date
-Tue Nov 15 18:03:33 PST 2005
-+ echo /usr/global/tools/povray/3.6.1/chaos_3_x86_64_ib/bin/povray /nfs/tmp0/rcook/paradis/2005-11/movie/480-360/worms_0760.ini
-/usr/global/tools/povray/3.6.1/chaos_3_x86_64_ib/bin/povray /nfs/tmp0/rcook/paradis/2005-11/movie/480-360/worms_0760.ini
-+ /usr/global/tools/povray/3.6.1/chaos_3_x86_64_ib/bin/povray /nfs/tmp0/rcook/paradis/2005-11/movie/480-360/worms_0760.ini
-Persistence of Vision(tm) Ray Tracer Version 3.6.1 (g++ 3.4.4 @
- x86_64-unknown-linux-gnu)
-This is an unofficial version compiled by:
- Rich Cook LLNL 423-9605 <rcook@llnl.gov>
- The POV-Ray Team(tm) is not responsible for supporting this version.
-POV-Ray is based on DKBTrace 2.12 by David K. Buck & Aaron A. Collins
-Copyright 1991-2003 Persistence of Vision Team
-Copyright 2003-2004 Persistence of Vision Raytracer Pty. Ltd.
-
-Primary POV-Ray 3.5/3.6 Developers: (Alphabetically)
-  Chris Cason         Thorsten Froehlich  Nathan Kopp         Ron Parker        
-
-Contributing Authors: (Alphabetically)
-  Steve Anger         Eric Barish         Dieter Bayer        Steve A. Bennett  
-  David K. Buck       Nicolas Calimet     Aaron A. Collins    Chris Dailey      
-  Steve Demlow        Andreas Dilger      Alexander Enzmann   Dan Farmer        
-  Mark Gordon         Christoph Hormann   Mike Hough          Chris Huff        
-  Kari Kivisalo       Lutz Kretzschmar    Jochen Lippert      Pascal Massimino  
-  Jim McElhiney       Douglas Muir        Juha Nieminen       Bill Pulver       
-  Eduard Schwan       Wlodzimierz Skiba   Robert Skinner      Yvo Smellenbergh  
-  Zsolt Szalavari     Scott Taylor        Massimo Valentini   Timothy Wegner    
-  Drew Wells          Chris Young       
-
-Other contributors are listed in the documentation.
-
-Support libraries used by POV-Ray:
-  ZLib 1.2.1, Copyright 1995-1998 Jean-loup Gailly and Mark Adler
-  LibPNG 1.2.5, Copyright 1998-2002 Glenn Randers-Pehrson
-  LibJPEG 6b, Copyright 1998 Thomas G. Lane
-  LibTIFF 3.6.1, Copyright 1988-1997 Sam Leffler, 1991-1997 SGI
-Redirecting Options
-  All Streams to console..........On 
-  Debug Stream to console.........On 
-  Fatal Stream to console.........On 
-  Render Stream to console........On 
-  Statistics Stream to console....On 
-  Warning Stream to console.......On 
-Parsing Options
-  Input file: /nfs/tmp0/rcook/paradis/2005-11/movie/480-360/converted_restart_fr
-ame0760_combined.pov (compatible to version 3.61)
-  Remove bounds........On 
-  Split unions.........Off
-  Library paths:
-    /usr/global/tools/povray/3.6.1/chaos_3_x86_64_ib/share/povray-3.6
-    /usr/global/tools/povray/3.6.1/chaos_3_x86_64_ib/share/povray-3.6/ini
-    /usr/global/tools/povray/3.6.1/chaos_3_x86_64_ib/share/povray-3.6/include
-    /usr/global/tools/povray/3.61/chaos_3_x86_64_ib/share/povray-3.6
-Output Options
-  Image resolution 480 by 360 (rows 1 to 360, columns 1 to 480).
-  Output file: /nfs/tmp0/rcook/paradis/2005-11/movie/480-360/images_0760.png, 24
- bpp PNG
-  Graphic display......Off
-  Mosaic preview.......Off
-  CPU usage histogram..Off
-  Continued trace......Off
-Tracing Options
-  Quality:  9
-  Bounding boxes.......On   Bounding threshold: 3
-  Light Buffer.........On 
-  Vista Buffer.........On   Draw Vista Buffer....Off
-  Antialiasing.........On  (Method 2, Threshold 0.990, Depth 3, Jitter 1.00)
-  Clock value:    0.000  (Animation off)
-
-  0:00:00 Parsing  0:00:01 Parsing 855K tokens  0:00:02 Parsing 2898K tokens  0:00:03 Parsing 4916K tokens  0:00:04 Parsing 6955K tokens  0:00:05 Parsing 8981K tokens  0:00:06 Parsing 11014K tokens  0:00:07 Parsing 13045K tokens  0:00:08 Parsing 15078K tokens  0:00:09 Parsing 17109K tokens  0:00:10 Parsing 19132K tokens  0:00:11 Parsing 21168K tokens
-Cleanup Parse Warning: This rendering uses the following experimental
- feature(s): spline. The design and implementation of these features is likely
- to change in future versions of POV-Ray. Full backward compatibility with the
- current implementation is NOT guaranteed.
-
-  0:00:11 Creating bounding slabs
-  0:00:11 Creating vista buffer
-  0:00:11 Creating light buffers  0:00:11 Creating light buffers  0:00:11 Creating light buffers 21200K tokens
-Scene Statistics
-  Finite objects:        92345
-  Infinite objects:          0
-  Light sources:             2
-  Total:                 92347
-
-  0:00:00 Rendering line 1 of 360, 0 supersamples  0:00:02 Rendering line 2 of 360, 111 supersamples  0:00:03 Rendering line 3 of 360, 208 supersamples  0:00:05 Rendering line 4 of 360, 336 supersamples  0:00:06 Rendering line 5 of 360, 458 supersamples  0:00:07 Rendering line 6 of 360, 575 supersamples  0:00:08 Rendering line 7 of 360, 707 supersamples  0:00:10 Rendering line 8 of 360, 833 supersamples  0:00:11 Rendering line 9 of 360, 951 supersamples  0:00:12 Rendering line 10 of 360, 1081 supersamples  0:00:13 Rendering line 11 of 360, 1190 supersamples  0:00:14 Rendering line 12 of 360, 1304 supersamples  0:00:16 Rendering line 13 of 360, 1426 supersamples  0:00:17 Rendering line 14 of 360, 1548 supersamples  0:00:18 Rendering line 15 of 360, 1663 supersamples  0:00:19 Rendering line 16 of 360, 1775 supersamples  0:00:21 Rendering line 17 of 360, 1897 supersamples  0:00:22 Rendering line 18 of 360, 2043 supersamples  0:00:23 Rendering line 19 of 360, 2183 supersamples  0:00:25 Rendering line 20 of 360, 2327 supersamples  0:00:26 Rendering line 21 of 360, 2454 supersamples  0:00:28 Rendering line 22 of 360, 2594 supersamples  0:00:29 Rendering line 23 of 360, 2729 supersamples  0:00:30 Rendering line 24 of 360, 2853 supersamples  0:00:31 Rendering line 25 of 360, 2978 supersamples  0:00:33 Rendering line 26 of 360, 3115 supersamples  0:00:34 Rendering line 27 of 360, 3256 supersamples  0:00:35 Rendering line 28 of 360, 3387 supersamples  0:00:37 Rendering line 29 of 360, 3527 supersamples  0:00:38 Rendering line 30 of 360, 3658 supersamples  0:00:39 Rendering line 31 of 360, 3798 supersamples  0:00:41 Rendering line 32 of 360, 3944 supersamples  0:00:42 Rendering line 33 of 360, 4075 supersamples  0:00:44 Rendering line 34 of 360, 4238 supersamples  0:00:45 Rendering line 35 of 360, 4386 supersamples  0:00:47 Rendering line 36 of 360, 4546 supersamples  0:00:49 Rendering line 37 of 360, 4687 supersamples  0:00:51 Rendering line 38 of 360, 4819 supersamples  0:00:53 Rendering line 39 of 360, 4973 supersamples  0:00:55 Rendering line 40 of 360, 5118 supersamples  0:00:57 Rendering line 41 of 360, 5259 supersamples  0:00:59 Rendering line 42 of 360, 5387 supersamples  0:01:00 Rendering line 43 of 360, 5511 supersamples  0:01:02 Rendering line 44 of 360, 5644 supersamples  0:01:04 Rendering line 45 of 360, 5766 supersamples  0:01:05 Rendering line 46 of 360, 5887 supersamples  0:01:07 Rendering line 47 of 360, 6019 supersamples  0:01:08 Rendering line 48 of 360, 6143 supersamples  0:01:10 Rendering line 49 of 360, 6280 supersamples  0:01:11 Rendering line 50 of 360, 6415 supersamples  0:01:13 Rendering line 51 of 360, 6533 supersamples  0:01:14 Rendering line 52 of 360, 6643 supersamples  0:01:16 Rendering line 53 of 360, 6753 supersamples  0:01:17 Rendering line 54 of 360, 6880 supersamples  0:01:18 Rendering line 55 of 360, 7010 supersamples  0:01:20 Rendering line 56 of 360, 7126 supersamples  0:01:21 Rendering line 57 of 360, 7229 supersamples  0:01:22 Rendering line 58 of 360, 7332 supersamples  0:01:24 Rendering line 59 of 360, 7431 supersamples  0:01:25 Rendering line 60 of 360, 7533 supersamples  0:01:26 Rendering line 61 of 360, 7648 supersamples  0:01:28 Rendering line 62 of 360, 7761 supersamples  0:01:29 Rendering line 63 of 360, 7869 supersamples  0:01:31 Rendering line 64 of 360, 7980 supersamples  0:01:32 Rendering line 65 of 360, 8091 supersamples  0:01:34 Rendering line 66 of 360, 8186 supersamples  0:01:35 Rendering line 67 of 360, 8289 supersamples  0:01:37 Rendering line 68 of 360, 8421 supersamples  0:01:40 Rendering line 69 of 360, 8558 supersamples  0:01:42 Rendering line 70 of 360, 8692 supersamples  0:01:44 Rendering line 71 of 360, 8814 supersamples  0:01:47 Rendering line 72 of 360, 8928 supersamples  0:01:49 Rendering line 73 of 360, 9035 supersamples  0:01:51 Rendering line 74 of 360, 9149 supersamples  0:01:54 Rendering line 75 of 360, 9260 supersamples  0:01:56 Rendering line 76 of 360, 9363 supersamples  0:01:59 Rendering line 77 of 360, 9464 supersamples  0:02:02 Rendering line 78 of 360, 9559 supersamples  0:02:05 Rendering line 79 of 360, 9661 supersamples  0:02:08 Rendering line 80 of 360, 9768 supersamples  0:02:11 Rendering line 81 of 360, 9877 supersamples  0:02:13 Rendering line 82 of 360, 9977 supersamples  0:02:15 Rendering line 83 of 360, 10064 supersamples  0:02:18 Rendering line 84 of 360, 10174 supersamples  0:02:20 Rendering line 85 of 360, 10266 supersamples  0:02:24 Rendering line 86 of 360, 10384 supersamples  0:02:27 Rendering line 87 of 360, 10491 supersamples  0:02:29 Rendering line 88 of 360, 10616 supersamples  0:02:32 Rendering line 89 of 360, 10745 supersamples  0:02:34 Rendering line 90 of 360, 10862 supersamples  0:02:37 Rendering line 91 of 360, 10968 supersamples  0:02:40 Rendering line 92 of 360, 11081 supersamples  0:02:43 Rendering line 93 of 360, 11195 supersamples  0:02:46 Rendering line 94 of 360, 11296 supersamples  0:02:49 Rendering line 95 of 360, 11398 supersamples  0:02:52 Rendering line 96 of 360, 11494 supersamples  0:02:55 Rendering line 97 of 360, 11603 supersamples  0:02:58 Rendering line 98 of 360, 11709 supersamples  0:03:01 Rendering line 99 of 360, 11819 supersamples  0:03:04 Rendering line 100 of 360, 11924 supersamples  0:03:07 Rendering line 101 of 360, 12025 supersamples  0:03:10 Rendering line 102 of 360, 12142 supersamples  0:03:13 Rendering line 103 of 360, 12248 supersamples  0:03:16 Rendering line 104 of 360, 12360 supersamples  0:03:19 Rendering line 105 of 360, 12473 supersamples  0:03:22 Rendering line 106 of 360, 12557 supersamples  0:03:25 Rendering line 107 of 360, 12653 supersamples  0:03:28 Rendering line 108 of 360, 12754 supersamples  0:03:31 Rendering line 109 of 360, 12867 supersamples  0:03:34 Rendering line 110 of 360, 12986 supersamples  0:03:38 Rendering line 111 of 360, 13108 supersamples  0:03:41 Rendering line 112 of 360, 13238 supersamples  0:03:45 Rendering line 113 of 360, 13373 supersamples  0:03:49 Rendering line 114 of 360, 13488 supersamples  0:03:52 Rendering line 115 of 360, 13594 supersamples  0:03:55 Rendering line 116 of 360, 13695 supersamples  0:03:58 Rendering line 117 of 360, 13808 supersamples  0:04:02 Rendering line 118 of 360, 13944 supersamples  0:04:06 Rendering line 119 of 360, 14068 supersamples  0:04:09 Rendering line 120 of 360, 14185 supersamples  0:04:13 Rendering line 121 of 360, 14304 supersamples  0:04:16 Rendering line 122 of 360, 14416 supersamples  0:04:19 Rendering line 123 of 360, 14525 supersamples  0:04:23 Rendering line 124 of 360, 14663 supersamples  0:04:26 Rendering line 125 of 360, 14777 supersamples  0:04:29 Rendering line 126 of 360, 14907 supersamples  0:04:33 Rendering line 127 of 360, 15038 supersamples  0:04:36 Rendering line 128 of 360, 15156 supersamples  0:04:39 Rendering line 129 of 360, 15278 supersamples  0:04:42 Rendering line 130 of 360, 15402 supersamples  0:04:45 Rendering line 131 of 360, 15512 supersamples  0:04:49 Rendering line 132 of 360, 15623 supersamples  0:04:52 Rendering line 133 of 360, 15750 supersamples  0:04:56 Rendering line 134 of 360, 15889 supersamples  0:05:00 Rendering line 135 of 360, 16023 supersamples  0:05:03 Rendering line 136 of 360, 16145 supersamples  0:05:05 Rendering line 137 of 360, 16240 supersamples  0:05:08 Rendering line 138 of 360, 16348 supersamples  0:05:11 Rendering line 139 of 360, 16473 supersamples  0:05:16 Rendering line 140 of 360, 16608 supersamples  0:05:19 Rendering line 141 of 360, 16741 supersamples  0:05:23 Rendering line 142 of 360, 16876 supersamples  0:05:26 Rendering line 143 of 360, 17006 supersamples  0:05:30 Rendering line 144 of 360, 17132 supersamples  0:05:33 Rendering line 145 of 360, 17242 supersamples  0:05:35 Rendering line 146 of 360, 17350 supersamples  0:05:38 Rendering line 147 of 360, 17456 supersamples  0:05:40 Rendering line 148 of 360, 17553 supersamples  0:05:44 Rendering line 149 of 360, 17671 supersamples  0:05:48 Rendering line 150 of 360, 17807 supersamples  0:05:51 Rendering line 151 of 360, 17930 supersamples  0:05:55 Rendering line 152 of 360, 18046 supersamples  0:05:58 Rendering line 153 of 360, 18174 supersamples  0:06:02 Rendering line 154 of 360, 18305 supersamples  0:06:05 Rendering line 155 of 360, 18451 supersamples  0:06:09 Rendering line 156 of 360, 18594 supersamples  0:06:12 Rendering line 157 of 360, 18709 supersamples  0:06:16 Rendering line 158 of 360, 18837 supersamples  0:06:20 Rendering line 159 of 360, 18979 supersamples  0:06:24 Rendering line 160 of 360, 19104 supersamples  0:06:27 Rendering line 161 of 360, 19224 supersamples  0:06:30 Rendering line 162 of 360, 19336 supersamples  0:06:33 Rendering line 163 of 360, 19453 supersamples  0:06:36 Rendering line 164 of 360, 19563 supersamples  0:06:40 Rendering line 165 of 360, 19688 supersamples  0:06:44 Rendering line 166 of 360, 19822 supersamples  0:06:47 Rendering line 167 of 360, 19938 supersamples  0:06:50 Rendering line 168 of 360, 20066 supersamples  0:06:53 Rendering line 169 of 360, 20201 supersamples  0:06:57 Rendering line 170 of 360, 20326 supersamples  0:07:00 Rendering line 171 of 360, 20460 supersamples  0:07:04 Rendering line 172 of 360, 20613 supersamples  0:07:07 Rendering line 173 of 360, 20760 supersamples  0:07:11 Rendering line 174 of 360, 20910 supersamples  0:07:14 Rendering line 175 of 360, 21063 supersamples  0:07:19 Rendering line 176 of 360, 21235 supersamples  0:07:24 Rendering line 177 of 360, 21431 supersamples  0:07:28 Rendering line 178 of 360, 21614 supersamples  0:07:32 Rendering line 179 of 360, 21800 supersamples  0:07:36 Rendering line 180 of 360, 21950 supersamples  0:07:40 Rendering line 181 of 360, 22098 supersamples  0:07:44 Rendering line 182 of 360, 22259 supersamples  0:07:48 Rendering line 183 of 360, 22418 supersamples  0:07:51 Rendering line 184 of 360, 22560 supersamples  0:07:54 Rendering line 185 of 360, 22695 supersamples  0:07:58 Rendering line 186 of 360, 22834 supersamples  0:08:01 Rendering line 187 of 360, 22993 supersamples  0:08:05 Rendering line 188 of 360, 23151 supersamples  0:08:08 Rendering line 189 of 360, 23285 supersamples  0:08:11 Rendering line 190 of 360, 23417 supersamples  0:08:15 Rendering line 191 of 360, 23565 supersamples  0:08:19 Rendering line 192 of 360, 23697 supersamples  0:08:21 Rendering line 193 of 360, 23818 supersamples  0:08:25 Rendering line 194 of 360, 23950 supersamples  0:08:28 Rendering line 195 of 360, 24098 supersamples  0:08:31 Rendering line 196 of 360, 24223 supersamples  0:08:34 Rendering line 197 of 360, 24362 supersamples  0:08:37 Rendering line 198 of 360, 24488 supersamples  0:08:39 Rendering line 199 of 360, 24612 supersamples  0:08:42 Rendering line 200 of 360, 24724 supersamples  0:08:45 Rendering line 201 of 360, 24856 supersamples  0:08:48 Rendering line 202 of 360, 24996 supersamples  0:08:50 Rendering line 203 of 360, 25122 supersamples  0:08:53 Rendering line 204 of 360, 25245 supersamples  0:08:56 Rendering line 205 of 360, 25379 supersamples  0:08:59 Rendering line 206 of 360, 25519 supersamples  0:09:03 Rendering line 207 of 360, 25651 supersamples  0:09:06 Rendering line 208 of 360, 25773 supersamples  0:09:09 Rendering line 209 of 360, 25908 supersamples  0:09:13 Rendering line 210 of 360, 26034 supersamples  0:09:15 Rendering line 211 of 360, 26144 supersamples  0:09:18 Rendering line 212 of 360, 26259 supersamples  0:09:20 Rendering line 213 of 360, 26376 supersamples  0:09:23 Rendering line 214 of 360, 26489 supersamples  0:09:26 Rendering line 215 of 360, 26601 supersamples  0:09:28 Rendering line 216 of 360, 26730 supersamples  0:09:31 Rendering line 217 of 360, 26861 supersamples  0:09:35 Rendering line 218 of 360, 27004 supersamples  0:09:38 Rendering line 219 of 360, 27142 supersamples  0:09:42 Rendering line 220 of 360, 27299 supersamples  0:09:45 Rendering line 221 of 360, 27443 supersamples  0:09:48 Rendering line 222 of 360, 27587 supersamples  0:09:52 Rendering line 223 of 360, 27733 supersamples  0:09:55 Rendering line 224 of 360, 27879 supersamples  0:09:58 Rendering line 225 of 360, 28021 supersamples  0:10:02 Rendering line 226 of 360, 28179 supersamples  0:10:05 Rendering line 227 of 360, 28320 supersamples  0:10:09 Rendering line 228 of 360, 28475 supersamples  0:10:12 Rendering line 229 of 360, 28615 supersamples  0:10:15 Rendering line 230 of 360, 28745 supersamples  0:10:18 Rendering line 231 of 360, 28864 supersamples  0:10:21 Rendering line 232 of 360, 28999 supersamples  0:10:25 Rendering line 233 of 360, 29130 supersamples  0:10:28 Rendering line 234 of 360, 29252 supersamples  0:10:31 Rendering line 235 of 360, 29361 supersamples  0:10:35 Rendering line 236 of 360, 29480 supersamples  0:10:38 Rendering line 237 of 360, 29592 supersamples  0:10:42 Rendering line 238 of 360, 29709 supersamples  0:10:45 Rendering line 239 of 360, 29815 supersamples  0:10:47 Rendering line 240 of 360, 29907 supersamples  0:10:50 Rendering line 241 of 360, 30011 supersamples  0:10:53 Rendering line 242 of 360, 30097 supersamples  0:10:55 Rendering line 243 of 360, 30188 supersamples  0:10:58 Rendering line 244 of 360, 30282 supersamples  0:11:01 Rendering line 245 of 360, 30384 supersamples  0:11:05 Rendering line 246 of 360, 30499 supersamples  0:11:08 Rendering line 247 of 360, 30610 supersamples  0:11:10 Rendering line 248 of 360, 30732 supersamples  0:11:14 Rendering line 249 of 360, 30849 supersamples  0:11:16 Rendering line 250 of 360, 30960 supersamples  0:11:19 Rendering line 251 of 360, 31073 supersamples  0:11:21 Rendering line 252 of 360, 31173 supersamples  0:11:24 Rendering line 253 of 360, 31274 supersamples  0:11:27 Rendering line 254 of 360, 31367 supersamples  0:11:29 Rendering line 255 of 360, 31460 supersamples  0:11:32 Rendering line 256 of 360, 31556 supersamples  0:11:35 Rendering line 257 of 360, 31681 supersamples  0:11:37 Rendering line 258 of 360, 31803 supersamples  0:11:41 Rendering line 259 of 360, 31926 supersamples  0:11:44 Rendering line 260 of 360, 32040 supersamples  0:11:47 Rendering line 261 of 360, 32157 supersamples  0:11:50 Rendering line 262 of 360, 32287 supersamples  0:11:53 Rendering line 263 of 360, 32398 supersamples  0:11:56 Rendering line 264 of 360, 32520 supersamples  0:11:58 Rendering line 265 of 360, 32631 supersamples  0:12:01 Rendering line 266 of 360, 32738 supersamples  0:12:04 Rendering line 267 of 360, 32840 supersamples  0:12:06 Rendering line 268 of 360, 32943 supersamples  0:12:09 Rendering line 269 of 360, 33050 supersamples  0:12:12 Rendering line 270 of 360, 33159 supersamples  0:12:15 Rendering line 271 of 360, 33264 supersamples  0:12:18 Rendering line 272 of 360, 33380 supersamples  0:12:21 Rendering line 273 of 360, 33480 supersamples  0:12:23 Rendering line 274 of 360, 33580 supersamples  0:12:26 Rendering line 275 of 360, 33694 supersamples  0:12:29 Rendering line 276 of 360, 33823 supersamples  0:12:32 Rendering line 277 of 360, 33943 supersamples  0:12:35 Rendering line 278 of 360, 34055 supersamples  0:12:38 Rendering line 279 of 360, 34184 supersamples  0:12:42 Rendering line 280 of 360, 34325 supersamples  0:12:45 Rendering line 281 of 360, 34458 supersamples  0:12:47 Rendering line 282 of 360, 34590 supersamples  0:12:50 Rendering line 283 of 360, 34705 supersamples  0:12:52 Rendering line 284 of 360, 34818 supersamples  0:12:55 Rendering line 285 of 360, 34930 supersamples  0:12:57 Rendering line 286 of 360, 35033 supersamples  0:13:00 Rendering line 287 of 360, 35141 supersamples  0:13:02 Rendering line 288 of 360, 35235 supersamples  0:13:04 Rendering line 289 of 360, 35341 supersamples  0:13:05 Rendering line 290 of 360, 35434 supersamples  0:13:07 Rendering line 291 of 360, 35521 supersamples  0:13:08 Rendering line 293 of 360, 35650 supersamples  0:13:09 Rendering line 294 of 360, 35719 supersamples  0:13:10 Rendering line 295 of 360, 35785 supersamples  0:13:11 Rendering line 296 of 360, 35844 supersamples  0:13:12 Rendering line 297 of 360, 35913 supersamples  0:13:13 Rendering line 298 of 360, 35988 supersamples  0:13:14 Rendering line 299 of 360, 36066 supersamples  0:13:15 Rendering line 300 of 360, 36122 supersamples  0:13:16 Rendering line 301 of 360, 36187 supersamples  0:13:17 Rendering line 302 of 360, 36269 supersamples  0:13:18 Rendering line 303 of 360, 36348 supersamples  0:13:19 Rendering line 304 of 360, 36420 supersamples  0:13:20 Rendering line 305 of 360, 36498 supersamples  0:13:21 Rendering line 306 of 360, 36557 supersamples  0:13:22 Rendering line 307 of 360, 36624 supersamples  0:13:23 Rendering line 308 of 360, 36689 supersamples  0:13:24 Rendering line 310 of 360, 36820 supersamples  0:13:25 Rendering line 311 of 360, 36887 supersamples  0:13:26 Rendering line 312 of 360, 36950 supersamples  0:13:27 Rendering line 313 of 360, 37001 supersamples  0:13:28 Rendering line 314 of 360, 37060 supersamples  0:13:29 Rendering line 316 of 360, 37187 supersamples  0:13:30 Rendering line 317 of 360, 37248 supersamples  0:13:31 Rendering line 318 of 360, 37309 supersamples  0:13:32 Rendering line 320 of 360, 37422 supersamples  0:13:33 Rendering line 321 of 360, 37481 supersamples  0:13:34 Rendering line 322 of 360, 37545 supersamples  0:13:35 Rendering line 324 of 360, 37667 supersamples  0:13:36 Rendering line 325 of 360, 37724 supersamples  0:13:37 Rendering line 327 of 360, 37842 supersamples  0:13:38 Rendering line 329 of 360, 37947 supersamples  0:13:39 Rendering line 331 of 360, 38048 supersamples  0:13:40 Rendering line 332 of 360, 38100 supersamples  0:13:41 Rendering line 334 of 360, 38201 supersamples  0:13:42 Rendering line 336 of 360, 38296 supersamples  0:13:43 Rendering line 338 of 360, 38392 supersamples  0:13:44 Rendering line 340 of 360, 38476 supersamples  0:13:45 Rendering line 342 of 360, 38569 supersamples  0:13:46 Rendering line 343 of 360, 38614 supersamples  0:13:47 Rendering line 345 of 360, 38716 supersamples  0:13:48 Rendering line 346 of 360, 38772 supersamples  0:13:49 Rendering line 347 of 360, 38827 supersamples  0:13:50 Rendering line 349 of 360, 38933 supersamples  0:13:51 Rendering line 350 of 360, 38994 supersamples  0:13:52 Rendering line 351 of 360, 39044 supersamples  0:13:53 Rendering line 353 of 360, 39148 supersamples  0:13:54 Rendering line 354 of 360, 39210 supersamples  0:13:55 Rendering line 355 of 360, 39269 supersamples  0:13:56 Rendering line 356 of 360, 39337 supersamples  0:13:57 Rendering line 357 of 360, 39402 supersamples  0:13:58 Rendering line 358 of 360, 39453 supersamples  0:13:59 Rendering line 359 of 360, 39497 supersamples
-  0:14:00 Done Tracing
-Render Statistics
-Image Resolution 480 x 360
-----------------------------------------------------------------------------
-Pixels:           172800   Samples:         1271353   Smpls/Pxl: 7.36
-Rays:            1271353   Saved:                 0   Max Level: 1/5
-----------------------------------------------------------------------------
-Ray->Shape Intersection          Tests       Succeeded  Percentage
-----------------------------------------------------------------------------
-Box                          131337934       127929244     97.40
-Cone/Cylinder                373017844        76461312     20.50
-Sphere                        70661759        19623435     27.77
-Bounding Box               14114544810      3871782760     27.43
-Light Buffer                 177237059        46080481     26.00
-Vista Buffer                 201654146       132978378     65.94
-----------------------------------------------------------------------------
-Calls to Noise:                   0   Calls to DNoise:          263574
-----------------------------------------------------------------------------
-Shadow Ray Tests:         305324836   Succeeded:             184082750
-----------------------------------------------------------------------------
-Smallest Alloc:                   9 bytes
-Largest  Alloc:             1477528 bytes
-Peak memory used:         118664117 bytes
-Total Scene Processing Times
-  Parse Time:    0 hours  0 minutes 11 seconds (11 seconds)
-  Photon Time:   0 hours  0 minutes  0 seconds (0 seconds)
-  Render Time:   0 hours 14 minutes  0 seconds (840 seconds)
-  Total Time:    0 hours 14 minutes 11 seconds (851 seconds)
-+ echo image finished without error
-image finished without error
-expr $currentframe + $numprocs
-++ expr 760 + 200
-+ currentframe=960
-+ '[' 1 '!=' 1 ']'
-+ '[' 960 -le 1353 ']'
-+ echo '*********** Beginning frame number 960 **************'
-*********** Beginning frame number 960 **************
-+ '[' 960 -le 0 ']'
-+ '[' 3111 -lt 5487 ']'
-expr $povfirst + \( $currentframe - $prologframes - 1 \) '*' $povstep 
-++ expr 75 + '(' 960 - 0 - 1 ')' '*' 4
-+ currentpov=3911
-+ '[' 3911 -gt 5487 ']'
-+ '[' x = x ']'
-expr $prologframes + $animframes
-++ expr 0 + 1353
-+ '[' 960 -le 1353 ']'
-$python -c "print $animstart + ($currentframe - 1 - $prologframes) * $animstep"
-++ /usr/bin/python -c 'print 0.0 + (960 - 1 - 0) * 0.000739644970414'
-+ currentspline=0.709319526627
-+ echo 'Current spline is 0.709319526627, current pov file is 3911'
-Current spline is 0.709319526627, current pov file is 3911
-+ cd /g/g0/rcook
-pad2length $currentpov $padlength
-++ pad2length 3911 4
-++ output=3911
-length $1
-+++ length 3911
-echo $1 | wc -m
-++++ echo 3911
-++++ wc -m
-+++ len=5
-+++ expr 5 - 1
-++ shortlen=4
-++ longlen=4
-++ '[' 4 -lt 4 ']'
-++ echo 3911
-+ povnum=3911
-padzeros $currentframe $numframes
-++ padzeros 960 1353
-length $2
-+++ length 1353
-echo $1 | wc -m
-++++ echo 1353
-++++ wc -m
-+++ len=5
-+++ expr 5 - 1
-++ longlen=4
-++ pad2length 960 4
-++ output=960
-length $1
-+++ length 960
-echo $1 | wc -m
-++++ wc -m
-++++ echo 960
-+++ len=4
-+++ expr 4 - 1
-++ shortlen=3
-++ longlen=4
-++ '[' 3 -lt 4 ']'
-++ output=0960
-expr $shortlen + 1
-+++ expr 3 + 1
-++ shortlen=4
-++ '[' 4 -lt 4 ']'
-++ echo 0960
-+ framenum=0960
-+ combined_pov_file=/nfs/tmp0/rcook/paradis/2005-11/movie/480-360/converted_restart_frame0960_combined.pov
-+ source_pov_file=/nfs/tmp0/rcook/paradis/2005-11/movie/pov/converted_restart_3911.pov
-+ cp /nfs/tmp0/rcook/paradis/2005-11/movie/pov/wormparams.inc /nfs/tmp0/rcook/paradis/2005-11/movie/480-360/converted_restart_frame0960_combined.pov
-+ sed 's/#include "wormparams.inc"//' /nfs/tmp0/rcook/paradis/2005-11/movie/pov/converted_restart_3911.pov
-+ povinifile=/nfs/tmp0/rcook/paradis/2005-11/movie/480-360/worms_0960.ini
-+ echo povray init file is /nfs/tmp0/rcook/paradis/2005-11/movie/480-360/worms_0960.ini
-povray init file is /nfs/tmp0/rcook/paradis/2005-11/movie/480-360/worms_0960.ini
-+ echo '# povray file for creating image'
-+ echo '# another comment '
-+ echo scriptname is
-scriptname is
-+ '[' x = x ']'
-+ echo no script supplied
-no script supplied
-+ cat
-+ '[' false = true ']'
-+ '[' false = true ']'
-+ '[' true = true ']'
-+ echo Declare=backdrop=1
-+ '[' false = true ']'
-+ '[' false = true ']'
-+ '[' false = true ']'
-+ '[' true = true ']'
-+ echo Display=Off
-+ echo lowquality is false
-lowquality is false
-+ '[' xfalse '!=' xtrue ']'
-+ cat
-+ echo Declare=cameraSpline=0.709319526627
-+ echo ''
-+ cd /nfs/tmp0/rcook/paradis/2005-11/movie/pov
-+ cmd='/usr/global/tools/povray/3.6.1/chaos_3_x86_64_ib/bin/povray /nfs/tmp0/rcook/paradis/2005-11/movie/480-360/worms_0960.ini'
-+ date
-Tue Nov 15 18:17:46 PST 2005
-+ echo /usr/global/tools/povray/3.6.1/chaos_3_x86_64_ib/bin/povray /nfs/tmp0/rcook/paradis/2005-11/movie/480-360/worms_0960.ini
-/usr/global/tools/povray/3.6.1/chaos_3_x86_64_ib/bin/povray /nfs/tmp0/rcook/paradis/2005-11/movie/480-360/worms_0960.ini
-+ /usr/global/tools/povray/3.6.1/chaos_3_x86_64_ib/bin/povray /nfs/tmp0/rcook/paradis/2005-11/movie/480-360/worms_0960.ini
-Persistence of Vision(tm) Ray Tracer Version 3.6.1 (g++ 3.4.4 @
- x86_64-unknown-linux-gnu)
-This is an unofficial version compiled by:
- Rich Cook LLNL 423-9605 <rcook@llnl.gov>
- The POV-Ray Team(tm) is not responsible for supporting this version.
-POV-Ray is based on DKBTrace 2.12 by David K. Buck & Aaron A. Collins
-Copyright 1991-2003 Persistence of Vision Team
-Copyright 2003-2004 Persistence of Vision Raytracer Pty. Ltd.
-
-Primary POV-Ray 3.5/3.6 Developers: (Alphabetically)
-  Chris Cason         Thorsten Froehlich  Nathan Kopp         Ron Parker        
-
-Contributing Authors: (Alphabetically)
-  Steve Anger         Eric Barish         Dieter Bayer        Steve A. Bennett  
-  David K. Buck       Nicolas Calimet     Aaron A. Collins    Chris Dailey      
-  Steve Demlow        Andreas Dilger      Alexander Enzmann   Dan Farmer        
-  Mark Gordon         Christoph Hormann   Mike Hough          Chris Huff        
-  Kari Kivisalo       Lutz Kretzschmar    Jochen Lippert      Pascal Massimino  
-  Jim McElhiney       Douglas Muir        Juha Nieminen       Bill Pulver       
-  Eduard Schwan       Wlodzimierz Skiba   Robert Skinner      Yvo Smellenbergh  
-  Zsolt Szalavari     Scott Taylor        Massimo Valentini   Timothy Wegner    
-  Drew Wells          Chris Young       
-
-Other contributors are listed in the documentation.
-
-Support libraries used by POV-Ray:
-  ZLib 1.2.1, Copyright 1995-1998 Jean-loup Gailly and Mark Adler
-  LibPNG 1.2.5, Copyright 1998-2002 Glenn Randers-Pehrson
-  LibJPEG 6b, Copyright 1998 Thomas G. Lane
-  LibTIFF 3.6.1, Copyright 1988-1997 Sam Leffler, 1991-1997 SGI
-Redirecting Options
-  All Streams to console..........On 
-  Debug Stream to console.........On 
-  Fatal Stream to console.........On 
-  Render Stream to console........On 
-  Statistics Stream to console....On 
-  Warning Stream to console.......On 
-Parsing Options
-  Input file: /nfs/tmp0/rcook/paradis/2005-11/movie/480-360/converted_restart_fr
-ame0960_combined.pov (compatible to version 3.61)
-  Remove bounds........On 
-  Split unions.........Off
-  Library paths:
-    /usr/global/tools/povray/3.6.1/chaos_3_x86_64_ib/share/povray-3.6
-    /usr/global/tools/povray/3.6.1/chaos_3_x86_64_ib/share/povray-3.6/ini
-    /usr/global/tools/povray/3.6.1/chaos_3_x86_64_ib/share/povray-3.6/include
-    /usr/global/tools/povray/3.61/chaos_3_x86_64_ib/share/povray-3.6
-Output Options
-  Image resolution 480 by 360 (rows 1 to 360, columns 1 to 480).
-  Output file: /nfs/tmp0/rcook/paradis/2005-11/movie/480-360/images_0960.png, 24
- bpp PNG
-  Graphic display......Off
-  Mosaic preview.......Off
-  CPU usage histogram..Off
-  Continued trace......Off
-Tracing Options
-  Quality:  9
-  Bounding boxes.......On   Bounding threshold: 3
-  Light Buffer.........On 
-  Vista Buffer.........On   Draw Vista Buffer....Off
-  Antialiasing.........On  (Method 2, Threshold 0.990, Depth 3, Jitter 1.00)
-  Clock value:    0.000  (Animation off)
-
-  0:00:00 Parsing  0:00:01 Parsing 1755K tokens  0:00:02 Parsing 3784K tokens  0:00:03 Parsing 5817K tokens  0:00:04 Parsing 7850K tokens  0:00:05 Parsing 9896K tokens  0:00:06 Parsing 11932K tokens  0:00:07 Parsing 13968K tokens  0:00:08 Parsing 15998K tokens  0:00:09 Parsing 18022K tokens  0:00:10 Parsing 20053K tokens  0:00:11 Parsing 22021K tokens  0:00:12 Parsing 24019K tokens  0:00:13 Parsing 26022K tokens
-Cleanup Parse Warning: This rendering uses the following experimental
- feature(s): spline. The design and implementation of these features is likely
- to change in future versions of POV-Ray. Full backward compatibility with the
- current implementation is NOT guaranteed.
-
-  0:00:13 Creating bounding slabs
-  0:00:14 Creating vista buffer
-  0:00:14 Creating light buffers  0:00:14 Creating light buffers  0:00:14 Creating light buffers 26426K tokens
-Scene Statistics
-  Finite objects:       114801
-  Infinite objects:          0
-  Light sources:             2
-  Total:                114803
-
-  0:00:00 Rendering line 1 of 360, 0 supersamples  0:00:01 Rendering line 17 of 360, 91 supersamples  0:00:02 Rendering line 22 of 360, 369 supersamples  0:00:03 Rendering line 24 of 360, 522 supersamples  0:00:04 Rendering line 26 of 360, 648 supersamples  0:00:05 Rendering line 28 of 360, 784 supersamples  0:00:06 Rendering line 30 of 360, 943 supersamples  0:00:07 Rendering line 32 of 360, 1120 supersamples  0:00:08 Rendering line 33 of 360, 1219 supersamples  0:00:09 Rendering line 34 of 360, 1325 supersamples  0:00:10 Rendering line 35 of 360, 1411 supersamples  0:00:11 Rendering line 36 of 360, 1517 supersamples  0:00:12 Rendering line 37 of 360, 1627 supersamples  0:00:13 Rendering line 39 of 360, 1831 supersamples  0:00:14 Rendering line 40 of 360, 1935 supersamples  0:00:15 Rendering line 41 of 360, 2043 supersamples  0:00:16 Rendering line 42 of 360, 2145 supersamples  0:00:17 Rendering line 43 of 360, 2237 supersamples  0:00:18 Rendering line 44 of 360, 2342 supersamples  0:00:19 Rendering line 46 of 360, 2572 supersamples  0:00:20 Rendering line 47 of 360, 2698 supersamples  0:00:22 Rendering line 48 of 360, 2849 supersamples  0:00:23 Rendering line 49 of 360, 2988 supersamples  0:00:24 Rendering line 50 of 360, 3134 supersamples  0:00:26 Rendering line 51 of 360, 3293 supersamples  0:00:28 Rendering line 52 of 360, 3453 supersamples  0:00:29 Rendering line 53 of 360, 3595 supersamples  0:00:31 Rendering line 54 of 360, 3735 supersamples  0:00:32 Rendering line 55 of 360, 3869 supersamples  0:00:34 Rendering line 56 of 360, 3997 supersamples  0:00:35 Rendering line 57 of 360, 4110 supersamples  0:00:36 Rendering line 58 of 360, 4239 supersamples  0:00:38 Rendering line 59 of 360, 4391 supersamples  0:00:39 Rendering line 60 of 360, 4542 supersamples  0:00:41 Rendering line 61 of 360, 4695 supersamples  0:00:42 Rendering line 62 of 360, 4832 supersamples  0:00:44 Rendering line 63 of 360, 4984 supersamples  0:00:45 Rendering line 64 of 360, 5142 supersamples  0:00:47 Rendering line 65 of 360, 5305 supersamples  0:00:48 Rendering line 66 of 360, 5477 supersamples  0:00:50 Rendering line 67 of 360, 5648 supersamples  0:00:52 Rendering line 68 of 360, 5822 supersamples  0:00:54 Rendering line 69 of 360, 5982 supersamples  0:00:55 Rendering line 70 of 360, 6128 supersamples  0:00:57 Rendering line 71 of 360, 6283 supersamples  0:00:58 Rendering line 72 of 360, 6433 supersamples  0:00:59 Rendering line 73 of 360, 6584 supersamples  0:01:00 Rendering line 74 of 360, 6734 supersamples  0:01:01 Rendering line 75 of 360, 6874 supersamples  0:01:02 Rendering line 76 of 360, 7011 supersamples  0:01:03 Rendering line 77 of 360, 7132 supersamples  0:01:05 Rendering line 78 of 360, 7272 supersamples  0:01:07 Rendering line 79 of 360, 7416 supersamples  0:01:08 Rendering line 80 of 360, 7565 supersamples  0:01:10 Rendering line 81 of 360, 7716 supersamples  0:01:11 Rendering line 82 of 360, 7853 supersamples  0:01:13 Rendering line 83 of 360, 7987 supersamples  0:01:15 Rendering line 84 of 360, 8111 supersamples  0:01:16 Rendering line 85 of 360, 8234 supersamples  0:01:18 Rendering line 86 of 360, 8351 supersamples  0:01:20 Rendering line 87 of 360, 8478 supersamples  0:01:22 Rendering line 88 of 360, 8606 supersamples  0:01:23 Rendering line 89 of 360, 8735 supersamples  0:01:25 Rendering line 90 of 360, 8854 supersamples  0:01:27 Rendering line 91 of 360, 8974 supersamples  0:01:29 Rendering line 92 of 360, 9089 supersamples  0:01:30 Rendering line 93 of 360, 9191 supersamples  0:01:32 Rendering line 94 of 360, 9312 supersamples  0:01:34 Rendering line 95 of 360, 9434 supersamples  0:01:36 Rendering line 96 of 360, 9572 supersamples  0:01:38 Rendering line 97 of 360, 9707 supersamples  0:01:40 Rendering line 98 of 360, 9832 supersamples  0:01:42 Rendering line 99 of 360, 9963 supersamples  0:01:44 Rendering line 100 of 360, 10098 supersamples  0:01:46 Rendering line 101 of 360, 10238 supersamples  0:01:48 Rendering line 102 of 360, 10369 supersamples  0:01:50 Rendering line 103 of 360, 10509 supersamples  0:01:53 Rendering line 104 of 360, 10656 supersamples  0:01:55 Rendering line 105 of 360, 10789 supersamples  0:01:57 Rendering line 106 of 360, 10916 supersamples  0:01:59 Rendering line 107 of 360, 11038 supersamples  0:02:02 Rendering line 108 of 360, 11171 supersamples  0:02:04 Rendering line 109 of 360, 11302 supersamples  0:02:06 Rendering line 110 of 360, 11421 supersamples  0:02:07 Rendering line 111 of 360, 11544 supersamples  0:02:09 Rendering line 112 of 360, 11659 supersamples  0:02:11 Rendering line 113 of 360, 11787 supersamples  0:02:13 Rendering line 114 of 360, 11906 supersamples  0:02:15 Rendering line 115 of 360, 12030 supersamples  0:02:18 Rendering line 116 of 360, 12156 supersamples  0:02:21 Rendering line 117 of 360, 12309 supersamples  0:02:23 Rendering line 118 of 360, 12462 supersamples  0:02:26 Rendering line 119 of 360, 12608 supersamples  0:02:28 Rendering line 120 of 360, 12753 supersamples  0:02:31 Rendering line 121 of 360, 12894 supersamples  0:02:33 Rendering line 122 of 360, 13030 supersamples  0:02:35 Rendering line 123 of 360, 13172 supersamples  0:02:38 Rendering line 124 of 360, 13314 supersamples  0:02:41 Rendering line 125 of 360, 13457 supersamples  0:02:43 Rendering line 126 of 360, 13598 supersamples  0:02:45 Rendering line 127 of 360, 13731 supersamples  0:02:47 Rendering line 128 of 360, 13858 supersamples  0:02:49 Rendering line 129 of 360, 13987 supersamples  0:02:50 Rendering line 130 of 360, 14119 supersamples  0:02:52 Rendering line 131 of 360, 14246 supersamples  0:02:53 Rendering line 132 of 360, 14383 supersamples  0:02:55 Rendering line 133 of 360, 14528 supersamples  0:02:57 Rendering line 134 of 360, 14664 supersamples  0:02:58 Rendering line 135 of 360, 14797 supersamples  0:03:01 Rendering line 136 of 360, 14956 supersamples  0:03:03 Rendering line 137 of 360, 15115 supersamples  0:03:05 Rendering line 138 of 360, 15262 supersamples  0:03:07 Rendering line 139 of 360, 15416 supersamples  0:03:09 Rendering line 140 of 360, 15548 supersamples  0:03:11 Rendering line 141 of 360, 15694 supersamples  0:03:13 Rendering line 142 of 360, 15826 supersamples  0:03:15 Rendering line 143 of 360, 15962 supersamples  0:03:17 Rendering line 144 of 360, 16097 supersamples  0:03:19 Rendering line 145 of 360, 16240 supersamples  0:03:21 Rendering line 146 of 360, 16377 supersamples  0:03:23 Rendering line 147 of 360, 16513 supersamples  0:03:25 Rendering line 148 of 360, 16634 supersamples  0:03:27 Rendering line 149 of 360, 16756 supersamples  0:03:29 Rendering line 150 of 360, 16884 supersamples  0:03:32 Rendering line 151 of 360, 17022 supersamples  0:03:33 Rendering line 152 of 360, 17146 supersamples  0:03:35 Rendering line 153 of 360, 17269 supersamples  0:03:37 Rendering line 154 of 360, 17383 supersamples  0:03:38 Rendering line 155 of 360, 17491 supersamples  0:03:40 Rendering line 156 of 360, 17608 supersamples  0:03:41 Rendering line 157 of 360, 17728 supersamples  0:03:43 Rendering line 158 of 360, 17848 supersamples  0:03:44 Rendering line 159 of 360, 17975 supersamples  0:03:46 Rendering line 160 of 360, 18128 supersamples  0:03:48 Rendering line 161 of 360, 18275 supersamples  0:03:50 Rendering line 162 of 360, 18425 supersamples  0:03:51 Rendering line 163 of 360, 18561 supersamples  0:03:52 Rendering line 164 of 360, 18696 supersamples  0:03:54 Rendering line 165 of 360, 18834 supersamples  0:03:56 Rendering line 166 of 360, 18984 supersamples  0:03:58 Rendering line 167 of 360, 19133 supersamples  0:03:59 Rendering line 168 of 360, 19283 supersamples  0:04:01 Rendering line 169 of 360, 19429 supersamples  0:04:02 Rendering line 170 of 360, 19570 supersamples  0:04:04 Rendering line 171 of 360, 19708 supersamples  0:04:05 Rendering line 172 of 360, 19810 supersamples  0:04:07 Rendering line 173 of 360, 19923 supersamples  0:04:09 Rendering line 174 of 360, 20053 supersamples  0:04:11 Rendering line 175 of 360, 20184 supersamples  0:04:13 Rendering line 176 of 360, 20346 supersamples  0:04:15 Rendering line 177 of 360, 20506 supersamples  0:04:16 Rendering line 178 of 360, 20657 supersamples  0:04:18 Rendering line 179 of 360, 20801 supersamples  0:04:19 Rendering line 180 of 360, 20946 supersamples  0:04:21 Rendering line 181 of 360, 21087 supersamples  0:04:23 Rendering line 182 of 360, 21252 supersamples  0:04:25 Rendering line 183 of 360, 21415 supersamples  0:04:26 Rendering line 184 of 360, 21574 supersamples  0:04:28 Rendering line 185 of 360, 21734 supersamples  0:04:29 Rendering line 186 of 360, 21891 supersamples  0:04:31 Rendering line 187 of 360, 22034 supersamples  0:04:32 Rendering line 188 of 360, 22180 supersamples  0:04:33 Rendering line 189 of 360, 22325 supersamples  0:04:35 Rendering line 190 of 360, 22462 supersamples  0:04:36 Rendering line 191 of 360, 22595 supersamples  0:04:37 Rendering line 192 of 360, 22730 supersamples  0:04:38 Rendering line 193 of 360, 22867 supersamples  0:04:39 Rendering line 194 of 360, 23017 supersamples  0:04:41 Rendering line 195 of 360, 23153 supersamples  0:04:42 Rendering line 196 of 360, 23300 supersamples  0:04:44 Rendering line 197 of 360, 23440 supersamples  0:04:45 Rendering line 198 of 360, 23584 supersamples  0:04:47 Rendering line 199 of 360, 23732 supersamples  0:04:48 Rendering line 200 of 360, 23884 supersamples  0:04:50 Rendering line 201 of 360, 24042 supersamples  0:04:52 Rendering line 202 of 360, 24181 supersamples  0:04:53 Rendering line 203 of 360, 24335 supersamples  0:04:55 Rendering line 204 of 360, 24500 supersamples  0:04:56 Rendering line 205 of 360, 24662 supersamples  0:04:57 Rendering line 206 of 360, 24816 supersamples  0:04:59 Rendering line 207 of 360, 24984 supersamples  0:05:00 Rendering line 208 of 360, 25138 supersamples  0:05:01 Rendering line 209 of 360, 25298 supersamples  0:05:03 Rendering line 210 of 360, 25458 supersamples  0:05:04 Rendering line 211 of 360, 25611 supersamples  0:05:05 Rendering line 212 of 360, 25749 supersamples  0:05:07 Rendering line 213 of 360, 25900 supersamples  0:05:08 Rendering line 214 of 360, 26064 supersamples  0:05:09 Rendering line 215 of 360, 26230 supersamples  0:05:11 Rendering line 216 of 360, 26379 supersamples  0:05:12 Rendering line 217 of 360, 26527 supersamples  0:05:13 Rendering line 218 of 360, 26674 supersamples  0:05:15 Rendering line 219 of 360, 26809 supersamples  0:05:16 Rendering line 220 of 360, 26967 supersamples  0:05:18 Rendering line 221 of 360, 27122 supersamples  0:05:19 Rendering line 222 of 360, 27263 supersamples  0:05:20 Rendering line 223 of 360, 27380 supersamples  0:05:21 Rendering line 225 of 360, 27617 supersamples  0:05:22 Rendering line 226 of 360, 27731 supersamples  0:05:23 Rendering line 227 of 360, 27861 supersamples  0:05:24 Rendering line 228 of 360, 28000 supersamples  0:05:25 Rendering line 229 of 360, 28158 supersamples  0:05:26 Rendering line 230 of 360, 28295 supersamples  0:05:28 Rendering line 231 of 360, 28437 supersamples  0:05:29 Rendering line 232 of 360, 28580 supersamples  0:05:30 Rendering line 233 of 360, 28729 supersamples  0:05:31 Rendering line 234 of 360, 28899 supersamples  0:05:32 Rendering line 235 of 360, 29058 supersamples  0:05:34 Rendering line 236 of 360, 29232 supersamples  0:05:35 Rendering line 237 of 360, 29373 supersamples  0:05:36 Rendering line 238 of 360, 29522 supersamples  0:05:37 Rendering line 239 of 360, 29667 supersamples  0:05:38 Rendering line 240 of 360, 29810 supersamples  0:05:39 Rendering line 241 of 360, 29950 supersamples  0:05:40 Rendering line 242 of 360, 30078 supersamples  0:05:41 Rendering line 243 of 360, 30188 supersamples  0:05:42 Rendering line 244 of 360, 30272 supersamples  0:05:43 Rendering line 246 of 360, 30453 supersamples  0:05:44 Rendering line 247 of 360, 30534 supersamples  0:05:45 Rendering line 248 of 360, 30614 supersamples  0:05:46 Rendering line 250 of 360, 30811 supersamples  0:05:47 Rendering line 251 of 360, 30913 supersamples  0:05:48 Rendering line 253 of 360, 31101 supersamples  0:05:49 Rendering line 254 of 360, 31187 supersamples  0:05:50 Rendering line 255 of 360, 31266 supersamples  0:05:51 Rendering line 257 of 360, 31423 supersamples  0:05:52 Rendering line 258 of 360, 31503 supersamples  0:05:53 Rendering line 259 of 360, 31582 supersamples  0:05:54 Rendering line 261 of 360, 31744 supersamples  0:05:55 Rendering line 263 of 360, 31901 supersamples  0:05:56 Rendering line 264 of 360, 31984 supersamples  0:05:57 Rendering line 265 of 360, 32052 supersamples  0:05:58 Rendering line 267 of 360, 32168 supersamples  0:05:59 Rendering line 270 of 360, 32293 supersamples  0:06:00 Rendering line 274 of 360, 32416 supersamples  0:06:01 Rendering line 276 of 360, 32480 supersamples  0:06:02 Rendering line 279 of 360, 32540 supersamples  0:06:03 Rendering line 283 of 360, 32625 supersamples  0:06:04 Rendering line 286 of 360, 32712 supersamples  0:06:05 Rendering line 289 of 360, 32792 supersamples  0:06:06 Rendering line 293 of 360, 32903 supersamples  0:06:07 Rendering line 297 of 360, 32993 supersamples  0:06:08 Rendering line 300 of 360, 33061 supersamples
-  0:06:08 Done Tracing
-Render Statistics
-Image Resolution 480 x 360
-----------------------------------------------------------------------------
-Pixels:           172800   Samples:         1172787   Smpls/Pxl: 6.79
-Rays:            1172787   Saved:                 0   Max Level: 1/5
-----------------------------------------------------------------------------
-Ray->Shape Intersection          Tests       Succeeded  Percentage
-----------------------------------------------------------------------------
-Box                           56450838        54660373     96.83
-Cone/Cylinder                181618067        37644140     20.73
-Sphere                        34984424         9185260     26.26
-Bounding Box                5951345544      1673704092     28.12
-Light Buffer                 144285395        36730809     25.46
-Vista Buffer                 240276769       171353891     71.32
-----------------------------------------------------------------------------
-Calls to Noise:                   0   Calls to DNoise:          146991
-----------------------------------------------------------------------------
-Shadow Ray Tests:         139057471   Succeeded:              83953980
-----------------------------------------------------------------------------
-Smallest Alloc:                   9 bytes
-Largest  Alloc:             1836824 bytes
-Peak memory used:         147890333 bytes
-Total Scene Processing Times
-  Parse Time:    0 hours  0 minutes 14 seconds (14 seconds)
-  Photon Time:   0 hours  0 minutes  0 seconds (0 seconds)
-  Render Time:   0 hours  6 minutes  8 seconds (368 seconds)
-  Total Time:    0 hours  6 minutes 22 seconds (382 seconds)
-+ echo image finished without error
-image finished without error
-expr $currentframe + $numprocs
-++ expr 960 + 200
-+ currentframe=1160
-+ '[' 1 '!=' 1 ']'
-+ '[' 1160 -le 1353 ']'
-+ echo '*********** Beginning frame number 1160 **************'
-*********** Beginning frame number 1160 **************
-+ '[' 1160 -le 0 ']'
-+ '[' 3911 -lt 5487 ']'
-expr $povfirst + \( $currentframe - $prologframes - 1 \) '*' $povstep 
-++ expr 75 + '(' 1160 - 0 - 1 ')' '*' 4
-+ currentpov=4711
-+ '[' 4711 -gt 5487 ']'
-+ '[' x = x ']'
-expr $prologframes + $animframes
-++ expr 0 + 1353
-+ '[' 1160 -le 1353 ']'
-$python -c "print $animstart + ($currentframe - 1 - $prologframes) * $animstep"
-++ /usr/bin/python -c 'print 0.0 + (1160 - 1 - 0) * 0.000739644970414'
-+ currentspline=0.85724852071
-+ echo 'Current spline is 0.85724852071, current pov file is 4711'
-Current spline is 0.85724852071, current pov file is 4711
-+ cd /g/g0/rcook
-pad2length $currentpov $padlength
-++ pad2length 4711 4
-++ output=4711
-length $1
-+++ length 4711
-echo $1 | wc -m
-++++ echo 4711
-++++ wc -m
-+++ len=5
-+++ expr 5 - 1
-++ shortlen=4
-++ longlen=4
-++ '[' 4 -lt 4 ']'
-++ echo 4711
-+ povnum=4711
-padzeros $currentframe $numframes
-++ padzeros 1160 1353
-length $2
-+++ length 1353
-echo $1 | wc -m
-++++ echo 1353
-++++ wc -m
-+++ len=5
-+++ expr 5 - 1
-++ longlen=4
-++ pad2length 1160 4
-++ output=1160
-length $1
-+++ length 1160
-echo $1 | wc -m
-++++ echo 1160
-++++ wc -m
-+++ len=5
-+++ expr 5 - 1
-++ shortlen=4
-++ longlen=4
-++ '[' 4 -lt 4 ']'
-++ echo 1160
-+ framenum=1160
-+ combined_pov_file=/nfs/tmp0/rcook/paradis/2005-11/movie/480-360/converted_restart_frame1160_combined.pov
-+ source_pov_file=/nfs/tmp0/rcook/paradis/2005-11/movie/pov/converted_restart_4711.pov
-+ cp /nfs/tmp0/rcook/paradis/2005-11/movie/pov/wormparams.inc /nfs/tmp0/rcook/paradis/2005-11/movie/480-360/converted_restart_frame1160_combined.pov
-+ sed 's/#include "wormparams.inc"//' /nfs/tmp0/rcook/paradis/2005-11/movie/pov/converted_restart_4711.pov
-+ povinifile=/nfs/tmp0/rcook/paradis/2005-11/movie/480-360/worms_1160.ini
-+ echo povray init file is /nfs/tmp0/rcook/paradis/2005-11/movie/480-360/worms_1160.ini
-povray init file is /nfs/tmp0/rcook/paradis/2005-11/movie/480-360/worms_1160.ini
-+ echo '# povray file for creating image'
-+ echo '# another comment '
-+ echo scriptname is
-scriptname is
-+ '[' x = x ']'
-+ echo no script supplied
-no script supplied
-+ cat
-+ '[' false = true ']'
-+ '[' false = true ']'
-+ '[' true = true ']'
-+ echo Declare=backdrop=1
-+ '[' false = true ']'
-+ '[' false = true ']'
-+ '[' false = true ']'
-+ '[' true = true ']'
-+ echo Display=Off
-+ echo lowquality is false
-lowquality is false
-+ '[' xfalse '!=' xtrue ']'
-+ cat
-+ echo Declare=cameraSpline=0.85724852071
-+ echo ''
-+ cd /nfs/tmp0/rcook/paradis/2005-11/movie/pov
-+ cmd='/usr/global/tools/povray/3.6.1/chaos_3_x86_64_ib/bin/povray /nfs/tmp0/rcook/paradis/2005-11/movie/480-360/worms_1160.ini'
-+ date
-Tue Nov 15 18:24:10 PST 2005
-+ echo /usr/global/tools/povray/3.6.1/chaos_3_x86_64_ib/bin/povray /nfs/tmp0/rcook/paradis/2005-11/movie/480-360/worms_1160.ini
-/usr/global/tools/povray/3.6.1/chaos_3_x86_64_ib/bin/povray /nfs/tmp0/rcook/paradis/2005-11/movie/480-360/worms_1160.ini
-+ /usr/global/tools/povray/3.6.1/chaos_3_x86_64_ib/bin/povray /nfs/tmp0/rcook/paradis/2005-11/movie/480-360/worms_1160.ini
-Persistence of Vision(tm) Ray Tracer Version 3.6.1 (g++ 3.4.4 @
- x86_64-unknown-linux-gnu)
-This is an unofficial version compiled by:
- Rich Cook LLNL 423-9605 <rcook@llnl.gov>
- The POV-Ray Team(tm) is not responsible for supporting this version.
-POV-Ray is based on DKBTrace 2.12 by David K. Buck & Aaron A. Collins
-Copyright 1991-2003 Persistence of Vision Team
-Copyright 2003-2004 Persistence of Vision Raytracer Pty. Ltd.
-
-Primary POV-Ray 3.5/3.6 Developers: (Alphabetically)
-  Chris Cason         Thorsten Froehlich  Nathan Kopp         Ron Parker        
-
-Contributing Authors: (Alphabetically)
-  Steve Anger         Eric Barish         Dieter Bayer        Steve A. Bennett  
-  David K. Buck       Nicolas Calimet     Aaron A. Collins    Chris Dailey      
-  Steve Demlow        Andreas Dilger      Alexander Enzmann   Dan Farmer        
-  Mark Gordon         Christoph Hormann   Mike Hough          Chris Huff        
-  Kari Kivisalo       Lutz Kretzschmar    Jochen Lippert      Pascal Massimino  
-  Jim McElhiney       Douglas Muir        Juha Nieminen       Bill Pulver       
-  Eduard Schwan       Wlodzimierz Skiba   Robert Skinner      Yvo Smellenbergh  
-  Zsolt Szalavari     Scott Taylor        Massimo Valentini   Timothy Wegner    
-  Drew Wells          Chris Young       
-
-Other contributors are listed in the documentation.
-
-Support libraries used by POV-Ray:
-  ZLib 1.2.1, Copyright 1995-1998 Jean-loup Gailly and Mark Adler
-  LibPNG 1.2.5, Copyright 1998-2002 Glenn Randers-Pehrson
-  LibJPEG 6b, Copyright 1998 Thomas G. Lane
-  LibTIFF 3.6.1, Copyright 1988-1997 Sam Leffler, 1991-1997 SGI
-Redirecting Options
-  All Streams to console..........On 
-  Debug Stream to console.........On 
-  Fatal Stream to console.........On 
-  Render Stream to console........On 
-  Statistics Stream to console....On 
-  Warning Stream to console.......On 
-Parsing Options
-  Input file: /nfs/tmp0/rcook/paradis/2005-11/movie/480-360/converted_restart_fr
-ame1160_combined.pov (compatible to version 3.61)
-  Remove bounds........On 
-  Split unions.........Off
-  Library paths:
-    /usr/global/tools/povray/3.6.1/chaos_3_x86_64_ib/share/povray-3.6
-    /usr/global/tools/povray/3.6.1/chaos_3_x86_64_ib/share/povray-3.6/ini
-    /usr/global/tools/povray/3.6.1/chaos_3_x86_64_ib/share/povray-3.6/include
-    /usr/global/tools/povray/3.61/chaos_3_x86_64_ib/share/povray-3.6
-Output Options
-  Image resolution 480 by 360 (rows 1 to 360, columns 1 to 480).
-  Output file: /nfs/tmp0/rcook/paradis/2005-11/movie/480-360/images_1160.png, 24
- bpp PNG
-  Graphic display......Off
-  Mosaic preview.......Off
-  CPU usage histogram..Off
-  Continued trace......Off
-Tracing Options
-  Quality:  9
-  Bounding boxes.......On   Bounding threshold: 3
-  Light Buffer.........On 
-  Vista Buffer.........On   Draw Vista Buffer....Off
-  Antialiasing.........On  (Method 2, Threshold 0.990, Depth 3, Jitter 1.00)
-  Clock value:    0.000  (Animation off)
-
-  0:00:00 Parsing  0:00:01 Parsing 1760K tokens  0:00:02 Parsing 3786K tokens  0:00:03 Parsing 5832K tokens  0:00:04 Parsing 7875K tokens  0:00:05 Parsing 9921K tokens  0:00:06 Parsing 11959K tokens  0:00:07 Parsing 13990K tokens  0:00:08 Parsing 16016K tokens  0:00:09 Parsing 18034K tokens  0:00:10 Parsing 20055K tokens  0:00:11 Parsing 22068K tokens  0:00:12 Parsing 24087K tokens  0:00:13 Parsing 26105K tokens  0:00:14 Parsing 28136K tokens
-Cleanup Parse Warning: This rendering uses the following experimental
- feature(s): spline. The design and implementation of these features is likely
- to change in future versions of POV-Ray. Full backward compatibility with the
- current implementation is NOT guaranteed.
-
-  0:00:14 Creating bounding slabs
-  0:00:14 Creating vista buffer
-  0:00:15 Creating light buffers  0:00:15 Creating light buffers  0:00:15 Creating light buffers 28264K tokens
-Scene Statistics
-  Finite objects:       122621
-  Infinite objects:          0
-  Light sources:             2
-  Total:                122623
-
-  0:00:00 Rendering line 1 of 360, 0 supersamples  0:00:01 Rendering line 3 of 360, 45 supersamples  0:00:02 Rendering line 5 of 360, 100 supersamples  0:00:03 Rendering line 7 of 360, 140 supersamples  0:00:04 Rendering line 11 of 360, 195 supersamples  0:00:05 Rendering line 13 of 360, 222 supersamples  0:00:06 Rendering line 15 of 360, 265 supersamples  0:00:07 Rendering line 18 of 360, 329 supersamples  0:00:08 Rendering line 20 of 360, 380 supersamples  0:00:09 Rendering line 23 of 360, 428 supersamples  0:00:10 Rendering line 27 of 360, 497 supersamples  0:00:11 Rendering line 30 of 360, 534 supersamples  0:00:12 Rendering line 36 of 360, 621 supersamples  0:00:13 Rendering line 42 of 360, 702 supersamples  0:00:14 Rendering line 46 of 360, 757 supersamples  0:00:15 Rendering line 49 of 360, 810 supersamples  0:00:16 Rendering line 53 of 360, 882 supersamples  0:00:17 Rendering line 56 of 360, 917 supersamples  0:00:18 Rendering line 59 of 360, 980 supersamples  0:00:19 Rendering line 62 of 360, 1010 supersamples  0:00:20 Rendering line 69 of 360, 1037 supersamples  0:00:21 Rendering line 72 of 360, 1083 supersamples  0:00:22 Rendering line 78 of 360, 1138 supersamples  0:00:23 Rendering line 85 of 360, 1200 supersamples  0:00:24 Rendering line 89 of 360, 1243 supersamples  0:00:25 Rendering line 94 of 360, 1296 supersamples  0:00:26 Rendering line 100 of 360, 1399 supersamples  0:00:27 Rendering line 104 of 360, 1453 supersamples  0:00:28 Rendering line 110 of 360, 1510 supersamples  0:00:29 Rendering line 116 of 360, 1586 supersamples  0:00:30 Rendering line 122 of 360, 1640 supersamples  0:00:31 Rendering line 126 of 360, 1684 supersamples  0:00:32 Rendering line 131 of 360, 1706 supersamples  0:00:33 Rendering line 138 of 360, 1729 supersamples  0:00:34 Rendering line 149 of 360, 1814 supersamples  0:00:35 Rendering line 156 of 360, 1925 supersamples  0:00:36 Rendering line 162 of 360, 2040 supersamples  0:00:37 Rendering line 166 of 360, 2126 supersamples  0:00:38 Rendering line 171 of 360, 2227 supersamples  0:00:39 Rendering line 175 of 360, 2321 supersamples  0:00:40 Rendering line 179 of 360, 2419 supersamples  0:00:41 Rendering line 182 of 360, 2501 supersamples  0:00:42 Rendering line 186 of 360, 2582 supersamples  0:00:43 Rendering line 189 of 360, 2651 supersamples  0:00:44 Rendering line 192 of 360, 2707 supersamples  0:00:45 Rendering line 195 of 360, 2770 supersamples  0:00:46 Rendering line 197 of 360, 2812 supersamples  0:00:47 Rendering line 199 of 360, 2869 supersamples  0:00:48 Rendering line 201 of 360, 2926 supersamples  0:00:49 Rendering line 202 of 360, 2961 supersamples  0:00:50 Rendering line 203 of 360, 3003 supersamples  0:00:51 Rendering line 204 of 360, 3057 supersamples  0:00:52 Rendering line 205 of 360, 3105 supersamples  0:00:53 Rendering line 206 of 360, 3155 supersamples  0:00:54 Rendering line 207 of 360, 3223 supersamples  0:00:56 Rendering line 208 of 360, 3281 supersamples  0:00:57 Rendering line 209 of 360, 3328 supersamples  0:00:58 Rendering line 210 of 360, 3395 supersamples  0:00:59 Rendering line 211 of 360, 3457 supersamples  0:01:00 Rendering line 212 of 360, 3515 supersamples  0:01:02 Rendering line 213 of 360, 3578 supersamples  0:01:03 Rendering line 214 of 360, 3646 supersamples  0:01:04 Rendering line 215 of 360, 3712 supersamples  0:01:05 Rendering line 216 of 360, 3766 supersamples  0:01:06 Rendering line 217 of 360, 3822 supersamples  0:01:07 Rendering line 218 of 360, 3868 supersamples  0:01:08 Rendering line 219 of 360, 3924 supersamples  0:01:09 Rendering line 220 of 360, 3988 supersamples  0:01:11 Rendering line 221 of 360, 4052 supersamples  0:01:12 Rendering line 222 of 360, 4138 supersamples  0:01:14 Rendering line 223 of 360, 4205 supersamples  0:01:15 Rendering line 224 of 360, 4267 supersamples  0:01:16 Rendering line 225 of 360, 4328 supersamples  0:01:17 Rendering line 226 of 360, 4407 supersamples  0:01:19 Rendering line 227 of 360, 4485 supersamples  0:01:20 Rendering line 228 of 360, 4563 supersamples  0:01:21 Rendering line 229 of 360, 4635 supersamples  0:01:23 Rendering line 230 of 360, 4710 supersamples  0:01:24 Rendering line 231 of 360, 4788 supersamples  0:01:27 Rendering line 232 of 360, 4874 supersamples  0:01:28 Rendering line 233 of 360, 4945 supersamples  0:01:30 Rendering line 234 of 360, 5026 supersamples  0:01:31 Rendering line 235 of 360, 5094 supersamples  0:01:32 Rendering line 236 of 360, 5142 supersamples  0:01:33 Rendering line 237 of 360, 5205 supersamples  0:01:34 Rendering line 238 of 360, 5258 supersamples  0:01:35 Rendering line 240 of 360, 5363 supersamples  0:01:36 Rendering line 241 of 360, 5423 supersamples  0:01:37 Rendering line 242 of 360, 5494 supersamples  0:01:38 Rendering line 243 of 360, 5572 supersamples  0:01:39 Rendering line 245 of 360, 5687 supersamples  0:01:40 Rendering line 246 of 360, 5737 supersamples  0:01:41 Rendering line 247 of 360, 5785 supersamples  0:01:42 Rendering line 248 of 360, 5834 supersamples  0:01:43 Rendering line 250 of 360, 5958 supersamples  0:01:44 Rendering line 252 of 360, 6102 supersamples  0:01:45 Rendering line 253 of 360, 6171 supersamples  0:01:46 Rendering line 254 of 360, 6234 supersamples  0:01:47 Rendering line 256 of 360, 6342 supersamples  0:01:48 Rendering line 258 of 360, 6452 supersamples  0:01:49 Rendering line 259 of 360, 6531 supersamples  0:01:50 Rendering line 260 of 360, 6592 supersamples  0:01:52 Rendering line 261 of 360, 6667 supersamples  0:01:53 Rendering line 262 of 360, 6726 supersamples  0:01:54 Rendering line 263 of 360, 6781 supersamples  0:01:55 Rendering line 264 of 360, 6822 supersamples  0:01:56 Rendering line 265 of 360, 6858 supersamples  0:01:57 Rendering line 267 of 360, 6941 supersamples  0:01:58 Rendering line 268 of 360, 6984 supersamples  0:01:59 Rendering line 269 of 360, 7064 supersamples  0:02:00 Rendering line 270 of 360, 7124 supersamples  0:02:01 Rendering line 271 of 360, 7180 supersamples  0:02:02 Rendering line 272 of 360, 7260 supersamples  0:02:03 Rendering line 273 of 360, 7340 supersamples  0:02:04 Rendering line 274 of 360, 7408 supersamples  0:02:05 Rendering line 275 of 360, 7483 supersamples  0:02:06 Rendering line 276 of 360, 7542 supersamples  0:02:07 Rendering line 277 of 360, 7602 supersamples  0:02:08 Rendering line 278 of 360, 7660 supersamples  0:02:10 Rendering line 279 of 360, 7734 supersamples  0:02:11 Rendering line 280 of 360, 7809 supersamples  0:02:12 Rendering line 282 of 360, 7912 supersamples  0:02:13 Rendering line 283 of 360, 7964 supersamples  0:02:14 Rendering line 284 of 360, 8035 supersamples  0:02:15 Rendering line 285 of 360, 8097 supersamples  0:02:16 Rendering line 286 of 360, 8169 supersamples  0:02:17 Rendering line 287 of 360, 8230 supersamples  0:02:18 Rendering line 288 of 360, 8300 supersamples  0:02:19 Rendering line 289 of 360, 8376 supersamples  0:02:21 Rendering line 290 of 360, 8455 supersamples  0:02:22 Rendering line 291 of 360, 8489 supersamples  0:02:23 Rendering line 292 of 360, 8528 supersamples  0:02:24 Rendering line 294 of 360, 8649 supersamples  0:02:26 Rendering line 295 of 360, 8727 supersamples  0:02:27 Rendering line 297 of 360, 8868 supersamples  0:02:28 Rendering line 298 of 360, 8941 supersamples  0:02:29 Rendering line 299 of 360, 8996 supersamples  0:02:30 Rendering line 300 of 360, 9055 supersamples  0:02:31 Rendering line 301 of 360, 9120 supersamples  0:02:32 Rendering line 302 of 360, 9179 supersamples  0:02:33 Rendering line 304 of 360, 9279 supersamples  0:02:34 Rendering line 305 of 360, 9335 supersamples  0:02:35 Rendering line 306 of 360, 9401 supersamples  0:02:36 Rendering line 308 of 360, 9517 supersamples  0:02:37 Rendering line 309 of 360, 9575 supersamples  0:02:38 Rendering line 310 of 360, 9646 supersamples  0:02:39 Rendering line 311 of 360, 9703 supersamples  0:02:40 Rendering line 312 of 360, 9760 supersamples  0:02:41 Rendering line 313 of 360, 9822 supersamples  0:02:43 Rendering line 314 of 360, 9891 supersamples  0:02:44 Rendering line 315 of 360, 9947 supersamples  0:02:45 Rendering line 317 of 360, 10048 supersamples  0:02:46 Rendering line 318 of 360, 10096 supersamples  0:02:47 Rendering line 319 of 360, 10147 supersamples  0:02:48 Rendering line 320 of 360, 10230 supersamples  0:02:49 Rendering line 321 of 360, 10296 supersamples  0:02:50 Rendering line 322 of 360, 10363 supersamples  0:02:51 Rendering line 323 of 360, 10421 supersamples  0:02:52 Rendering line 324 of 360, 10465 supersamples  0:02:54 Rendering line 325 of 360, 10511 supersamples  0:02:55 Rendering line 326 of 360, 10587 supersamples  0:02:57 Rendering line 327 of 360, 10656 supersamples  0:02:58 Rendering line 328 of 360, 10715 supersamples  0:02:59 Rendering line 329 of 360, 10777 supersamples  0:03:00 Rendering line 330 of 360, 10829 supersamples  0:03:01 Rendering line 331 of 360, 10895 supersamples  0:03:02 Rendering line 332 of 360, 10945 supersamples  0:03:03 Rendering line 333 of 360, 10994 supersamples  0:03:04 Rendering line 334 of 360, 11080 supersamples  0:03:06 Rendering line 335 of 360, 11154 supersamples  0:03:07 Rendering line 337 of 360, 11267 supersamples  0:03:08 Rendering line 338 of 360, 11326 supersamples  0:03:09 Rendering line 339 of 360, 11398 supersamples  0:03:10 Rendering line 340 of 360, 11455 supersamples  0:03:11 Rendering line 341 of 360, 11512 supersamples  0:03:12 Rendering line 342 of 360, 11557 supersamples  0:03:13 Rendering line 344 of 360, 11641 supersamples  0:03:14 Rendering line 346 of 360, 11737 supersamples  0:03:15 Rendering line 348 of 360, 11802 supersamples  0:03:16 Rendering line 350 of 360, 11863 supersamples  0:03:17 Rendering line 353 of 360, 11953 supersamples  0:03:18 Rendering line 355 of 360, 12038 supersamples  0:03:19 Rendering line 358 of 360, 12195 supersamples  0:03:20 Rendering line 359 of 360, 12266 supersamples  0:03:21 Rendering line 360 of 360, 12340 supersamples
-  0:03:21 Done Tracing
-Render Statistics
-Image Resolution 480 x 360
-----------------------------------------------------------------------------
-Pixels:           172800   Samples:          472928   Smpls/Pxl: 2.74
-Rays:             472928   Saved:                 0   Max Level: 1/5
-----------------------------------------------------------------------------
-Ray->Shape Intersection          Tests       Succeeded  Percentage
-----------------------------------------------------------------------------
-Box                           41145510        39516408     96.04
-Cone/Cylinder                 94937354        17471877     18.40
-Sphere                        16968889         4504602     26.55
-Bounding Box                3430925793       977080354     28.48
-Light Buffer                  62506067        17215066     27.54
-Vista Buffer                  40336562        25060829     62.13
-----------------------------------------------------------------------------
-Calls to Noise:                   0   Calls to DNoise:          171000
-----------------------------------------------------------------------------
-Shadow Ray Tests:          99004924   Succeeded:              52089155
-----------------------------------------------------------------------------
-Smallest Alloc:                   9 bytes
-Largest  Alloc:             1961944 bytes
-Peak memory used:         150115677 bytes
-Total Scene Processing Times
-  Parse Time:    0 hours  0 minutes 15 seconds (15 seconds)
-  Photon Time:   0 hours  0 minutes  0 seconds (0 seconds)
-  Render Time:   0 hours  3 minutes 21 seconds (201 seconds)
-  Total Time:    0 hours  3 minutes 36 seconds (216 seconds)
-+ echo image finished without error
-image finished without error
-expr $currentframe + $numprocs
-++ expr 1160 + 200
-+ currentframe=1360
-+ '[' 1 '!=' 1 ']'
-+ '[' 1360 -le 1353 ']'
-
-echo End $0 at `date`
-date
-++ date
-+ echo End /g/g0/rcook/current_projects/paraDIS_hts/movie/makewormmovie.sh at Tue Nov 15 18:27:46 PST 2005
-End /g/g0/rcook/current_projects/paraDIS_hts/movie/makewormmovie.sh at Tue Nov 15 18:27:46 PST 2005

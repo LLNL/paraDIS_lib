@@ -1,6 +1,0 @@
-#$Id: initfile_include_test,v 1.1 2004/08/04 23:00:13 rcook Exp $
-# included by initfile_sample
-
-argsmap included_argsmap
-include_var I am an include variable
-

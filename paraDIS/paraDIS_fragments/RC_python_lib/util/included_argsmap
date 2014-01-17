@@ -1,5 +1,0 @@
-# $Id: included_argsmap,v 1.2 2004/08/11 22:19:06 rcook Exp $
-# this file helps test recursive inclusion...
-# pointed to by initfile_include_test
-include_var 	INC_VARIABLE	-ivar    overwrite
-
