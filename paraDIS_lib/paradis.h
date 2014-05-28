@@ -381,7 +381,7 @@ namespace paraDIS {
     /*! 
       Convert of MinimalNode to string
     */ 
-    virtual std::string Stringify(int indent, bool shortform=true) const {
+    virtual std::string Stringify(int indent = 0, bool shortform=true) const {
       std::string s =std::string("MinimalNode: ")+Node::Stringify(0) + string("\nClassification: ") + string(mKeep?"KEEP":"DON'T KEEP") + string("\n");  
       s += (intToString(mNeighbors.size()) + " neighbors --------------:\n");
       uint32_t n = 0; 
@@ -666,7 +666,7 @@ namespace paraDIS {
     /*!
       Convert FullNode to string
     */ 
-    virtual std::string Stringify(int indent, bool shortform=true) const;
+    virtual std::string Stringify(int indent=0, bool shortform=true) const;
 
     
     /*!
@@ -1069,7 +1069,7 @@ namespace paraDIS {
     /*!
       convert ArmSegment to string
     */ 
-    std::string Stringify(int indent) const; 
+    std::string Stringify(int indent=0) const; 
  
     /*!
       return a vector ep1 - ep0 
@@ -1989,7 +1989,7 @@ s      Tell the data set which file to read
     /*!
       Print out arm statistics
     */
-    void PrintArmStats(FILE *); 
+    void PrintArmStats(FILE *fp = NULL); 
       
  
    /*!

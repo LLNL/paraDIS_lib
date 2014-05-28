@@ -665,7 +665,6 @@ namespace paraDIS {
       }
     return;
   }
-  
   //===========================================================================
   std::string FullNode::Stringify(int indent, bool shortform) const {
     int ntype = mNodeType ;
@@ -1614,6 +1613,7 @@ namespace paraDIS {
             replacement->AddNeighbor(segment);
           }
       }
+    dbprintf(5, str(boost::format("Arm::DetachAndReplaceNode.  Detached node is now: %1%.  Replacement is now: %2%\n")%(node->Stringify())%(replacement->Stringify())).c_str()); 
     return;
   }
   
@@ -2582,6 +2582,8 @@ namespace paraDIS {
   void DataSet::PrintArmStats(FILE *thefile) {
     //if (!dbg_isverbose()) return;
     //dbprintf(3, "Beginning PrintArmStats()");
+    if (!thefile) thefile = stdout;
+    
     double armLengths[11] = {0}, totalArmLength=0;
     
 

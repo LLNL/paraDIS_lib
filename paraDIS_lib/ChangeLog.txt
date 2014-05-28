@@ -1,0 +1,28 @@
+ 
+
+2014-01-31: version 2.3.5
+       Added "ScrewType" to segments for Jaime Marian; shows in VTK files but not yet VisIt plugin. 
+       
+2013-07-17: version 2.3.4
+       Change definition of tags, only marking loop nodes with 8192 now. 
+       add burgers vector to metaarm file      
+       Added node tracing in addition to arm tracing.
+       Fix bug where loading a second timestep in VisIt caused crashes. The notorious "second time around" bug. 
+
+2013-05-30: version 2.3.3
+       Enable the creation of "trace files" which allow user to track what happens to particular arms visually and in text
+
+2013-05-29: version 2.3.2
+       Detach any "pass-through" arms from terminal nodes before decomposing any arm.  
+
+2013-05-24: version 2.3.1
+       Various bugfixes to make the code actually produce results that are consistent with previous results. 
+       Added tools to track history of arms after decomposition of higher energy arms into lower energy arms. 
+       Simplified the arguments to analyzeParaDIS to make visualization easier. 
+2013-04-25: version 2.3
+        Implemented MetaArm visualization, including subsetting by some new variables in the meshes.  Using enumerated scalars now for better subset operations.  
+        We now have metaarm visualization.  
+        Added several new variables, some having to do with meta-arms, cleaned up variable naming convention, and converted some into enumerated scalars to allow subset operations to work. 
+        Added the ability to write out so-called tagfiles, which are simply a copy of the original data with certain values replaced by "8" when a node is in a LOOP metaarm.  
+        
+        
