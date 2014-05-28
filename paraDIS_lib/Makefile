@@ -11,14 +11,15 @@ ifndef SYS_TYPE
 export SYS_TYPE = $(shell uname)
 endif
 CWD = $(shell pwd)
-MF-INCLUDE ?= $(projdir)/mf-include
+MF-INCLUDE = $(shell cd ..; pwd)/mf-include
 include $(MF-INCLUDE)/mf-include.common
 
 SFILES = paradis.C paradis_c_interface.C paradisStreaming.C paradisTest.C analyzeParaDIS.C
 
 CPPLIBDIR=$(projdir)/RC_cpp_lib
 CLIBDIR=$(CPPLIBDIR)/RC_c_lib
-INCLUDES =  -I$(CLIBDIR) -I$(CPPLIBDIR)
+TCLAP=$(CPPLIBDIR)/tclap-1.2.0/include
+INCLUDES =  -I$(CLIBDIR) -I$(CPPLIBDIR) -I$(TCLAP)
 LDFLAGS+=-lstdc++
 #ELECTRIC_FENCE = libefence.a -lpthread
 #CXX = purify g++-3.2.3
@@ -102,14 +103,14 @@ undepend:
 	for dir in `pwd`/$(CLIBDIR) `pwd`/$(CPPLIBDIR) ; do cd $$dir; $(MAKE) undepend; done
 
 depend: 	
-	makedepend -Y $(SFILES)
+	makedepend -Y -p $(SYS_TYPE)/ $(SFILES)
 	cd $(CLIBDIR);  $(MAKE) depend
 	cd $(CPPLIBDIR);  $(MAKE) depend	
 
 # DO NOT DELETE
 
-paradis.o: paradis.h
-paradis_c_interface.o: paradis.h paradis_c_interface.h
-paradisStreaming.o: paradisStreaming.h paradis.h
-paradisTest.o: paradis.h
-analyzeParaDIS.o: paradis.h paradis_version.h
+chaos_5_x86_64_ib/paradis.o: paradis.h paradis_version.h
+chaos_5_x86_64_ib/paradis_c_interface.o: paradis.h paradis_c_interface.h
+chaos_5_x86_64_ib/paradisStreaming.o: paradisStreaming.h paradis.h
+chaos_5_x86_64_ib/paradisTest.o: paradis.h
+chaos_5_x86_64_ib/analyzeParaDIS.o: paradis_c_interface.h paradis.h

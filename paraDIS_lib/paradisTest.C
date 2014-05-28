@@ -34,16 +34,16 @@ int main(int argc, char *argv[]) {
     dsData.SetProcNum(procnum,numprocs); 
     dsData.SetDataFile(datafile); 
     dsData.EnableDebugOutput(debugfiles); 
-    dsData.SetDebugOutputDir("debuginfo"); 
+    dsData.SetOutputDir("debuginfo"); 
 	system("mkdir -p debuginfo"); 
     dsData.GetBounds(datamin, datamax, datafile); 
 
     /*!
       restrict the bounds for fun
     */ 
-    if (restrictBounds) {
+    /*if (restrictBounds) {
       dsData.TestRestrictSubspace(); 
-    }
+      }*/
     
     dsData.ReadData(); 
 

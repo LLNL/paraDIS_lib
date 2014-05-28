@@ -75,10 +75,10 @@ static paraDIS::DataSet *gDataSet = NULL;
     return; 
   }
    
-  void paraDIS_TestRestrictSubspace(void) {
+  /*  void paraDIS_TestRestrictSubspace(void) {
     gDataSet->TestRestrictSubspace(); 
     return; 
-  } 
+    } */
      
   
   void paraDIS_SetProcNum(int procnum, int numprocs){
@@ -122,7 +122,7 @@ static paraDIS::DataSet *gDataSet = NULL;
     
   int8_t paraDIS_GetNumNodeNeighbors(uint32_t nodenum){
     PARADIS_INIT;
-    return gDataSet->GetNode(nodenum)->GetNumNeighbors(); 
+    return gDataSet->GetNode(nodenum)->GetNumNeighborSegments(); 
   }  
 
   int32_t  paraDIS_GetNodeSimulationDomain(uint32_t nodenum){

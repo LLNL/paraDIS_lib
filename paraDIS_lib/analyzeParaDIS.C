@@ -153,11 +153,11 @@ int main(int argc, char *argv[]) {
       
       gDataSet->ReadData("", false); 
       
-      paraDIS_init(gDataSet); 
       
       //======== BEGIN TEST CODE FROM DUMPFILE.C ========================
       /*  
-          #define vtkIdType uint32_t
+          paraDIS_init(gDataSet); 
+         #define vtkIdType uint32_t
           uint32_t nodenum = 0;
           uint32_t mNumMetaArmSegments = 0; // 0 based node IDs
           vtkIdType nodeIndices[2]; 
