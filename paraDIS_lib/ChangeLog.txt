@@ -1,5 +1,8 @@
  
 
+2014-01-31: version 2.3.6
+       Fixed bugs relating to very rare cases of looped arms which have wrapped segments, or decomposed arms which cross over themselves when decomposed.  
+       
 2014-01-31: version 2.3.5
        Added "ScrewType" to segments for Jaime Marian; shows in VTK files but not yet VisIt plugin. 
        

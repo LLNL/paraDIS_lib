@@ -50,7 +50,7 @@ global: all
 libparadis: $(PARADISLIB) 
 
 $(SYS_TYPE)/paradis.o: paradis.C
-	$(CXX)  $(CXXFLAGS) -c -o $@  $<
+	$(CXX)  $(CXXFLAGS) -c -o $@ -DUSE_ABORT=1 $<
 	@echo DONE WITH $@
 
 $(SYS_TYPE)/paradisStreaming.o: paradisStreaming.C
