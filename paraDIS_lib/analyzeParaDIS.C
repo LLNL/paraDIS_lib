@@ -27,6 +27,8 @@ int main(int argc, char *argv[]) {
 
   TCLAP::SwitchArg debugfilesFlag("d", "debugfiles", "dump out detailed debug files in output directory", cmd); 
 
+  TCLAP::SwitchArg noDebugfilesFlag("", "no-debugfiles", "do NOT dump out detailed debug files in output directory", cmd); 
+
   TCLAP::SwitchArg doc("D", "doc", "Print out the documentation for paraDIS data types.", cmd); 
 
   //  TCLAP::SwitchArg noRenumber("", "no-renumber", "Do not renumber nodes.  Use this flag when debugging.", cmd); 
@@ -97,10 +99,17 @@ int main(int argc, char *argv[]) {
         verbosity = 5; 
       }
     }
+
+    if (noDebugfilesFlag.getValue()) {
+      debugfiles = false; 
+    }
+
     if (verbosity == -1) {
       verbosity = 0; 
     }
-
+    if (verbosity) {
+      cerr << "verbosity is " << verbosity << endl; 
+    }
     for (vector<string>::const_iterator dfile = dumpfiles.getValue().begin(); dfile != dumpfiles.getValue().end(); dfile++) {
       string basename = basenameFlag.getValue(); 
       if (basename == "") {
@@ -141,7 +150,7 @@ int main(int argc, char *argv[]) {
       
       if (verbosity) {
         gDataSet->SetVerbosity(verbosity, fileout); 
-        fprintf(stderr, "Writing verbose output to file %s/%s\n", outdir.c_str(), fileout.c_str()); 
+        fprintf(stderr, "Writing verbose output at level %d to file %s/%s\n", verbosity, outdir.c_str(), fileout.c_str()); 
       }
       gDataSet->SetThreshold(threshold.getValue());
       
