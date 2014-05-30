@@ -1396,29 +1396,29 @@ namespace paraDIS {
       dbprintf(6, "Arm::GetNodes(arm %d): Arm has no segments. \n", mArmID); 
       return nodes;
     }
-       segnum = mTerminalSegments.size();
-      while (!startSegment && segnum--) {
-        int ep = 2;
-        while (ep--) {
-          /* Get rid of aliasing to avoid returning nodes that are not part of this arm but are wrapped.*/ 
-          if (*(mTerminalSegments[segnum]->GetEndpoint(ep)) == *startNode) {
-            /* Also, catch the rare case that a terminal segment has an endpoint which matches the node ID of an endpoint of this arm, but is not the endpoint because of a Detach operation earlier.  (whew!)  This is done by making sure it is not an interior node with type 2. */
-            if ( mTerminalNodes.size() == 1 || mTerminalSegments[segnum]->GetEndpoint(ep)->GetNumNeighborSegments() != 2)  {
-              startSegment = mTerminalSegments[segnum];
+    segnum = mTerminalSegments.size();
+    while (!startSegment && segnum--) {
+      int ep = 2;
+      while (ep--) {
+        /* Get rid of aliasing to avoid returning nodes that are not part of this arm but are wrapped.*/ 
+        if (*(mTerminalSegments[segnum]->GetEndpoint(ep)) == *startNode) {
+          /* Also, catch the rare case that a terminal segment has an endpoint which matches the node ID of an endpoint of this arm, but is not the endpoint because of a Detach operation earlier.  (whew!)  This is done by making sure it is not an interior node with type 2. */
+          if ( mTerminalNodes.size() == 1 || mTerminalSegments[segnum]->GetEndpoint(ep)->GetNumNeighborSegments() != 2)  {
+            startSegment = mTerminalSegments[segnum];
+            
+            if (startNode != mTerminalSegments[segnum]->GetEndpoint(ep)) {
+              startNode = mTerminalSegments[segnum]->GetEndpoint(ep);
               
-              if (startNode != mTerminalSegments[segnum]->GetEndpoint(ep)) {
-                startNode = mTerminalSegments[segnum]->GetEndpoint(ep);
-                
-                dbprintf(6, "Arm::GetNodes(arm %d): changed startNode to %s\n", mArmID, startNode->Stringify().c_str()); 
-              }
-            }
-            else {
-              dbprintf(6, "Arm::GetNodes(arm %d): found terminal segment %d candidate node %d that matches startNode but does not appear to be a terminal node:  %s\n", mArmID, segnum, ep, mTerminalSegments[segnum]->GetEndpoint(ep)->Stringify().c_str());
+              dbprintf(6, "Arm::GetNodes(arm %d): changed startNode to %s\n", mArmID, startNode->Stringify().c_str()); 
             }
           }
-        }    
-      }
+          else {
+            dbprintf(6, "Arm::GetNodes(arm %d): found terminal segment %d candidate node %d that matches startNode but does not appear to be a terminal node:  %s\n", mArmID, segnum, ep, mTerminalSegments[segnum]->GetEndpoint(ep)->Stringify().c_str());
+          }
+        }
+      }    
     }
+    
     
     FullNode *lastNode = mTerminalNodes[mTerminalNodes.size()-1-startnodenum];
     dbprintf(6, "Arm::GetNodes(arm %d):   lastNode: %s\n", mArmID, lastNode->Stringify().c_str()); 
