@@ -1867,6 +1867,12 @@ namespace paraDIS {
       mDoStats = tf; 
     }
     /*!
+      if this is true, then create brief summary file.  
+    */ 
+    void EnableSummaryOutput(bool tf=true) {
+      mDoSummaryFile = tf; 
+    }
+    /*!
       if this is true, then create tag file.  
     */ 
     void EnableTagFileOutput(bool tf=true) {
@@ -1986,10 +1992,6 @@ s      Tell the data set which file to read
       mNumBins = numbins; 
       return; 
     }
-    /*!
-      Print out arm statistics
-    */
-    void PrintArmStats(FILE *fp = NULL); 
       
  
    /*!
@@ -2166,6 +2168,11 @@ s      Tell the data set which file to read
       return  ArmSegment::mArmSegmentVector.size(); 
     }
 
+    void PrintArmStats(FILE *file=NULL) {
+      if (!file) file = stdout; 
+      fprintf(file, "%s", ArmSummary().c_str()); 
+    }
+
     /*!
       This is a redundant data structure that allows us to find arm segments that have the same endpoints during the initial reading of the dump file. 
     */ 
@@ -2196,6 +2203,7 @@ s      Tell the data set which file to read
       mDoTagFile = false;
       mDoVTKFile = false; 
       mDoStats = false; 
+      mDoSummaryFile = false; 
       mOutputDir = "./paradis-debug";
       mDataMin = mDataMax = mDataSize = mSubspaceMin = mSubspaceMax = 
         rclib::Point<float>(0.0); 
@@ -2213,15 +2221,24 @@ s      Tell the data set which file to read
     */ 
     void DebugPrintMinimalNodes(void); 
 
-    /*!
-       Done in two places, so break out code here: 
+    /*!      
+    Statistical summaries:
     */ 
-    std::string GetMonsterNodeSummary(void);
+    std::string MonsterNodeSummary(void);
 
+    std::string ArmSummary(void); 
+
+    std::string MetaArmSummary(void);
     /*! 
       Prints out all full nodes 
     */ 
     void DebugPrintFullNodes(void); 
+    
+   /*! 
+      Prints out summary of arms and metaarms in a short file
+    */ 
+    void WriteSummaryFile(const char *altname = NULL); 
+
    /*! 
       Prints out all arms
     */ 
@@ -2368,6 +2385,10 @@ s      Tell the data set which file to read
       if this is true, then create arm and metaarm files.  
     */ 
     bool mDoStats; 
+    /*!
+      if this is true, then create short summary file.  
+    */ 
+    bool mDoSummaryFile; 
     /*!
       if this is true, then create tag file.  
     */ 

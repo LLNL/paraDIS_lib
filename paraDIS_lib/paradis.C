@@ -2607,229 +2607,6 @@ namespace paraDIS {
   }
 
   //===========================================================================
-  // see also DebugPrintArms() and PrintArmFile() -- this just tabulates a summary
-  void DataSet::PrintArmStats(FILE *thefile) {
-    //if (!dbg_isverbose()) return;
-    //dbprintf(3, "Beginning PrintArmStats()");
-    if (!thefile) thefile = stdout;
-    
-    double armLengths[11] = {0}, totalArmLength=0;
-    
-
-    uint32_t numArms[11] = {0};  // number of arms of each type
-    uint32_t totalArms=0;
-#if LINKED_LOOPS
-    double linkedLoopLength = 0;
-    uint32_t numLinkedLoops = 0;
-#endif
-    
-    double *armLengthBins = NULL;
-    long *armBins = NULL;
-    if (mNumBins) {
-      armLengthBins = (double*)calloc(mNumBins, sizeof(double));
-      armBins = (long*)calloc(mNumBins, sizeof(long));
-    }
-    //NN types corresponding to burgers values of the NN arms:
-    const char *armTypes[7] = {
-      "NN_200",
-      "NN_020",
-      "NN_002",
-      "NN_+++",
-      "NN_++-",
-      "NN_+-+",
-      "NN_-++"
-    };
-    
-    double shortLengths[16] = {0}, longLengths[16]={0};
-    uint32_t numShortArms[16]={0}, numLongArms[16]={0};
-
-    vector<Arm *>::iterator armpos = Arm::mArms.begin(), armend = Arm::mArms.end();
-    while (armpos != armend) {
-      double length = (*armpos)->GetLength();
-      int armType = (*armpos)->mArmType;
-      if (armType == ARM_EMPTY) {
-        ++armpos;
-        continue;
-      }
-      if (mThreshold >= 0) {
-        int8_t btype = (*armpos)->GetBurgersType();
-        if (!btype) {
-          printf("Error:  armpos has no terminal segments!\n");
-        }
-        if (armType == ARM_SHORT_NN_111) {
-          numShortArms[btype-1]++;
-          shortLengths[btype-1] += length;
-        }
-        else {
-          numLongArms[btype-1]++;
-          longLengths[btype-1] += length;
-        }
-      }
-      if (mNumBins) {
-        int binNum = (int)((double)length/Arm::mLongestLength * mNumBins);
-        if (binNum == mNumBins) binNum = mNumBins-1;
-        if (binNum > mNumBins || binNum < 0) {
-          printf("Error:  binNum %d is invalid (num bins is %d)\n", binNum, mNumBins);
-        } else {
-          armLengthBins[binNum] += length;
-          armBins[binNum]++;
-        }
-      }
-      armLengths[armType] += length;
-      totalArmLength += length;
-      numArms[armType]++;
-
-      totalArms++;
-#if LINKED_LOOPS
-      if ((*armpos)->mPartOfLinkedLoop) {
-        numLinkedLoops ++;
-        linkedLoopLength += length;
-      }
-#endif
-      ++armpos;
-    }
-    
-    fprintf(thefile, "\n");
-    fprintf(thefile, "===========================================\n");
-    fprintf(thefile, "total Number of non-empty arms: %d\n", totalArms);
-    fprintf(thefile, "total length of all arms before decomposition: %.2f\n", Arm::mTotalArmLengthBeforeDecomposition);
-    fprintf(thefile, "total length of all arms after decomposition: %.2f\n", Arm::mTotalArmLengthAfterDecomposition);
-    double delta = Arm::mTotalArmLengthAfterDecomposition - (Arm::mDecomposedLength + Arm::mTotalArmLengthBeforeDecomposition);
-    fprintf(thefile, "Total decomposed length (computed independently): %.2f (delta %f)\n", Arm::mDecomposedLength, delta);
-    double ratio = delta / Arm::mTotalArmLengthAfterDecomposition;
-    if (Arm::mTotalArmLengthAfterDecomposition && fabs(ratio) > 0.00001 ) {
-      string errmsg = str(boost::format("\n\nError:  mDecomposedLength %1% + mTotalArmLengthBeforeDecomposition %2% != mTotalArmLengthAfterDecomposition %3% (ratio is %4%)!\n\n\n")%Arm::mDecomposedLength%Arm::mTotalArmLengthBeforeDecomposition%Arm::mTotalArmLengthAfterDecomposition%ratio);
-      cerr  << errmsg;
-      fprintf(thefile,  errmsg.c_str());
-    }
-    fprintf(thefile, "Number of segments classified in arm: %d\n", ArmSegment::mNumClassified);
-    fprintf(thefile, "Number of segments measured in arm: %d\n", ArmSegment::mNumArmSegmentsMeasured);
-    fprintf(thefile, "Number of segments wrapped: %d\n", ArmSegment::mNumWrapped);
-    fprintf(thefile, "===========================================\n");
-    int i = 0; for (i=0; i<11; i++) {
-      fprintf(thefile, "%s: number of arms = %d\n", ArmTypeNames(i).c_str(), numArms[i]);
-      fprintf(thefile, "%s: total length of arms = %.2f\n", ArmTypeNames(i).c_str(), armLengths[i]);
-      fprintf(thefile, "----------------------\n");
-    }
-#if LINKED_LOOPS
-    fprintf(thefile, "LINKED LOOPS: total number of arms = %d\n", numLinkedLoops);
-    fprintf(thefile, "LINKED LOOPS: total length of arms = %.2f\n", linkedLoopLength);
-    fprintf(thefile, "----------------------\n");
-#endif
-
-    // write a row of arm lengths to make analysis via spreadsheet easier
-    fprintf(thefile, "Key: \nUNKNOWN\tUNINTRSTNG\tLOOP\tMM_111\tMN_111\tNN_111\tMM_200\tMN_200\tNN_200\tSHORT_NN_111\tSHORT_NN_200\n");
-    int n = 0;
-    while (n<11) {
-      fprintf(thefile, "%.2f\t",  armLengths[n]);
-      ++n;
-    }
-
-
-    
-    if (mThreshold >= 0.0) {
-      fprintf(thefile, "\n\n----------------------\n");
-      fprintf(thefile, "THRESHOLD data.  Threshold = %.2f\n", mThreshold);
-      int n = 0;
-      for (n=0; n<16; n++) {
-        fprintf(thefile, "----------------------\n");
-        fprintf(thefile, "Total number of %s arms: %d\n", armTypes[n], numShortArms[n] + numLongArms[n]);
-        fprintf(thefile, "Total length of %s arms: %.2f\n", armTypes[n], shortLengths[n] + longLengths[n]);
-        fprintf(thefile, "Number of %s arms SHORTER than threshold = %d\n", armTypes[n], numShortArms[n]);
-        fprintf(thefile, "Total length of %s arms shorter than threshold = %.2f\n", armTypes[n], shortLengths[n]);
-        fprintf(thefile, "Number of %s arms LONGER than threshold = %d\n", armTypes[n], numLongArms[n]);
-        fprintf(thefile, "Total length of %s arms longer than threshold = %.2f\n", armTypes[n], longLengths[n]);
-        fprintf(thefile, "\n");
-      }
-    }
-    
-    // write a row of arm lengths to make analysis via spreadsheet easier
-    fprintf(thefile, "----------------------\n");
-    fprintf(thefile, "Key: NN_200\tNN_020\tNN_002\tNN_+++\tNN_++-\tNN_+-+\tNN_-++\n");
-    fprintf(thefile, "SHORT ARM LENGTHS:\n");
-    n=0; while (n<16) {
-      fprintf(thefile, "%.2f\t",  shortLengths[n]);
-      ++n;
-    }
-    fprintf(thefile, "\nLONG ARM LENGTHS:\n");
-    n = 0; while (n<16) {
-      fprintf(thefile, "%.2f\t",  longLengths[n]);
-      ++n;
-    }
-    fprintf(thefile, "\n");
-
-    fprintf(thefile, "----------------------\n\n\n");
-
-    if (mNumBins) {
-      // print a row of bin values
-      fprintf(thefile, "BINS: \n");
-      fprintf(thefile, "max length = %.3f\n", Arm::mLongestLength);
-
-      long totalArms = 0; // reality check
-      double totalLength = 0;  // reality check
-      string line;
-      int binNum = 0;
-      fprintf(thefile, "%-12s%-12s%-12s\n", "Bin", "Arms", "Lengths");
-      for (binNum = 0; binNum < mNumBins; ++binNum) {
-        fprintf(thefile, "%-12d%-12ld%-12.3f\n", binNum, armBins[binNum], armLengthBins[binNum]);
-        totalArms += armBins[binNum];
-        totalLength += armLengthBins[binNum];
-      }
-      fprintf(thefile, "%-12s%-12ld%-12.3f\n", "TOTAL", totalArms, totalLength);
-    }
-
-    fprintf(thefile, "\n\n========================================\n");
-    fprintf(thefile, "DECOMPOSITION STATISTICS\n");
-    fprintf(thefile, "----------------------\n");
-    int energy = 0;
-    while (energy < 7) {
-      fprintf(thefile, "Decomposed arms, energy level %d: %d\n", energy, Arm::mNumDecomposed[energy]);
-      energy++;
-    }
-
-    fprintf(thefile, "Detached/absorbed arms: %d\n", Arm::mNumDestroyedInDetachment);
-    
-    fprintf(thefile, "========================================\n\n\n");
-#ifdef DEBUG_SEGMENTS
-    // check against segment lengths:
-    uint32_t numSegments[11] = {0}, totalSegments=0, culledSegments=0;  // number of arms of each type
-    double segmentLengths[11] = {0}, totalSegmentLength=0, culledLength=0;
-    for (std::map<uint32_t, ArmSegment *>::iterator segpos = ArmSegments.begin(); segpos != mArmSegments.end(); ++segpos) {
-      ArmSegment *seg = segpos->second;
-      double length = seg->GetLength();
-      // Cull out half the wrapped segments in such a way that for each culled, there is an identical one remaining:
-      if (!seg->Cullable()) {
-        segmentLengths[seg->GetMNType()] += length;
-        totalSegmentLength += length;
-        numSegments[seg->GetMNType()]++;
-        totalSegments++;
-      } else {
-        culledSegments++;
-        culledLength +=length;
-      }
-    }
-    
-    fprintf(thefile, "===========================================\n");
-    fprintf(thefile, "REALITY CHECK:  total length of all segments, skipping wrapped segments\n");
-    fprintf(thefile, "total Number of segments: %d\n", totalSegments);
-    fprintf(thefile, "total length of all segments: %.2f\n", totalSegmentLength);
-    fprintf(thefile, "===========================================\n");
-    for (i=0; i<11; i++) {
-      fprintf(thefile, "%s: number of segs = %d\n", ArmTypeNames(i).c_str(), numArms[i]);
-      fprintf(thefile, "%s: total length of segments = %.2f\n", ArmTypeNames(i).c_str(), armLengths[i]);
-      fprintf(thefile, "----------------------\n");
-    }
-    
-    fprintf(thefile, "CULLED segments = %d\n", culledSegments);
-    fprintf(thefile, "CULLED length = %.2f\n", culledLength);
-    
-    fprintf(thefile, "Wrapped lengths: %.2f\n", ArmSegment::mSegLen);
-    fprintf(thefile, "----------------------\n\n\n");
-#endif
-    return;
-  }
-
-  //===========================================================================
   void DataSet::ReadBounds(void) {
     dbprintf(2,"Beginning ReadBounds\n");
 
@@ -3599,7 +3376,229 @@ namespace paraDIS {
   }
 
   //===========================================================================
-  string DataSet::GetMonsterNodeSummary(void) {
+  // see also DebugPrintArms() and PrintArmFile() -- this just tabulates a summary
+  string DataSet::ArmSummary(void) {
+    //if (!dbg_isverbose()) return;
+    //dbprintf(3, "Beginning PrintArmStats()");
+    string summary;     
+    double armLengths[11] = {0}, totalArmLength=0;
+    
+
+    uint32_t numArms[11] = {0};  // number of arms of each type
+    uint32_t totalArms=0;
+#if LINKED_LOOPS
+    double linkedLoopLength = 0;
+    uint32_t numLinkedLoops = 0;
+#endif
+    
+    double *armLengthBins = NULL;
+    long *armBins = NULL;
+    if (mNumBins) {
+      armLengthBins = (double*)calloc(mNumBins, sizeof(double));
+      armBins = (long*)calloc(mNumBins, sizeof(long));
+    }
+    //NN types corresponding to burgers values of the NN arms:
+    const char *armTypes[7] = {
+      "NN_200",
+      "NN_020",
+      "NN_002",
+      "NN_+++",
+      "NN_++-",
+      "NN_+-+",
+      "NN_-++"
+    };
+    
+    double shortLengths[16] = {0}, longLengths[16]={0};
+    uint32_t numShortArms[16]={0}, numLongArms[16]={0};
+
+    vector<Arm *>::iterator armpos = Arm::mArms.begin(), armend = Arm::mArms.end();
+    while (armpos != armend) {
+      double length = (*armpos)->GetLength();
+      int armType = (*armpos)->mArmType;
+      if (armType == ARM_EMPTY) {
+        ++armpos;
+        continue;
+      }
+      if (mThreshold >= 0) {
+        int8_t btype = (*armpos)->GetBurgersType();
+        if (!btype) {
+          printf("Error:  armpos has no terminal segments!\n");
+        }
+        if (armType == ARM_SHORT_NN_111) {
+          numShortArms[btype-1]++;
+          shortLengths[btype-1] += length;
+        }
+        else {
+          numLongArms[btype-1]++;
+          longLengths[btype-1] += length;
+        }
+      }
+      if (mNumBins) {
+        int binNum = (int)((double)length/Arm::mLongestLength * mNumBins);
+        if (binNum == mNumBins) binNum = mNumBins-1;
+        if (binNum > mNumBins || binNum < 0) {
+          printf("Error:  binNum %d is invalid (num bins is %d)\n", binNum, mNumBins);
+        } else {
+          armLengthBins[binNum] += length;
+          armBins[binNum]++;
+        }
+      }
+      armLengths[armType] += length;
+      totalArmLength += length;
+      numArms[armType]++;
+
+      totalArms++;
+#if LINKED_LOOPS
+      if ((*armpos)->mPartOfLinkedLoop) {
+        numLinkedLoops ++;
+        linkedLoopLength += length;
+      }
+#endif
+      ++armpos;
+    }
+    
+    summary += "\n";
+    summary += "===========================================\n";
+    summary += str(boost::format("total Number of non-empty arms: %d\n") % totalArms);
+    summary += str(boost::format("total length of all arms before decomposition: %.2f\n") % Arm::mTotalArmLengthBeforeDecomposition);
+    summary += str(boost::format("total length of all arms after decomposition: %.2f\n") % Arm::mTotalArmLengthAfterDecomposition);
+    double delta = Arm::mTotalArmLengthAfterDecomposition - Arm::mDecomposedLength + Arm::mTotalArmLengthBeforeDecomposition;
+    summary += str(boost::format("Total decomposed length (computed independently): %.2f (delta %f)\n") % Arm::mDecomposedLength % delta);
+    double ratio = delta / Arm::mTotalArmLengthAfterDecomposition;
+    if (Arm::mTotalArmLengthAfterDecomposition && fabs(ratio) > 0.00001 ) {
+      string errmsg = str(boost::format("\n\nError:  mDecomposedLength %1% + mTotalArmLengthBeforeDecomposition %2% != mTotalArmLengthAfterDecomposition %3% (ratio is %4%)!\n\n\n")%Arm::mDecomposedLength%Arm::mTotalArmLengthBeforeDecomposition%Arm::mTotalArmLengthAfterDecomposition%ratio);
+      cerr  << errmsg;
+      summary +=  errmsg;
+    }
+    summary += str(boost::format("Number of segments classified in arm: %d\n") % ArmSegment::mNumClassified);
+    summary += str(boost::format("Number of segments measured in arm: %d\n") % ArmSegment::mNumArmSegmentsMeasured);
+    summary += str(boost::format("Number of segments wrapped: %d\n") % ArmSegment::mNumWrapped);
+    summary += "===========================================\n";
+    int i = 0; for (i=0; i<11; i++) {
+      summary += str(boost::format("%s: number of arms = %d\n") % ArmTypeNames(i).c_str() % numArms[i]);
+      summary += str(boost::format("%s: total length of arms = %.2f\n") % ArmTypeNames(i).c_str() % armLengths[i]);
+      summary += "----------------------\n";
+    }
+#if LINKED_LOOPS
+    summary += str(boost::format("LINKED LOOPS: total number of arms = %d\n") % numLinkedLoops);
+    summary += str(boost::format("LINKED LOOPS: total length of arms = %.2f\n") % linkedLoopLength);
+    summary += "----------------------\n";
+#endif
+    
+    // write a row of arm lengths to make analysis via spreadsheet easier
+    summary += "Key: \nUNKNOWN\tUNINTRSTNG\tLOOP\tMM_111\tMN_111\tNN_111\tMM_200\tMN_200\tNN_200\tSHORT_NN_111\tSHORT_NN_200\n";
+    int n = 0;
+    while (n<11) {
+      summary += str(boost::format("%.2f\t") %  armLengths[n]);
+      ++n;
+    }
+    
+    
+    
+    if (mThreshold >= 0.0) {
+      summary += "\n\n----------------------\n";
+      summary += str(boost::format("THRESHOLD data.  Threshold = %.2f\n") % mThreshold);
+      int n = 0;
+      for (n=0; n<16; n++) {
+        summary += "----------------------\n";
+        summary += str(boost::format("Total number of %s arms: %d\n") % armTypes[n] % (numShortArms[n] + numLongArms[n]));
+        summary += str(boost::format("Total length of %s arms: %.2f\n") % armTypes[n] % (shortLengths[n] + longLengths[n]));
+        summary += str(boost::format("Number of %s arms SHORTER than threshold = %d\n") % armTypes[n] % numShortArms[n]);
+        summary += str(boost::format("Total length of %s arms shorter than threshold = %.2f\n") % armTypes[n] % shortLengths[n]);
+        summary += str(boost::format("Number of %s arms LONGER than threshold = %d\n") % armTypes[n] % numLongArms[n]);
+        summary += str(boost::format("Total length of %s arms longer than threshold = %.2f\n") % armTypes[n] % longLengths[n]);
+        summary += "\n";
+      }
+    }
+    
+    // write a row of arm lengths to make analysis via spreadsheet easier
+    summary += "----------------------\n";
+    summary += "Key: NN_200\tNN_020\tNN_002\tNN_+++\tNN_++-\tNN_+-+\tNN_-++\n";
+    summary += "SHORT ARM LENGTHS:\n";
+    n=0; while (n<16) {
+      summary += str(boost::format("%.2f\t") %  shortLengths[n]);
+      ++n;
+    }
+    summary += "\nLONG ARM LENGTHS:\n";
+    n = 0; while (n<16) {
+      summary += str(boost::format("%.2f\t") %  longLengths[n]);
+      ++n;
+    }
+    summary += "\n";
+    
+    summary += "----------------------\n\n\n";
+    
+    if (mNumBins) {
+      // print a row of bin values
+      summary += "BINS: \n";
+      summary += str(boost::format("max length = %.3f\n") % Arm::mLongestLength);
+      
+      long totalArms = 0; // reality check
+      double totalLength = 0;  // reality check
+      string line;
+      int binNum = 0;
+      summary += str(boost::format("%-12s%-12s%-12s\n") % "Bin" % "Arms" % "Lengths");
+      for (binNum = 0; binNum < mNumBins; ++binNum) {
+        summary += str(boost::format("%-12d%-12ld%-12.3f\n") % binNum % armBins[binNum] % armLengthBins[binNum]);
+        totalArms += armBins[binNum];
+        totalLength += armLengthBins[binNum];
+      }
+      summary += str(boost::format("%-12s%-12ld%-12.3f\n") % "TOTAL" % totalArms % totalLength);
+    }
+    
+    summary += "\n\n========================================\n";
+    summary += "DECOMPOSITION STATISTICS\n";
+    summary += "----------------------\n";
+    int energy = 0;
+    while (energy < 7) {
+      summary += str(boost::format("Decomposed arms, energy level %d: %d\n") % energy % Arm::mNumDecomposed[energy]);
+      energy++;
+    }
+    
+    summary += str(boost::format("Detached/absorbed arms: %d\n") % Arm::mNumDestroyedInDetachment);
+    
+    summary += "========================================\n\n\n";
+#ifdef DEBUG_SEGMENTS
+    // check against segment lengths:
+    uint32_t numSegments[11] = {0}, totalSegments=0, culledSegments=0;  // number of arms of each type
+    double segmentLengths[11] = {0}, totalSegmentLength=0, culledLength=0;
+    for (std::map<uint32_t, ArmSegment *>::iterator segpos = ArmSegments.begin(); segpos != mArmSegments.end(); ++segpos) {
+      ArmSegment *seg = segpos->second;
+      double length = seg->GetLength();
+      // Cull out half the wrapped segments in such a way that for each culled, there is an identical one remaining:
+      if (!seg->Cullable()) {
+        segmentLengths[seg->GetMNType()] += length;
+        totalSegmentLength += length;
+        numSegments[seg->GetMNType()]++;
+        totalSegments++;
+      } else {
+        culledSegments++;
+        culledLength +=length;
+      }
+    }
+    
+    summary += "===========================================\n";
+    summary += "REALITY CHECK:  total length of all segments, skipping wrapped segments\n";
+    summary += str(boost::format("total Number of segments: %d\n") % totalSegments);
+    summary += str(boost::format("total length of all segments: %.2f\n") % totalSegmentLength);
+    summary += "===========================================\n";
+    for (i=0; i<11; i++) {
+      summary += str(boost::format("%s: number of segs = %d\n") % ArmTypeNames(i).c_str(), numArms[i]);
+      summary += str(boost::format("%s: total length of segments = %.2f\n") % ArmTypeNames(i).c_str() % armLengths[i]);
+      summary += "----------------------\n";
+    }
+    
+    summary += str(boost::format("CULLED segments = %d\n") % culledSegments);
+    summary += str(boost::format("CULLED length = %.2f\n") % culledLength);
+    
+    summary += str(boost::format("Wrapped lengths: %.2f\n") % ArmSegment::mSegLen);
+    summary += "----------------------\n\n\n";
+#endif
+    return summary;
+  }
+  
+  //===========================================================================
+  string DataSet::MonsterNodeSummary(void) {
     vector<uint32_t> monsterTypes(1);
     for (std::map<uint32_t, FullNode*>::iterator nodepos = FullNode::mFullNodes.begin(); nodepos !=  FullNode::mFullNodes.end(); nodepos++) {
       FullNode *node = nodepos->second;
@@ -3613,13 +3612,64 @@ namespace paraDIS {
       }
     }
     string s;
+    s += "MONSTER NODE SUMMARY STATISTICS \n";
+    s += "=========================================================================\n";
     s += str(boost::format("Total monster nodes: %1%\n") %monsterTypes[0]);
     for (uint8_t t = 1; t < monsterTypes.size(); t++) {
       if (monsterTypes[t]) {
         s += str(boost::format("Type -%1% monster nodes: %2%\n") % (int)t % monsterTypes[t]);
       }
     }
-    return s;
+    s += "=========================================================================\n";
+   return s;
+  }
+
+  //===========================================================================
+  string DataSet::MetaArmSummary(void) {
+
+    uint32_t a = Arm::mArms.size();
+    while (a--) {
+      Arm::mArms[a]->mSeen = false;
+    }
+    uint32_t armnum = 0, metaarmcounts[7]={0};
+    double metaarmtypelengths[7] = {0.0}, totalEPDist = 0.0;
+    uint32_t numarms = 0;
+    for (vector<boost::shared_ptr<MetaArm> >::iterator pos = mMetaArms.begin(); pos != mMetaArms.end(); ++pos) {
+      if ((*pos)->mTerminalNodes.size() == 2) {
+        totalEPDist += (*pos)->mTerminalNodes[0]->Distance(*( (*pos)->mTerminalNodes[1]), true);
+      }
+      metaarmcounts[(*pos)->mMetaArmType]++;
+      metaarmtypelengths[(*pos)->mMetaArmType] += (*pos)->mLength;
+      numarms += (*pos)->mAllArms.size();
+      for (vector<Arm*>::iterator armpos = (*pos)->mAllArms.begin(); armpos != (*pos)->mAllArms.end(); ++armpos) {
+        if ((*armpos)->mSeen) {
+          dbecho(0, str(boost::format("\nError in PrintMetaArmFile: arm %d in metaarm %d has mSeen == true\n")% ((*armpos)->mArmID) %((*pos)->mMetaArmID)));
+        }
+        (*armpos)->mSeen = true;
+      }
+    }
+    armnum = 0;
+    for  (vector<Arm*>::iterator armpos = Arm::mArms.begin(); armpos != Arm::mArms.end(); armpos++, armnum++) {
+      if ((*armpos)->mArmType != ARM_EMPTY && !(*armpos)->mSeen) {
+        dbecho(0, str(boost::format("\n******** \n   Error: arm %1% has not been seen in a metaarm.  Arm: %2%.\n*********\n")%armnum%((*armpos)->Stringify(0))));
+      }
+    }
+
+    string summary = "METAARM SUMMARY STATISTICS \n";
+    summary += "=========================================================================\n";
+    summary += str(boost::format("%9s%28s%20s%20s\n") % "TypeID" % "MetaArmType" % "NumMetaArms" % "MetaArmLengths");
+    int i=0;
+    while (i<4) {
+      summary += str(boost::format("%9d%28s%20d%20.3f\n") % i
+                     % MetaArmTypeNames(i).c_str()
+                     % metaarmcounts[i]
+                     % metaarmtypelengths[i]);
+      ++i;
+    }
+    summary += str(boost::format("Total number of arms in metaarms: %d\n") % numarms);
+    summary += str(boost::format("Total EP-Dist: %20.3f\n") % totalEPDist);
+    summary += "=========================================================================\n";
+    return summary; 
   }
 
   //===========================================================================
@@ -3635,7 +3685,7 @@ namespace paraDIS {
     debugfile << "=================================================" << endl;
     debugfile <<"Total full nodes: " << FullNode::mFullNodes.size() << endl;
 
-    debugfile << GetMonsterNodeSummary();
+    debugfile << MonsterNodeSummary();
 
     debugfile <<"Total memory for nodes and their pointers: " << FullNode::mFullNodes.size() * (sizeof(FullNode) + sizeof(FullNode *)) << endl;
     debugfile << "=================================================" << endl;
@@ -3818,13 +3868,28 @@ namespace paraDIS {
     }
   }
 
+  //===========================================================================
+  void DataSet::WriteSummaryFile(const char *altname) {
+    std::string filename = mOutputDir + "/" + mOutputBasename + "-summary.txt";
+    if (altname) {
+      filename = mOutputDir + string("/summary-") + altname + ".txt";
+    }
+    ofstream summaryfile (filename.c_str());
+    
+    summaryfile << "SUMMARY FILE written  on " << timestamp() << " by " << GetLibraryVersionString("PrintSummaryFile") << endl;
+    summaryfile << MetaArmSummary() << endl << endl; 
+    summaryfile << "******************************************************" << endl 
+                << "******************************************************" << endl << endl;
+    summaryfile << MonsterNodeSummary() << endl << endl; 
+ 
+    return; 
+  }
 
   //===========================================================================
   void DataSet::DebugPrintArms(const char *altname) {
     std::string filename = mOutputDir + "/" + mOutputBasename + "-Arms-debug.txt";
     if (altname) {
-      string altstring = string("-") + altname;
-      filename = mOutputDir + string("/Arms-debug") + altstring + ".txt";
+      filename = mOutputDir + string("/Arms-debug-") + altname + ".txt";
     }
     dbecho(1, str(boost::format("Writing arms to debug file %s... ")% filename));
     if (!Mkdir (mOutputDir.c_str())) {
@@ -4332,16 +4397,13 @@ namespace paraDIS {
     return;
   }
 
+
   //===========================================================================
   // Print out all MetaArms in a simple format in a file for analysis, just for Meijie
   void DataSet::PrintMetaArmFile(void) {
     string metaArmFile = mOutputDir + "/" + mOutputBasename + ".metaarms";
     dbecho(0, str(boost::format("Writing metaarms to metaarm file %s... ")% metaArmFile));
     
-    uint32_t a = Arm::mArms.size();
-    while (a--) {
-      Arm::mArms[a]->mSeen = false;
-    }
 
     FILE *armfile = fopen (metaArmFile.c_str(), "w");
     if (!armfile) {
@@ -4350,54 +4412,11 @@ namespace paraDIS {
     }
     fprintf(armfile, "DISCUSSION: \n%s\n", doctext.c_str());
     fflush(armfile);
-    uint32_t armnum = 0, metaarmcounts[7]={0};
-    double metaarmtypelengths[7] = {0.0}, totalEPDist = 0.0;
-    uint32_t numarms = 0;
-    for (vector<boost::shared_ptr<MetaArm> >::iterator pos = mMetaArms.begin(); pos != mMetaArms.end(); ++pos) {
-      if ((*pos)->mTerminalNodes.size() == 2) {
-        totalEPDist += (*pos)->mTerminalNodes[0]->Distance(*( (*pos)->mTerminalNodes[1]), true);
-      }
-      metaarmcounts[(*pos)->mMetaArmType]++;
-      metaarmtypelengths[(*pos)->mMetaArmType] += (*pos)->mLength;
-      numarms += (*pos)->mAllArms.size();
-      for (vector<Arm*>::iterator armpos = (*pos)->mAllArms.begin(); armpos != (*pos)->mAllArms.end(); ++armpos) {
-        if ((*armpos)->mSeen) {
-          dbecho(0, str(boost::format("\nError in PrintMetaArmFile: arm %d in metaarm %d has mSeen == true\n")% ((*armpos)->mArmID) %((*pos)->mMetaArmID)));
-        }
-        (*armpos)->mSeen = true;
-      }
-    }
-    armnum = 0;
-    for  (vector<Arm*>::iterator armpos = Arm::mArms.begin(); armpos != Arm::mArms.end(); armpos++, armnum++) {
-      if ((*armpos)->mArmType != ARM_EMPTY && !(*armpos)->mSeen) {
-        dbecho(0, str(boost::format("\n******** \n   Error: arm %1% has not been seen in a metaarm.  Arm: %2%.\n*********\n")%armnum%((*armpos)->Stringify(0))));
-      }
-    }
     
-    fprintf(armfile, "\n\n");
-    fprintf(armfile, "METAARM SUMMARY STATISTICS \n");
-    fprintf(armfile, "=========================================================================\n");
-    fprintf(armfile, "%9s%28s%20s%20s\n", "TypeID", "MetaArmType", "NumMetaArms", "MetaArmLengths");
-    int i=0;
-    while (i<4) {
-      fprintf(armfile, "%9d%28s%20d%20.3f\n",
-              i,
-              MetaArmTypeNames(i).c_str(),
-              metaarmcounts[i],
-              metaarmtypelengths[i]);
-      ++i;
-    }
-    fprintf(armfile, "Total number of arms in metaarms: %d\n", numarms);
-    fprintf(armfile, "Total EP-Dist: %20.3f\n", totalEPDist);
-    fprintf(armfile, "=========================================================================\n");
-    fprintf(armfile, "\n\n");
+    fprintf(armfile, "\n\n%s\n\n\n\n%s\n\n", 
+            MetaArmSummary().c_str(), 
+            MonsterNodeSummary().c_str()); 
 
-    fprintf(armfile, "\n\n");
-    fprintf(armfile, "MONSTER NODE SUMMARY STATISTICS \n");
-    fprintf(armfile, "=========================================================================\n");
-    fprintf(armfile, GetMonsterNodeSummary().c_str());
-    fprintf(armfile, "=========================================================================\n");
-    fprintf(armfile, "\n\n");
     
     fprintf(armfile, "\n\n");
     fprintf(armfile, "METAARM DETAILED STATISTICS\n");
@@ -4409,7 +4428,7 @@ namespace paraDIS {
             "EP1-Type", "EP1-ID",   "EP1-X", "EP1-Y", "EP1-Z",
             "EP2-Type", "EP2-ID",   "EP2-X", "EP2-Y", "EP2-Z",
             "BurgersType","(NumArms):<Arm List>");
-    armnum = 0;
+    uint32_t armnum = 0;
     for (vector<boost::shared_ptr<MetaArm> >::iterator pos = mMetaArms.begin(); pos != mMetaArms.end(); ++pos) {
       int numtermnodes = (*pos)->mTerminalNodes.size(), numNeighbors[2] = {0};
       int numtermarms = (*pos)->mTerminalArms.size();
@@ -4971,6 +4990,10 @@ namespace paraDIS {
 
     if (mDoVTKFile) {
       WriteVTKFiles();
+    }
+
+    if (mDoSummaryFile) {
+      WriteSummaryFile();
     }
 
     dbprintf(1, "ReadData complete\n");
