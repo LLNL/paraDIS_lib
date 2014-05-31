@@ -3462,11 +3462,15 @@ namespace paraDIS {
     summary += str(boost::format("total Number of non-empty arms: %d\n") % totalArms);
     summary += str(boost::format("total length of all arms before decomposition: %.2f\n") % Arm::mTotalArmLengthBeforeDecomposition);
     summary += str(boost::format("total length of all arms after decomposition: %.2f\n") % Arm::mTotalArmLengthAfterDecomposition);
-    double delta = Arm::mTotalArmLengthAfterDecomposition - Arm::mDecomposedLength + Arm::mTotalArmLengthBeforeDecomposition;
+
+    double delta = Arm::mTotalArmLengthAfterDecomposition - (Arm::mDecomposedLength + Arm::mTotalArmLengthBeforeDecomposition);
+
     summary += str(boost::format("Total decomposed length (computed independently): %.2f (delta %f)\n") % Arm::mDecomposedLength % delta);
+
     double ratio = delta / Arm::mTotalArmLengthAfterDecomposition;
+
     if (Arm::mTotalArmLengthAfterDecomposition && fabs(ratio) > 0.00001 ) {
-      string errmsg = str(boost::format("\n\nError:  mDecomposedLength %1% + mTotalArmLengthBeforeDecomposition %2% != mTotalArmLengthAfterDecomposition %3% (ratio is %4%)!\n\n\n")%Arm::mDecomposedLength%Arm::mTotalArmLengthBeforeDecomposition%Arm::mTotalArmLengthAfterDecomposition%ratio);
+      string errmsg = str(boost::format("\n\nError: mDecomposedLength %1% + mTotalArmLengthBeforeDecomposition %2% != mTotalArmLengthAfterDecomposition %3% (ratio is %4%)!\n\n\n")%Arm::mDecomposedLength%Arm::mTotalArmLengthBeforeDecomposition%Arm::mTotalArmLengthAfterDecomposition%ratio);
       cerr  << errmsg;
       summary +=  errmsg;
     }
@@ -3660,14 +3664,18 @@ namespace paraDIS {
     summary += str(boost::format("%9s%28s%20s%20s\n") % "TypeID" % "MetaArmType" % "NumMetaArms" % "MetaArmLengths");
     int i=0;
     while (i<4) {
-      summary += str(boost::format("%9d%28s%20d%20.3f\n") % i
+      summary += str(boost::format("%9d%28s%20d%20.2f\n") % i
                      % MetaArmTypeNames(i).c_str()
                      % metaarmcounts[i]
                      % metaarmtypelengths[i]);
       ++i;
     }
-    summary += str(boost::format("Total number of arms in metaarms: %d\n") % numarms);
-    summary += str(boost::format("Total EP-Dist: %20.3f\n") % totalEPDist);
+    double totalLoopLength = metaarmtypelengths[2] + metaarmtypelengths[3]; 
+    double ma111beforeDecomp = Arm::mTotalArmLengthBeforeDecomposition - totalLoopLength; 
+    summary += "\n"; 
+    summary += str(boost::format("%50s%15d\n") % "Total number of arms in metaarms:" % numarms);
+    summary += str(boost::format("%50s%15.2f\n") % "Total METAARM_111 length before decomposition:" %  ma111beforeDecomp);
+    summary += str(boost::format("%50s%15.2f\n") % "Total EP-Dist:" % totalEPDist);
     summary += "=========================================================================\n";
     return summary; 
   }
@@ -3874,13 +3882,14 @@ namespace paraDIS {
     if (altname) {
       filename = mOutputDir + string("/summary-") + altname + ".txt";
     }
+    dbecho(1, str(boost::format("Writing summary file %s... ")% filename));
     ofstream summaryfile (filename.c_str());
     
-    summaryfile << "SUMMARY FILE written  on " << timestamp() << " by " << GetLibraryVersionString("PrintSummaryFile") << endl;
+    summaryfile << "SUMMARY FILE written  on " << timestamp() << " by " << GetLibraryVersionString("PrintSummaryFile") << endl << endl;
     summaryfile << MetaArmSummary() << endl << endl; 
-    summaryfile << "******************************************************" << endl 
-                << "******************************************************" << endl << endl;
     summaryfile << MonsterNodeSummary() << endl << endl; 
+    summaryfile << ArmSummary() << endl << endl; 
+    dbecho(1, str(boost::format("summary complete\n")));
  
     return; 
   }
@@ -4988,12 +4997,12 @@ namespace paraDIS {
       WriteTagFile();
     }
 
-    if (mDoVTKFile) {
-      WriteVTKFiles();
-    }
-
     if (mDoSummaryFile) {
       WriteSummaryFile();
+    }
+
+    if (mDoVTKFile) {
+      WriteVTKFiles();
     }
 
     dbprintf(1, "ReadData complete\n");
