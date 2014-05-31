@@ -45,6 +45,8 @@ int main(int argc, char *argv[]) {
 
   TCLAP::SwitchArg statsFlag("s", "stats", "print arm, metaarm files in output directory", cmd); 
 
+  TCLAP::SwitchArg summaryFlag("", "summary", "print brief summaries of arms and metaarms statistics in a file in the output directory", cmd); 
+
   TCLAP::SwitchArg tagfileFlag("", "tagfile", "Output a new data file basename-tagged.data, identical to the input except that all node entries have the correct \"tag\" values.", cmd); 
 
   TCLAP::ValueArg<float> threshold("", "threshold", "report on number of arms of various types which have length less than the given threshold", false, -1.0, "FLOAT", cmd); 
@@ -89,12 +91,14 @@ int main(int argc, char *argv[]) {
     bool tagfile = tagfileFlag.getValue();
     int verbosity = verbosityFlag.getValue(); 
     bool vtkfile = vtkfileFlag.getValue(); 
+    bool summary = summaryFlag.getValue(); 
 
     if (fullout.getValue()) {
       debugfiles = true; 
       stats = true; 
       tagfile = true;
       vtkfile = true; 
+      summary = true; 
       if (verbosity == -1) {
         verbosity = 5; 
       }
@@ -145,6 +149,7 @@ int main(int argc, char *argv[]) {
       
       gDataSet->EnableDebugOutput(debugfiles); 
       gDataSet->EnableStatsOutput(stats); 
+      gDataSet->EnableSummaryOutput(summary); 
       gDataSet->EnableTagFileOutput(tagfile); 
       gDataSet->EnableVTKFileOutput(vtkfile); 
       
