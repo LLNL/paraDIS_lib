@@ -1,7 +1,9 @@
  
 
-2014-01-31: version 2.3.6
+2014-06-02: version 2.3.6
        Fixed bugs relating to very rare cases of looped arms which have wrapped segments, or decomposed arms which cross over themselves when decomposed.  
+       Add --summary flag to allow all summaries to be printed in a single file.
+       Improved documentation in summary files to clarify segments, arms and metaarms.  
        
 2014-01-31: version 2.3.5
        Added "ScrewType" to segments for Jaime Marian; shows in VTK files but not yet VisIt plugin. 

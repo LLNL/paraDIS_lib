@@ -215,6 +215,8 @@ namespace paraDIS {
 
   uint32_t ArmSegment::mNextSegmentID = 0;
   double ArmSegment::mSegLen = 0 ;
+  uint32_t ArmSegment::mNumBeforeDecomposition = 0; // happens in ExtendByArm()
+  uint32_t ArmSegment::mNumDecomposed = 0; // happens in ExtendByArm()
   uint32_t ArmSegment::mNumClassified = 0;
   uint32_t ArmSegment::mNumWrapped = 0;
   uint32_t ArmSegment::mNumArmSegmentsMeasured=0;
@@ -483,12 +485,21 @@ namespace paraDIS {
     return;
   }
   
-  string doctext = "ParaDIS data is a set of disconnected undirected graphs, which may contain cycles.  \n"
+  string doctext = "DISCUSSION AND DEFINITIONS: \n"
+            "ParaDIS data is a set of disconnected undirected graphs, which may contain cycles.  \n"
+            "\n"
+            "===================================================================\n"
+            "NODES AND SEGMENTS\n"
             "All nodes in a paraDIS data set have at least one neighbor given in the paraDIS output file.  The connection, or neighbor relation, between two adjacent nodes is called an \"arm segment.\"  A node is considered an \"interior node\" if it has exactly two neighbors, else it is considered a \"terminal node.\"  The only exception to this is that loops always have one terminal node, which may have two neighbors.  \n"
+            "\n"
+            "===================================================================\n"
+            "ARMS\n"
             "An \"arm\" is a sequence of interior nodes terminated by one or two terminal nodes.  A loop is an arm that has only one terminal node.  \n"
             "Every node is part of at least one arm.  If it's not an interior node, we say the node \"has arms.\"  The number of arms equals the number of neighbors, even if some are loops.  E.g., a terminal node with three neighbors has three arms by definition, even if two of the neighbors are part of the same loop, i.e., two of the arms might be the same arm.\n"
+            "Every segment in an arm has the same Burgers vector.  See below.\n"
             "\n"
-            "Segments and arms have Burgers vectors associated with them.  \n"
+            "===================================================================\n"
+            "Segments, arms, and metaarms have Burgers vectors associated with them.\n"
             "  //  Segment BURGERS TYPES: (P = plus(+) and M = minus(-))\n"
   "// These are valued in order of increasing energy levels, corresponding to the sum of the square of the components of the burgers vector.  \n"
   "#define BURGERS_DECOMPOSED  -2  // for segments that are decomposed\n"
@@ -509,6 +520,8 @@ namespace paraDIS {
   "#define BURGERS_113         42\n"
   "#define BURGERS_222         50  // BEGIN ENERGY LEVEL 5\n"
   "#define BURGERS_004         60  // BEGIN ENERGY LEVEL 6\n"
+  "\n"
+  "===================================================================\n"
   "NODE TYPES and MONSTER NODES: \n"
   "Every node has a node type.  The vast majority of nodes are simply have NodeType = number of neighboring nodes.  But some nodes get negative types, and these are known as Monster Nodes.  Oooh, scary.  \n"
   "Only a terminal node may be a \"monster node\" A.K.A. \"M Type node.\" If a node is not an \"M\" then it is an \"N\" for \"non-monster\" or \"normal.\"  Interior nodes are always type \"N\" if anyone cares to ask, but this is usually ignored.  \n"
@@ -531,7 +544,9 @@ namespace paraDIS {
   "#define ARM_SHORT_NN_111  9\n"
   "#define ARM_SHORT_NN_200  10\n"
   "\n"
-  "MetaArms are collections of arms.  There are three main types, plus an \"unknonwn\" category for misfit arms:\n"
+  "===================================================================\n"
+  "METAARMS\n"
+  "MetaArms are collections of arms, either a loop, or terminated by two M nodes. Every arm in a MetaArm has the same Burgers vector, and there are always either zero or two M nodes in a MetaArm.  There are three main types, plus an \"unknonwn\" category for misfit arms:\n"
   "#define METAARM_UNKNOWN     0  // Not defined, error, or some other odd state\n"
   "#define METAARM_111         1  // Entirely composed of type 111 arms of the same burgers vector.   Does not include loops. \n"
   "#define METAARM_LOOP_111    2  // Contains a loop, composed entirely of type 111 arms.\n"
@@ -1854,6 +1869,7 @@ namespace paraDIS {
         dbprintf(6, "ExtendBySegments(%d): Arm segment #%d: Created newNode %d by copying source node %d.\n", mArmID, seg, newNode->GetIndex(), sourceNode->GetIndex());
       }
       interiorSegment = new ArmSegment(*sourceSegments[seg]);
+      ArmSegment::mNumDecomposed ++; 
       dbprintf(6, "ExtendBySegments(%d): Setting source segment %d as BURGERS_DECOMPOSED.\n", mArmID, sourceSegments[seg]->mSegmentID);
       interiorSegment->mParentArm = this;
       interiorSegment->mNumDuplicates = sourceSegments[seg]->mNumDuplicates + numDuplicates;
@@ -3459,13 +3475,13 @@ namespace paraDIS {
     
     summary += "\n";
     summary += "===========================================\n";
-    summary += str(boost::format("total Number of non-empty arms: %d\n") % totalArms);
-    summary += str(boost::format("total length of all arms before decomposition: %.2f\n") % Arm::mTotalArmLengthBeforeDecomposition);
-    summary += str(boost::format("total length of all arms after decomposition: %.2f\n") % Arm::mTotalArmLengthAfterDecomposition);
+    summary += str(boost::format("%50s%12d\n")%"total number of non-empty arms:" % totalArms);
+    summary += str(boost::format("%50s%12.2f\n")%"total length of all arms before decomposition:" % Arm::mTotalArmLengthBeforeDecomposition);
+    summary += str(boost::format("%50s%12.2f\n")%"total length of all arms after decomposition:" % Arm::mTotalArmLengthAfterDecomposition);
 
     double delta = Arm::mTotalArmLengthAfterDecomposition - (Arm::mDecomposedLength + Arm::mTotalArmLengthBeforeDecomposition);
 
-    summary += str(boost::format("Total decomposed length (computed independently): %.2f (delta %f)\n") % Arm::mDecomposedLength % delta);
+    summary += str(boost::format("%50s%12.2f\n")%"Total decomposed length (computed independently):" % Arm::mDecomposedLength);
 
     double ratio = delta / Arm::mTotalArmLengthAfterDecomposition;
 
@@ -3474,9 +3490,15 @@ namespace paraDIS {
       cerr  << errmsg;
       summary +=  errmsg;
     }
-    summary += str(boost::format("Number of segments classified in arm: %d\n") % ArmSegment::mNumClassified);
-    summary += str(boost::format("Number of segments measured in arm: %d\n") % ArmSegment::mNumArmSegmentsMeasured);
-    summary += str(boost::format("Number of segments wrapped: %d\n") % ArmSegment::mNumWrapped);
+
+    summary += "===========================================\n";
+
+    summary += str(boost::format("%50s%12d\n")%"Total number of segments before decomposition:" % ArmSegment::mNumBeforeDecomposition);
+    summary += str(boost::format("%50s%12d\n")%"Total number of segments decomposed:" % ArmSegment::mNumDecomposed);
+    summary += str(boost::format("%50s%12d\n")%"Total number of segments after decomposition:" % ArmSegment::mNumClassified);
+    summary += str(boost::format("%50s%12d\n")%"Number of segments classified in arm:" % ArmSegment::mNumClassified);
+    summary += str(boost::format("%50s%12d\n")%"Number of segments measured in arm:" % ArmSegment::mNumArmSegmentsMeasured);
+    summary += str(boost::format("%50s%12d\n")%"Number of segments wrapped:" % ArmSegment::mNumWrapped);
     summary += "===========================================\n";
     int i = 0; for (i=0; i<11; i++) {
       summary += str(boost::format("%s: number of arms = %d\n") % ArmTypeNames(i).c_str() % numArms[i]);
@@ -3659,23 +3681,28 @@ namespace paraDIS {
       }
     }
 
-    string summary = "METAARM SUMMARY STATISTICS \n";
+    string summary = "METAARM SUMMARY STATISTICS\n";
     summary += "=========================================================================\n";
     summary += str(boost::format("%9s%28s%20s%20s\n") % "TypeID" % "MetaArmType" % "NumMetaArms" % "MetaArmLengths");
     int i=0;
+    double totalLength = 0; 
     while (i<4) {
       summary += str(boost::format("%9d%28s%20d%20.2f\n") % i
                      % MetaArmTypeNames(i).c_str()
                      % metaarmcounts[i]
                      % metaarmtypelengths[i]);
+      totalLength += metaarmtypelengths[i]; 
       ++i;
     }
     double totalLoopLength = metaarmtypelengths[2] + metaarmtypelengths[3]; 
     double ma111beforeDecomp = Arm::mTotalArmLengthBeforeDecomposition - totalLoopLength; 
     summary += "\n"; 
-    summary += str(boost::format("%50s%15d\n") % "Total number of arms in metaarms:" % numarms);
-    summary += str(boost::format("%50s%15.2f\n") % "Total METAARM_111 length before decomposition:" %  ma111beforeDecomp);
-    summary += str(boost::format("%50s%15.2f\n") % "Total EP-Dist:" % totalEPDist);
+    summary += str(boost::format("%60s%12d\n") % "Total number of arms in metaarms:" % numarms);
+    summary += str(boost::format("%60s%12.2f\n") % "Total length of all loops (loops cannot be decomposed):" %  totalLoopLength);
+    summary += str(boost::format("%60s%12.2f\n") % "Total Length of all metaarms after decomposition:" % totalLength);
+    summary += str(boost::format("%60s%12.2f\n") % "Total EP-Dist of all metaarms:" % totalEPDist);
+    summary += str(boost::format("%60s%12.2f\n") % "Computed METAARM_111 length \"before decomposition\":" %  ma111beforeDecomp);
+    summary += "\nNote: metaarms are formed after decomposition occurs.  We compute a notional \"length of METAARM_111 before decomposition\" by subtracting the length of the loops from the total lengths of all arms before decomposition.\n"; 
     summary += "=========================================================================\n";
     return summary; 
   }
@@ -3859,6 +3886,7 @@ namespace paraDIS {
 
       STARTPROGRESS();
       armnum = 0;
+      ArmSegment::mNumBeforeDecomposition = ArmSegment::mArmSegments.size(); 
       for (vector<Arm*>::iterator pos = Arm::mArms.begin(); pos!= Arm::mArms.end(); ++pos, ++armnum) {
         if ((*pos)->Decompose(energyLevel)) {
           numDecomposed[energyLevel]++;
@@ -3882,14 +3910,15 @@ namespace paraDIS {
     if (altname) {
       filename = mOutputDir + string("/summary-") + altname + ".txt";
     }
-    dbecho(1, str(boost::format("Writing summary file %s... ")% filename));
     ofstream summaryfile (filename.c_str());
     
-    summaryfile << "SUMMARY FILE written  on " << timestamp() << " by " << GetLibraryVersionString("PrintSummaryFile") << endl << endl;
+    summaryfile << "SUMMARY FILE written  on " << timestamp() << " by " << GetLibraryVersionString("PrintSummaryFile") << endl;
+    summaryfile << "Please see the bottom of this file for a discussion of the meanings of \"segment\", \"node\", \"arm\" and \"metaarm.\""<< endl << endl; 
     summaryfile << MetaArmSummary() << endl << endl; 
     summaryfile << MonsterNodeSummary() << endl << endl; 
     summaryfile << ArmSummary() << endl << endl; 
-    dbecho(1, str(boost::format("summary complete\n")));
+    summaryfile << doctext << endl; 
+    dbecho(1, str(boost::format("Wrote summary file %s\n")% filename));
  
     return; 
   }
@@ -4419,7 +4448,7 @@ namespace paraDIS {
       cerr << "ERROR:  Cannot open output file to write out arms" << endl;
       return;
     }
-    fprintf(armfile, "DISCUSSION: \n%s\n", doctext.c_str());
+    fprintf(armfile, "\n%s\n", doctext.c_str());
     fflush(armfile);
     
     fprintf(armfile, "\n\n%s\n\n\n\n%s\n\n", 
