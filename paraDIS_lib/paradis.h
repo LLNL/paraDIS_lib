@@ -933,6 +933,7 @@ namespace paraDIS {
       
       mSegLen = 0; 
       mNumClassified = 0; 
+      mNumDecomposed = 0; 
       mNumWrapped = 0; 
       mNumArmSegmentsMeasured = 0; 
       mNextSegmentID = 0; 
@@ -1248,7 +1249,8 @@ namespace paraDIS {
 
 
     static double mSegLen;
-    static uint32_t mNumClassified, mNumWrapped, mNumArmSegmentsMeasured; 
+    static uint32_t mNumClassified, mNumBeforeDecomposition, 
+      mNumDecomposed, mNumWrapped, mNumArmSegmentsMeasured; 
     static uint32_t mNextSegmentID; 
 
   protected:
