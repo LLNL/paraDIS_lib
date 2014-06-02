@@ -41,11 +41,12 @@ debug:
 install: all
 	mkdir -p $(INSTALL_DIR)/bin && cp $(TARGETS) $(INSTALL_DIR)/bin
 
+global: all
+	INSTALL_DIR=/usr/global/tools/IMG_private/paraDIS/$$SYS_TYPE $(MAKE) install
+
 install-debug: 
 	DEBUG=-g $(MAKE) install
 
-global: all
-	INSTALL_DIR=/usr/global/tools/IMG_private/paraDIS/$$SYS_TYPE $(MAKE) install
 
 libparadis: $(PARADISLIB) 
 
