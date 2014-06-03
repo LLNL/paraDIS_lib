@@ -3495,9 +3495,9 @@ namespace paraDIS {
 
     summary += str(boost::format("%50s%12d\n")%"Total number of segments before decomposition:" % ArmSegment::mNumBeforeDecomposition);
     summary += str(boost::format("%50s%12d\n")%"Total number of segments decomposed:" % ArmSegment::mNumDecomposed);
-    summary += str(boost::format("%50s%12d\n")%"Total number of segments after decomposition:" % ArmSegment::mNumClassified);
-    summary += str(boost::format("%50s%12d\n")%"Number of segments classified in arm:" % ArmSegment::mNumClassified);
-    summary += str(boost::format("%50s%12d\n")%"Number of segments measured in arm:" % ArmSegment::mNumArmSegmentsMeasured);
+    summary += str(boost::format("%50s%12d\n")%"Total number of segments after decomposition:" % (ArmSegment::mNumBeforeDecomposition - ArmSegment::mNumDecomposed));
+    // summary += str(boost::format("%50s%12d\n")%"Number of segments classified in arm:" % ArmSegment::mNumClassified);
+    // summary += str(boost::format("%50s%12d\n")%"Number of segments measured in arm:" % ArmSegment::mNumArmSegmentsMeasured);
     summary += str(boost::format("%50s%12d\n")%"Number of segments wrapped:" % ArmSegment::mNumWrapped);
     summary += "===========================================\n";
     int i = 0; for (i=0; i<11; i++) {
