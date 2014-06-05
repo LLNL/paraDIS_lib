@@ -1445,7 +1445,7 @@ namespace paraDIS {
 
     dbprintf(6, "Arm::GetNodes(arm %d): Found start segment %s and startNode %s\n", mArmID, startSegment->Stringify(0).c_str(), startNode->Stringify(0).c_str());
     if (startNode->GetNumNeighborSegments() == 1) {
-      if (mDecomposing) {
+      if (mDecomposing && !startSegment->mGhostEndpoints.size() ) {
         dbprintf(6, "Arm::GetNodes(arm %d): startNode has only one neighbor and we are decomposing the arm and there are no ghost endpoints, so this is assumed to be the result of decomposition and this is in fact a legitimate endpoint.\n", mArmID);
       } else {
         /*
@@ -1992,6 +1992,7 @@ namespace paraDIS {
     if (numTermNodes == 0 || numTermNodes == 1) {
       dbprintf(4, "Arm::Decompose(energy %d, arm %d): Looped arm, will not decompose\n", energy,  mArmID);
       WriteTraceFiles("0-loop-no-decomposition");
+      mDecomposing = false;
       return false;
     }
 
@@ -2014,6 +2015,7 @@ namespace paraDIS {
     // Note that cross-arm detachment might cause this arm to become invalid.
     if (!mTerminalNodes.size()) {
       dbprintf(4, "Arm::Decompose(energy %d, arm %d): This arm was eliminated by DetachCrossArms, cannot decompose.\n", energy, mArmID);
+      mDecomposing = false;
       return false;
     }
 
@@ -2130,6 +2132,7 @@ namespace paraDIS {
 
     mNumDecomposed[energy]++;
     dbprintf(4, "Arm::Decompose(energy %d, arm %d): Arm decomposition complete. After arm decomposition, the arm looks like this: %s", energy, mArmID, Stringify(0,false).c_str());
+    mDecomposing = false;
     return true;
   }
   
@@ -3490,7 +3493,7 @@ namespace paraDIS {
       cerr  << errmsg;
       summary +=  errmsg;
     }
-
+ 
     summary += "===========================================\n";
 
     summary += str(boost::format("%50s%12d\n")%"Total number of segments before decomposition:" % ArmSegment::mNumBeforeDecomposition);
