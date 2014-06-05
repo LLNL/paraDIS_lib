@@ -1,4 +1,6 @@
  
+2014-06-05: version 2.3.6b
+       Fixed a bug involving the decomposition of arms and tracing of wrapped segments that caused early termination on some data sets.  
 
 2014-06-02: version 2.3.6
        Fixed bugs relating to very rare cases of looped arms which have wrapped segments, or decomposed arms which cross over themselves when decomposed.  
