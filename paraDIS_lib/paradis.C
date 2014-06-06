@@ -3400,10 +3400,10 @@ namespace paraDIS {
     //if (!dbg_isverbose()) return;
     //dbprintf(3, "Beginning PrintArmStats()");
     string summary;     
-    double armLengths[11] = {0}, totalArmLength=0;
+    double armLengths[7] = {0}, totalArmLength=0;
     
 
-    uint32_t numArms[11] = {0};  // number of arms of each type
+    uint32_t numArms[7] = {0};  // number of arms of each type
     uint32_t totalArms=0;
 #if LINKED_LOOPS
     double linkedLoopLength = 0;
@@ -3462,9 +3462,9 @@ namespace paraDIS {
           armBins[binNum]++;
         }
       }
-      armLengths[armType] += length;
+      armLengths[armType+1] += length;
       totalArmLength += length;
-      numArms[armType]++;
+      numArms[armType+1]++;
 
       totalArms++;
 #if LINKED_LOOPS
@@ -3476,8 +3476,7 @@ namespace paraDIS {
       ++armpos;
     }
     
-    summary += "\n";
-    summary += "===========================================\n";
+    summary += "\n===========================================\n\n";
     summary += str(boost::format("%50s%12d\n")%"total number of non-empty arms:" % totalArms);
     summary += str(boost::format("%50s%12.2f\n")%"total length of all arms before decomposition:" % Arm::mTotalArmLengthBeforeDecomposition);
     summary += str(boost::format("%50s%12.2f\n")%"total length of all arms after decomposition:" % Arm::mTotalArmLengthAfterDecomposition);
@@ -3494,20 +3493,25 @@ namespace paraDIS {
       summary +=  errmsg;
     }
  
-    summary += "===========================================\n";
+    summary += "\n===========================================\n\n";
 
     summary += str(boost::format("%50s%12d\n")%"Total number of segments before decomposition:" % ArmSegment::mNumBeforeDecomposition);
     summary += str(boost::format("%50s%12d\n")%"Total number of segments decomposed:" % ArmSegment::mNumDecomposed);
-    summary += str(boost::format("%50s%12d\n")%"Total number of segments after decomposition:" % (ArmSegment::mNumBeforeDecomposition - ArmSegment::mNumDecomposed));
+    summary += str(boost::format("%50s%12d\n")%"Total number of segments after decomposition:" % (ArmSegment::mArmSegments.size()));
     // summary += str(boost::format("%50s%12d\n")%"Number of segments classified in arm:" % ArmSegment::mNumClassified);
     // summary += str(boost::format("%50s%12d\n")%"Number of segments measured in arm:" % ArmSegment::mNumArmSegmentsMeasured);
     summary += str(boost::format("%50s%12d\n")%"Number of segments wrapped:" % ArmSegment::mNumWrapped);
     summary += "===========================================\n";
-    int i = 0; for (i=0; i<11; i++) {
-      summary += str(boost::format("%s: number of arms = %d\n") % ArmTypeNames(i).c_str() % numArms[i]);
-      summary += str(boost::format("%s: total length of arms = %.2f\n") % ArmTypeNames(i).c_str() % armLengths[i]);
+    totalArmLength = 0; 
+    int i = 0; for (i=0; i<7; i++) {
+      summary += str(boost::format("%40s = %d\n")%(str(boost::format("Number of %s arms") % ArmTypeNames(i-1))) % numArms[i]);
+      summary += str(boost::format("%40s = %.2f\n")%(str(boost::format("Total length of %s arms") % ArmTypeNames(i-1))) % armLengths[i]);
+      totalArmLength += armLengths[i]; 
       summary += "----------------------\n";
     }
+    summary += str(boost::format("%40s = %.2f\n")%"Total length of all arm types" % totalArmLength);
+    summary += "\n===========================================\n\n";
+     
 #if LINKED_LOOPS
     summary += str(boost::format("LINKED LOOPS: total number of arms = %d\n") % numLinkedLoops);
     summary += str(boost::format("LINKED LOOPS: total length of arms = %.2f\n") % linkedLoopLength);
@@ -3555,9 +3559,8 @@ namespace paraDIS {
     }
     summary += "\n";
     
-    summary += "----------------------\n\n\n";
-    
     if (mNumBins) {
+      summary += "\n========================================\n\n";
       // print a row of bin values
       summary += "BINS: \n";
       summary += str(boost::format("max length = %.3f\n") % Arm::mLongestLength);
@@ -3575,7 +3578,7 @@ namespace paraDIS {
       summary += str(boost::format("%-12s%-12ld%-12.3f\n") % "TOTAL" % totalArms % totalLength);
     }
     
-    summary += "\n\n========================================\n";
+    summary += "\n========================================\n\n";
     summary += "DECOMPOSITION STATISTICS\n";
     summary += "----------------------\n";
     int energy = 0;
@@ -3586,7 +3589,7 @@ namespace paraDIS {
     
     summary += str(boost::format("Detached/absorbed arms: %d\n") % Arm::mNumDestroyedInDetachment);
     
-    summary += "========================================\n\n\n";
+    summary += "\n========================================\n\n";
 #ifdef DEBUG_SEGMENTS
     // check against segment lengths:
     uint32_t numSegments[11] = {0}, totalSegments=0, culledSegments=0;  // number of arms of each type
@@ -3606,11 +3609,11 @@ namespace paraDIS {
       }
     }
     
-    summary += "===========================================\n";
+    summary += "\n===========================================\n\n";
     summary += "REALITY CHECK:  total length of all segments, skipping wrapped segments\n";
     summary += str(boost::format("total Number of segments: %d\n") % totalSegments);
     summary += str(boost::format("total length of all segments: %.2f\n") % totalSegmentLength);
-    summary += "===========================================\n";
+    summary += "\n===========================================\n\n";
     for (i=0; i<11; i++) {
       summary += str(boost::format("%s: number of segs = %d\n") % ArmTypeNames(i).c_str(), numArms[i]);
       summary += str(boost::format("%s: total length of segments = %.2f\n") % ArmTypeNames(i).c_str() % armLengths[i]);
