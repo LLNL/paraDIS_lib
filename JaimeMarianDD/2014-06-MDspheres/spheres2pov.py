@@ -101,10 +101,14 @@ except:
 print "gMatrix is", gMatrix
 # and now read the atoms:
 atomID = 0
+parsingBounds = False
+boundsParsed = False
 try: 
-    for line in infile:  
-        print ("parsing atom %d on line %d: \"%s\""%(atomID, lineNo,str(line)))
+    for line in infile:
+        if not boundsParsed:
+            if  BOX BOUNDS
         line = line.split()
+        print ("parsing atom %d on line %d: \"%s\""%(atomID, lineNo,str(line)))
         fileLoc=[float(line[2]), float(line[3]), float(line[4])]
         atomType = line[1]
         loc=[0,0,0]
