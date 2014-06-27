@@ -1,7 +1,8 @@
 #!/usr/bin/env bash
 #set -xv
 # Render animation.blend file in parallel on the cluster using blender-2.70a
-
+# Assumes SLURM is present.  If not, runs in serial.  Each frame takes about 3 minutes to render.  
+# usage:  srun -W 300000 -n 12 render_parallel.sh
 
 numframes=300
 

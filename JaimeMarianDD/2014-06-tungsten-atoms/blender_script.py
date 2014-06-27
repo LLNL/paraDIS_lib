@@ -2,14 +2,14 @@
 """
 Blender python script for creating an atomistic rendering for Jaime
 
-Method 1 does not work:  
-/Volumes/MacProHD/Programs/graphics/Blender/blender.app/Contents/MacOS/blender -P /Users/cook47/current_projects/paraDIS/JaimeMarianDD/2014-06-tungsten-atoms/blender_script.py
+Method 1: command line
+blender -b --python blender_script.py -o testing -F PNG -x 1 -f 1
 
-Method 2: 
+Method 2: GUI
 Do the following in the blender python window.  The script assumes you have done this.  
 import os, sys
-sys.path.append('/Users/cook47/current_projects/paraDIS/JaimeMarianDD/2014-06-tungsten-atoms')
-os.chdir('/Users/cook47/current_projects/paraDIS/JaimeMarianDD/2014-06-tungsten-atoms')
+sys.path.append(os.getenv('HOME')+'/current_projects/paraDIS/JaimeMarianDD/2014-06-tungsten-atoms')
+os.chdir(os.getenv('HOME')+'/current_projects/paraDIS/JaimeMarianDD/2014-06-tungsten-atoms')
 filename = 'blender_script.py'
 exec(compile(open(filename).read(), filename, 'exec'))
 
@@ -26,10 +26,12 @@ You may modify and reload as often as you wish with this syntax.
 Remember:  Anything you do in blender shows up as a python command in the info window at the top of the GUI!  Very helpful to know this! 
 
 """
-
-import math, sys, json
+from math import *
+from mathutils import *
+import  sys, json, os, bpy
 import numpy
 sys.path.append('/Users/cook47/current_projects/paraDIS/JaimeMarianDD/2014-06-tungsten-atoms')
+sys.path.append(os.getcwd())
 #exec(compile(open(filename).read(), 'diverging_map.py', 'exec'))
 from diverging_map import *
 #========================================================================
@@ -293,7 +295,6 @@ def MakeAtoms(data):
 
 #========================================================================
 def CreateScene(data):
-    SetupContext()
     createBoundsPlanes(data)
     SetupCameraAndFrustrum(data)
 
@@ -301,7 +302,7 @@ def CreateScene(data):
 data = {"nothing":None}
 def LoadData():
     global data
-    os.chdir("/Users/cook47/current_projects/paraDIS/JaimeMarianDD/2014-06-tungsten-atoms")
+    os.chdir(os.getenv('HOME')+"/current_projects/paraDIS/JaimeMarianDD/2014-06-tungsten-atoms")
     infile = open("MD_300K_1100MPa_d40_slice[1].json")
     data = json.load(infile)["data"]
     return 
@@ -309,7 +310,11 @@ def LoadData():
 
 #========================================================================
 def LoadSetupRender():
+    SetupContext()
     LoadData()
     MakeAtoms(data)
     CreateScene(data)
 
+#========================================================================
+if __name__ == "__main__":
+    LoadSetupRender()
