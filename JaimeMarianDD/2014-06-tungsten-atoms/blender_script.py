@@ -15,7 +15,7 @@ import os, sys
 projdir = os.path.expanduser('~/current_projects/paraDIS/JaimeMarianDD/2014-06-tungsten-atoms')
 sys.path.append(projdir)
 os.chdir(projdir)
-filename = projdir + 'blender_script.py'
+filename = projdir + '/blender_script.py'
 exec(compile(open(filename).read(), filename, 'exec'))
 
 # To load the data, setup the scene, and draw all the atoms: 
@@ -27,8 +27,8 @@ LoadData(datafile)
 MakeAtoms(data)
 CreateScene(data)
 
-# Useful:
-deleteObjectsByName('blah')
+# Useful: :-)
+deleteObjectsByName('.001')
 
 Remember:  Anything you do in blender shows up as a python command in the info window at the top of the GUI!  Very helpful to know this! 
 
@@ -226,11 +226,15 @@ def SetupCameraAndFrustrum(data):
     cam.clip_end = 20*boundsSize[2]
     camobj.scale = Vector(boundsSize) * 0.1 
     #
-    if not 'lookat' in bpy.data.objects:
+    if 'lookat' in bpy.data.objects:
+        lookat = bpy.data.objects["lookat"]
+    else:
         bpy.ops.object.empty_add()
         bpy.data.objects['Empty'].name= "lookat"
-        lookat.location = (-39, 37, 0)        
-    lookat = bpy.data.objects["lookat"]
+        lookat = bpy.data.objects["lookat"]
+        lookat.location = (-39, 37, 0)
+
+        
     camobj.constraints.new(type='TRACK_TO')
     camobj.constraints['Track To'].target = lookat
     camobj.constraints['Track To'].track_axis = 'TRACK_NEGATIVE_Z'
@@ -244,6 +248,27 @@ def SetupCameraAndFrustrum(data):
     bpy.context.scene.world.use_nodes = True
     bpy.context.scene.world.node_tree.nodes['Background'].inputs['Color'].default_value = [0,0,0.05,1]
     return
+
+#========================================================================
+def SetupAnimation():
+    bpy.ops.object.select_all(action='INVERT')
+    bpy.ops.anim.keyframe_delete_v3d()
+    bpy.context.scene.frame_end = 300
+    lookat = bpy.data.objects["lookat"]
+    lookat.location = (0, 61, 0)
+    lookat.keyframe_insert(data_path="location", frame=1)
+    lookat.location = (-136, 61, 0)
+    lookat.keyframe_insert(data_path="location", frame=100)
+    lookat.location = (100, 61, 0)
+    lookat.keyframe_insert(data_path="location", frame=300.0)
+    camobj = bpy.data.objects['Camera']
+    camobj.location = [-50, -200, 90]
+    camobj.keyframe_insert(data_path="location", frame=1)
+    camobj.location = [-50, -20, 90]
+    camobj.keyframe_insert(data_path="location", frame=100)
+    camobj.location = [-20, -20, -20]
+    camobj.keyframe_insert(data_path="location", frame=300)
+
 
 #========================================================================
 def createBoundsPlane(name, rotation, location, scale):
@@ -371,7 +396,7 @@ data = {"nothing":None}
 def LoadData(datafile=""):
     global data
     if datafile == "":
-        datafile=projdir + '/MD_300K_1100MPa_d40_slice[1].json"
+        datafile=projdir + '/MD_300K_1100MPa_d40_slice[1].json'
     print ("Loading data from file %s"%datafile)
     infile = open(datafile)
     data = json.load(infile)["data"]
