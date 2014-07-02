@@ -202,6 +202,7 @@ def CreateLights(data):
     return
 
 #========================================================================
+# No longer used; just keep for later reference
 def pointCamera(camobj, lookat):
       # aim the camera
     direction = lookat - camobj.location
@@ -225,10 +226,11 @@ def SetupCameraAndFrustrum(data):
     cam.clip_end = 20*boundsSize[2]
     camobj.scale = Vector(boundsSize) * 0.1 
     #
-    bpy.ops.object.empty_add()
-    lookat = bpy.data.objects['Empty'].name= "lookat"
+    if not 'lookat' in bpy.data.objects:
+        bpy.ops.object.empty_add()
+        bpy.data.objects['Empty'].name= "lookat"
+        lookat.location = (-39, 37, 0)        
     lookat = bpy.data.objects["lookat"]
-    lookat.location = (-39, 37, 0)
     camobj.constraints.new(type='TRACK_TO')
     camobj.constraints['Track To'].target = lookat
     camobj.constraints['Track To'].track_axis = 'TRACK_NEGATIVE_Z'
