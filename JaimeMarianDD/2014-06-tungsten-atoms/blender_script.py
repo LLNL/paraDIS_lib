@@ -45,8 +45,9 @@ def SetupContext():
         print ('Render is = CYCLES')
     bpy.data.scenes["Scene"].cycles.samples = 200
     bpy.data.scenes["Scene"].cycles.preview_samples = 200
-    bpy.data.scenes["Scene"].render.resolution_x = 1920 * 2
-    bpy.data.scenes["Scene"].render.resolution_y = 1080 * 2    
+    bpy.data.scenes["Scene"].render.resolution_x = 1920
+    bpy.data.scenes["Scene"].render.resolution_y = 1080   
+    bpy.data.scenes["Scene"].render.resolution_percentage = 100  
     deleteObjectsByName(['Cube', 'Lamp'])
     for area in bpy.context.screen.areas:
         if area.type == 'VIEW_3D':
@@ -357,21 +358,26 @@ def CreateScene(data):
 
 #========================================================================
 data = {"nothing":None}
-def LoadData():
+def LoadData(datafile=""):
     global data
-    os.chdir(os.getenv('HOME')+"/current_projects/paraDIS/JaimeMarianDD/2014-06-tungsten-atoms")
-    infile = open("MD_300K_1100MPa_d40_slice[1].json")
+    if datafile == "":
+        datafile=os.getenv('HOME')+"/current_projects/paraDIS/JaimeMarianDD/2014-06-tungsten-atoms/MD_300K_1100MPa_d40_slice[1].json"
+    infile = open(datafile)
     data = json.load(infile)["data"]
     return 
 
 
 #========================================================================
-def LoadSetupRender():
+def LoadSetupRender(datafile=""):
     SetupContext()
-    LoadData()
+    LoadData(datafile)
     MakeAtoms(data)
     CreateScene(data)
 
 #========================================================================
-#if __name__ == "__main__":
-#    LoadSetupRender()
+if __name__ == "__main__":
+    if len(sys.argv) > 1:
+        LoadSetupRender(sys.argv[1])
+    # Don't do this, because it will reload the data when you call the exec() command from above in the GUI: 
+    # else:
+    #     LoadSetupRender()

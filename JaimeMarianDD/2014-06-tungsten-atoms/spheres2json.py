@@ -1,12 +1,10 @@
 #!/usr/bin/env python
 import sys, scipy, json, math
 
-
 def usage():
     print "Usage:  spheres2json.py infile [outfile] [logfile]"
     print "default logfile is \"infile-basename.log\""    
     return
-
 
 if len(sys.argv) < 2:
     print "error: insufficient args"
@@ -36,13 +34,11 @@ savederr = sys.stderr
 print "Sending output to", logfile
 sys.stdout = sys.stderr = open(logfile, "w")
 
-
 #========================================================
 def PrintThing(thing):
     exec("print \"%s: \","%thing + thing)
     return
 
- 
 #===================================================
 # parse the input file
 #========================================================
