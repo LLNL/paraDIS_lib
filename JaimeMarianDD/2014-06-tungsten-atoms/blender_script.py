@@ -6,23 +6,30 @@ Method 1: command line
 blender -b --python blender_script.py -o testing -F PNG -x 1 -f 1
 
 Method 2: GUI
-Do the following in the blender python window.  The script assumes you have done this.  
+Do the following in the blender python window: 
+
+# Load contents of blender_script.py
+# You may modify and reload as often as you wish, which redefines the functions without executing them.
+
 import os, sys
-sys.path.append(os.getenv('HOME')+'/current_projects/paraDIS/JaimeMarianDD/2014-06-tungsten-atoms')
-os.chdir(os.getenv('HOME')+'/current_projects/paraDIS/JaimeMarianDD/2014-06-tungsten-atoms')
-filename = 'blender_script.py'
+projdir = os.path.expanduser('~/current_projects/paraDIS/JaimeMarianDD/2014-06-tungsten-atoms')
+sys.path.append(projdir)
+os.chdir(projdir)
+filename = projdir + 'blender_script.py'
 exec(compile(open(filename).read(), filename, 'exec'))
 
 # To load the data, setup the scene, and draw all the atoms: 
 LoadSetupRender()
 
-Or just
-LoadData()
+# Or choose from a subset of LoadSetupRender(): 
+SetupContext()
+LoadData(datafile)
+MakeAtoms(data)
 CreateScene(data)
 
-LoadAtoms(data)
+# Useful:
+deleteObjectsByName('blah')
 
-You may modify and reload as often as you wish with this syntax.
 Remember:  Anything you do in blender shows up as a python command in the info window at the top of the GUI!  Very helpful to know this! 
 
 """
@@ -30,9 +37,10 @@ from math import *
 from mathutils import *
 import  sys, json, os, bpy
 import numpy
-sys.path.append('/Users/cook47/current_projects/paraDIS/JaimeMarianDD/2014-06-tungsten-atoms')
+projdir = os.path.expanduser('~/current_projects/paraDIS/JaimeMarianDD/2014-06-tungsten-atoms')
 sys.path.append(os.getcwd())
-#exec(compile(open(filename).read(), 'diverging_map.py', 'exec'))
+sys.path.append(projdir)
+os.chdir(projdir)
 from diverging_map import *
 #========================================================================
 # assume starting from homefile (with cube, camera and light)
@@ -290,11 +298,11 @@ def CreateTexturedCube(data):
     coordnode = mat.node_tree.nodes.new("ShaderNodeTexCoord")
     mat.node_tree.links.new(texturenode.outputs['Color'], bsdfnode.inputs['Color'])
     mat.node_tree.links.new(coordnode.outputs['Object'], texturenode.inputs['Vector'])
-    realpath = os.path.expanduser('~/current_projects/paraDIS/JaimeMarianDD/2014-06-tungsten-atoms/atomtile.png')
+    realpath = projdir + '/atomtile.png'
     img = bpy.data.images.load(realpath)
     texturenode.image = img
     texturenode.projection = 'BOX'
-    texturenode.texture_mapping.scale = (20, 60, 20)
+    texturenode.texture_mapping.scale = Vector(boundsSize) * 0.1
     return 
 
 #========================================================================
@@ -361,7 +369,8 @@ data = {"nothing":None}
 def LoadData(datafile=""):
     global data
     if datafile == "":
-        datafile=os.getenv('HOME')+"/current_projects/paraDIS/JaimeMarianDD/2014-06-tungsten-atoms/MD_300K_1100MPa_d40_slice[1].json"
+        datafile=projdir + '/MD_300K_1100MPa_d40_slice[1].json"
+    print ("Loading data from file %s"%datafile)
     infile = open(datafile)
     data = json.load(infile)["data"]
     return 
