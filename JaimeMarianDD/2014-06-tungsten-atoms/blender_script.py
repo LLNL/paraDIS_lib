@@ -45,6 +45,8 @@ def SetupContext():
         print ('Render is = CYCLES')
     bpy.data.scenes["Scene"].cycles.samples = 200
     bpy.data.scenes["Scene"].cycles.preview_samples = 200
+    bpy.data.scenes["Scene"].render.resolution_x = 1920 * 2
+    bpy.data.scenes["Scene"].render.resolution_y = 1080 * 2    
     deleteObjectsByName(['Cube', 'Lamp'])
     for area in bpy.context.screen.areas:
         if area.type == 'VIEW_3D':
@@ -106,14 +108,6 @@ def getView3Dspace(n=0):
      return found
 
 
-#========================================================================
-def pointCamera(camobj, lookat):
-      # aim the camera
-    direction = lookat - camobj.location
-    # point the cameras '-Z' and use its 'Y' as up
-    rot_quat = direction.to_track_quat('-Z', 'Y')
-    camobj.rotation_euler = rot_quat.to_euler()
-
 # ====================================================================
 # Create a cylinder as part of the bounding box "wireframe"
 def MakeCylinder(name, ep1, ep2, radius, orientation):
@@ -153,7 +147,7 @@ def CreateBoundingBox(data):
         cylnum = cylnum + 1
     return    
 
-        
+
 #========================================================================
 # create light plane: 
 def create_light_plane(name, radius, rotation, location, value=1): 
@@ -172,6 +166,40 @@ def create_light_plane(name, radius, rotation, location, value=1):
      lightmat.node_tree.links.new(emitter.outputs['Emission'], lightmat.node_tree.nodes['Material Output'].inputs['Surface'])
      return light
 
+# ============================================================
+def CreateLight(location, brightness, name):
+    bpy.ops.object.lamp_add(type="POINT")
+    point = bpy.data.objects['Point']
+    point.name =  name    
+    point.data.node_tree.nodes['Emission'].inputs['Strength'].default_value = brightness
+    point.location = location
+    point.data.shadow_soft_size = 50
+    #location = (0, 0, bounds[2][0] + boundsSize[2]*0.9)
+    # create_light(name, radius, rotation, location, value=1):
+    #create_light_plane("light1", 500, (0,0,0), location, 10.0)
+    # bpy.data.objects['light1'].scale = [boundsSize[0]/4.0, boundsSize[1]/4.0, 1]
+    return
+
+# ============================================================
+def CreateLights(data):
+    bounds = data["bounds"]
+    boundsSize = data["size"]
+    i = 0
+    for xfac in [ 0.25, 0.75 ]:
+        for yfac in [ 0.5, 0.75 ]: 
+            location = (bounds[0][0] + boundsSize[0] * xfac, bounds[1][0] + boundsSize[1] * yfac, bounds[2][0] + boundsSize[2]*0.8)
+            CreateLight(location, 150000, "light %d"%i)
+            i = i+1
+    return
+
+#========================================================================
+def pointCamera(camobj, lookat):
+      # aim the camera
+    direction = lookat - camobj.location
+    # point the cameras '-Z' and use its 'Y' as up
+    rot_quat = direction.to_track_quat('-Z', 'Y')
+    camobj.rotation_euler = rot_quat.to_euler()
+
 #========================================================================
 # Set up camera and frustrum
 def SetupCameraAndFrustrum(data):
@@ -182,7 +210,7 @@ def SetupCameraAndFrustrum(data):
     #
     # Set up camera, lights, 
     camobj = bpy.data.objects['Camera']
-    camobj.location = [-250, -50, 35]
+    camobj.location = [50, -50, 25]
     cam = bpy.data.cameras['Camera']
     cam.show_limits = True
     cam.clip_end = 20*boundsSize[2]
@@ -191,39 +219,40 @@ def SetupCameraAndFrustrum(data):
     bpy.ops.object.empty_add()
     lookat = bpy.data.objects['Empty'].name= "lookat"
     lookat = bpy.data.objects["lookat"]
-    lookat.location = center
+    lookat.location = (-39, 37, 0)
+    camobj.constraints.new(type='TRACK_TO')
+    camobj.constraints['Track To'].target = lookat
+    camobj.constraints['Track To'].track_axis = 'TRACK_NEGATIVE_Z'
+    camobj.constraints['Track To'].up_axis = 'UP_Y'
     #
-    pointCamera(camobj, lookat.location)
+    # pointCamera(camobj, lookat.location)
     #
     space = getView3Dspace(0)
     space.clip_start=0.001
     space.clip_end = 1000*1000
     bpy.context.scene.world.use_nodes = True
     bpy.context.scene.world.node_tree.nodes['Background'].inputs['Color'].default_value = [0,0,0.05,1]
-    bpy.ops.object.lamp_add(type="SUN")
-    bpy.data.objects['Sun']
-    bpy.data.objects['Sun'].data.node_tree.nodes['Emission'].inputs['Strength'].default_value = 5
-    # create_light(name, radius, rotation, location, value=1):
-    # create_light_plane("light1", 1.0, (0,0,0), (0,0, 2*data["size"][2]), 10.0)
-    # bpy.data.objects['light1'].scale = [boundsSize[0]/4.0, boundsSize[1]/4.0, 1]
+    return
 
 #========================================================================
 def createBoundsPlane(name, rotation, location, scale):
     bpy.ops.mesh.primitive_plane_add(radius=1, rotation=rotation, location=location) 
     plane = bpy.data.objects['Plane']
     plane.name = name
-    bpy.data.objects[name].scale = scale
+    plane.scale = scale
     bpy.data.materials.new('%s_material'%name)
     planemat = bpy.data.materials['%s_material'%name]
     plane.data.materials.append(planemat)
     planemat.use_nodes = True
-    glossnode = planemat.node_tree.nodes.new("ShaderNodeBsdfGlossy")
-    glossnode.name = 'glossnode_%s'%name
-    glossnode.inputs['Roughness'].default_value = 0.35
-    glossnode.inputs['Color'].default_value = [0.2,0.2,0.2,1]
-    # planemat.node_tree.nodes.remove(planemat.node_tree.nodes["Diffuse BSDF"])
-    outnode = planemat.node_tree.nodes['Material Output']
-    planemat.node_tree.links.new(glossnode.outputs['BSDF'], outnode.inputs['Surface'])
+    diffuseNode = planemat.node_tree.nodes["Diffuse BSDF"]
+    diffuseNode.inputs['Color'].default_value = [0.2,0.2,0.2,1]    
+    #planemat.node_tree.nodes.remove(planemat.node_tree.nodes["Diffuse BSDF"])
+    #glossnode = planemat.node_tree.nodes.new("ShaderNodeBsdfGlossy")
+    #glossnode.name = 'glossnode_%s'%name
+    #glossnode.inputs['Roughness'].default_value = 0.35
+    #glossnode.inputs['Color'].default_value = [0.2,0.2,0.2,1]
+    #outnode = planemat.node_tree.nodes['Material Output']
+    #planemat.node_tree.links.new(glossnode.outputs['BSDF'], outnode.inputs['Surface'])
     return
 
 #========================================================================
@@ -233,13 +262,39 @@ def createBoundsPlanes(data):
     center =  data["center"]
     diag = data["diagonal"]
     # XY plane:
-    createBoundsPlane("XY_Plane", (0, 0, 0), (data["center"][0], data["center"][1], data['bounds'][2][0]), [boundsSize[0]*10.0, boundsSize[1]*10.0, 1] )    
+    createBoundsPlane("XY_Plane", (0, 0, 0), (data["center"][0], data["center"][1], -25.0), [boundsSize[0]*10.0, boundsSize[1]*10.0, 1] )    
     # YZ plane (rotate Y into Z)
     # createBoundsPlane("YZ_Plane", (0, pi/2.0, 0), (bounds[0][0], center[1], center[2]), [boundsSize[2]/2.0, boundsSize[1]/2.0, 1])    
     # XZ plane (rotate X into Z)
     # createBoundsPlane("XZ_Plane", (pi/2.0, 0, 0), (center[0], bounds[1][0], center[2]), [boundsSize[0]/2.0, boundsSize[2]/2.0, 1])    
     return
 
+#========================================================================
+def CreateTexturedCube(data):
+    bounds = data["bounds"]
+    boundsSize = data["size"]
+    center =  data["center"]
+    bpy.ops.mesh.primitive_cube_add()
+    cube = bpy.data.objects['Cube']
+    name = "Textured Cube"
+    cube.name = name
+    cube.scale = Vector(boundsSize)/2.0
+    cube.location = center
+    bpy.data.materials.new('%s_material'%name)
+    mat = bpy.data.materials['%s_material'%name]
+    cube.data.materials.append(mat)
+    mat.use_nodes = True
+    bsdfnode = mat.node_tree.nodes["Diffuse BSDF"]
+    texturenode = mat.node_tree.nodes.new("ShaderNodeTexImage")
+    coordnode = mat.node_tree.nodes.new("ShaderNodeTexCoord")
+    mat.node_tree.links.new(texturenode.outputs['Color'], bsdfnode.inputs['Color'])
+    mat.node_tree.links.new(coordnode.outputs['Object'], texturenode.inputs['Vector'])
+    realpath = os.path.expanduser('~/current_projects/paraDIS/JaimeMarianDD/2014-06-tungsten-atoms/atomtile.png')
+    img = bpy.data.images.load(realpath)
+    texturenode.image = img
+    texturenode.projection = 'BOX'
+    texturenode.texture_mapping.scale = (20, 60, 20)
+    return 
 
 #========================================================================
 def MakeColorRamp(mat, linknode, colors):
@@ -288,15 +343,17 @@ def MakeAtom(atom):
     return
 
 #========================================================================
-
 def MakeAtoms(data):
     for atom in data["atoms"]:
         MakeAtom(atom)
 
 #========================================================================
 def CreateScene(data):
-    createBoundsPlanes(data)
+    # createBoundsPlanes(data)
+    CreateTexturedCube(data)
     SetupCameraAndFrustrum(data)
+    CreateLights(data)
+    # CreateBoundingBox(data)
 
 #========================================================================
 data = {"nothing":None}
@@ -316,5 +373,5 @@ def LoadSetupRender():
     CreateScene(data)
 
 #========================================================================
-if __name__ == "__main__":
-    LoadSetupRender()
+#if __name__ == "__main__":
+#    LoadSetupRender()
