@@ -9,7 +9,8 @@ clobber=1 # unset this to not clobber existing frames/frame_%04d.png files
 
 # To make smaller frames for fast test cases, set this: 
 export BLENDER_RESOLUTION_PERCENTAGE=100
-
+export BLENDER_OUTDIR="shinyframes"
+export BLENDER_FRAMENAMES="frame"
 if [ "$SLURM_NPROCS" == "" ]; then 
     SLURM_NPROCS=1
     SLURM_PROCID=0

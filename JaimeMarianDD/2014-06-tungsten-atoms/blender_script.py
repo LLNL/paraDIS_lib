@@ -19,7 +19,7 @@ filename = projdir + '/blender_script.py'
 exec(compile(open(filename).read(), filename, 'exec'))
 
 # To load the data, setup the scene, and draw all the atoms: 
-LoadSetupRender()
+LoadAndSetup()
 
 # Or choose from a subset of LoadSetupRender(): 
 SetupContext()
@@ -193,14 +193,14 @@ def CreateLight(location, brightness, name):
     return
 
 # ============================================================
-def CreateLights(data):
+def CreateLights(data, brightness):
     bounds = data["bounds"]
     boundsSize = data["size"]
     i = 0
     for xfac in [ 0.25, 0.75 ]:
         for yfac in [ 0.5, 0.75 ]: 
             location = (bounds[0][0] + boundsSize[0] * xfac, bounds[1][0] + boundsSize[1] * yfac, bounds[2][0] + boundsSize[2]*0.8)
-            CreateLight(location, 150000, "light %d"%i)
+            CreateLight(location, brightness, "light %d"%i)
             i = i+1
     return
 
@@ -368,13 +368,12 @@ def MakeAtom(atom):
     mat.use_nodes = True
     glossnode = mat.node_tree.nodes.new("ShaderNodeBsdfGlossy")
     glossnode.name = "gloss_%d"%atom['id']
-    glossnode.inputs['Roughness'].default_value = 0.35
+    glossnode.inputs['Roughness'].default_value = 0.1
     color = colormap.interpolateColor(RGB1, RGB2, atom['c_centro']/10.0)
     glossnode.inputs['Color'].default_value = [color[0]/255.0,color[1]/255.0,color[2]/255.0,1]
     # mat.node_tree.nodes.remove(mat.node_tree.nodes["Diffuse BSDF"])
     outnode = mat.node_tree.nodes['Material Output']
     mat.node_tree.links.new(glossnode.outputs['BSDF'], outnode.inputs['Surface'])
-    
     #colors = [ [1,0,0,1], [1,1,0,1], [1,0,1,1], [0,1,0,1], [0,1,1,1] ]
     #ramp = MakeColorRamp(mat, glossnode, colors)
     #ramp.name = 'ColorRame_%s'%name
@@ -391,7 +390,7 @@ def CreateScene(data):
     # createBoundsPlanes(data)
     CreateTexturedCube(data)
     SetupCameraAndFrustrum(data)
-    CreateLights(data)
+    CreateLights(data, 100000)
     # CreateBoundingBox(data)
 
 #========================================================================
@@ -421,11 +420,21 @@ if __name__ == "__main__":
         try:
             timestep = int(os.getenv("BLENDER_TIMESTEP"))
         except:
-            timestep = 1        
+            timestep = 1            
         print ("Timestep is %d"%(timestep))
-        datafile = os.getenv("BLENDER_DATAFILE")
-        bpy.data.scenes["Scene"].render.filepath = "frames/frame_%04d"%timestep
+        outdir = os.getenv("BLENDER_OUTDIR")
+        if outdir == "":
+            outdir=="frames"
+        basename = os.getenv("BLENDER_FRAMENAMES")
+        if basename == "":
+            basename = "frame"
+        filename = "%s/%s_%04d"%(outdir,basename,timestep)
+        if not os.path.exists(outdir):
+            os.mkdir(outdir)
+        print ("Rendering to file %s"%filename)
+        bpy.data.scenes["Scene"].render.filepath = filename
         bpy.data.scenes["Scene"].frame_set(timestep)
+        datafile = os.getenv("BLENDER_DATAFILE")
         LoadAndSetup(datafile)
         bpy.ops.render.render(write_still = True)
     # Don't do this, because it will reload the data when you call the exec() command from above in the GUI: 
