@@ -54,8 +54,11 @@ def SetupContext():
     bpy.data.scenes["Scene"].cycles.samples = 200
     bpy.data.scenes["Scene"].cycles.preview_samples = 200
     bpy.data.scenes["Scene"].render.resolution_x = 1920
-    bpy.data.scenes["Scene"].render.resolution_y = 1080   
-    bpy.data.scenes["Scene"].render.resolution_percentage = 100  
+    bpy.data.scenes["Scene"].render.resolution_y = 1080
+    try:
+        bpy.data.scenes["Scene"].render.resolution_percentage = int(os.getenv("BLENDER_RESOLUTION_PERCENTAGE"))
+    except:
+        bpy.data.scenes["Scene"].render.resolution_percentage = 100  
     deleteObjectsByName(['Cube', 'Lamp'])
     for area in bpy.context.screen.areas:
         if area.type == 'VIEW_3D':
@@ -252,7 +255,7 @@ def SetupCameraAndFrustrum(data):
 #========================================================================
 def SetupAnimation():
     bpy.ops.object.select_all(action='INVERT')
-    bpy.ops.anim.keyframe_delete_v3d()
+    bpy.context.active_object.animation_data_clear()
     bpy.context.scene.frame_end = 300
     lookat = bpy.data.objects["lookat"]
     lookat.location = (0, 61, 0)
@@ -404,16 +407,27 @@ def LoadData(datafile=""):
 
 
 #========================================================================
-def LoadSetupRender(datafile=""):
+def LoadAndSetup(datafile=""):
     SetupContext()
     LoadData(datafile)
     MakeAtoms(data)
     CreateScene(data)
+    SetupAnimation()
 
 #========================================================================
 if __name__ == "__main__":
-    if len(sys.argv) > 1:
-        LoadSetupRender(sys.argv[1])
+    if len(sys.argv) > 1:    
+        print ("sys.argv is %s"%str(sys.argv))
+        try:
+            timestep = int(os.getenv("BLENDER_TIMESTEP"))
+        except:
+            timestep = 1        
+        print ("Timestep is %d"%(timestep))
+        datafile = os.getenv("BLENDER_DATAFILE")
+        bpy.data.scenes["Scene"].render.filepath = "frames/frame_%04d"%timestep
+        bpy.data.scenes["Scene"].frame_set(timestep)
+        LoadAndSetup(datafile)
+        bpy.ops.render.render(write_still = True)
     # Don't do this, because it will reload the data when you call the exec() command from above in the GUI: 
     # else:
     #     LoadSetupRender()

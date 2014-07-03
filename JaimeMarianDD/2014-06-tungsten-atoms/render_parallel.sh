@@ -5,6 +5,10 @@
 # usage:  srun -W 300000 -n 12 render_parallel.sh
 
 numframes=300
+clobber=1 # unset this to not clobber existing frames/frame_%04d.png files
+
+# To make smaller frames for fast test cases, set this: 
+export BLENDER_RESOLUTION_PERCENTAGE=100
 
 if [ "$SLURM_NPROCS" == "" ]; then 
     SLURM_NPROCS=1
@@ -42,8 +46,13 @@ echo "TASK $SLURM_PROCID : $FIRST FRAME: $myfirstframe  LAST FRAME: $mylastframe
 framenum=$myfirstframe
 while [ "$framenum" -le "$mylastframe" ]; do 
     outfile=frames/frame$(printf '%04d' $framenum).png
-    if [ ! -f $outfile ]; then 
-        blender animation.blend -b -o frames/frame  -F PNG -x 1 -f $framenum
+    if [ "$clobber" ] || [ ! -f $outfile ]; then 
+        # render from a blend file:
+        # blender animation.blend -b -o frames/frame  -F PNG -x 1 -f $framenum
+        # render from a python file:
+        export BLENDER_TIMESTEP=$framenum
+        export BLENDER_DATAFILE="$HOME/current_projects/paraDIS/JaimeMarianDD/2014-06-tungsten-atoms/MD_300K_1100MPa_d40_slice[1].json"
+        blender animation.blend -b -f $framenum --python blender_script.py 
     else 
         echo "$outfile already exists; skipping"
     fi
