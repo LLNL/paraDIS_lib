@@ -35,7 +35,9 @@ int main(int argc, char *argv[]) {
 
   TCLAP::ValueArg<string> fileoutFlag("o", "outfile", "Print output to outdir/filename.  If filename is stderr, then print to stderr. Default: outdir/basename.out", false, "", "filename", cmd); 
 
-  TCLAP::SwitchArg fullout("F", "full", "Same as running --stats --debugfiles --tagfile --vtkfile.  Note that using --no-renumber can also help.", cmd); 
+  TCLAP::SwitchArg fullout("F", "full", "Same as running --stats --debugfiles --tagfile --vtkfile --jsonfile.  Note that using --no-renumber can also help.", cmd); 
+
+  TCLAP::SwitchArg jsonfileFlag("J", "json-file", "export results to JSON files for visualization and other analysis", cmd); 
 
   TCLAP::ValueArg<int> numbins("n", "numbins", "during report, divide total arms into num bins by length and report on the total length in each bin", false, 0, "integer", cmd); 
 
@@ -90,6 +92,7 @@ int main(int argc, char *argv[]) {
     bool stats = statsFlag.getValue(); 
     bool tagfile = tagfileFlag.getValue();
     int verbosity = verbosityFlag.getValue(); 
+    bool jsonfile = jsonfileFlag.getValue(); 
     bool vtkfile = vtkfileFlag.getValue(); 
     bool summary = summaryFlag.getValue(); 
 
@@ -98,6 +101,7 @@ int main(int argc, char *argv[]) {
       stats = true; 
       tagfile = true;
       vtkfile = true; 
+      jsonfile = true; 
       summary = true; 
       if (verbosity == -1) {
         verbosity = 5; 
@@ -152,6 +156,7 @@ int main(int argc, char *argv[]) {
       gDataSet->EnableSummaryOutput(summary); 
       gDataSet->EnableTagFileOutput(tagfile); 
       gDataSet->EnableVTKFileOutput(vtkfile); 
+      gDataSet->EnableJSONFileOutput(jsonfile); 
       
       if (verbosity) {
         gDataSet->SetVerbosity(verbosity, fileout); 

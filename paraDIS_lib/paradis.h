@@ -940,35 +940,6 @@ namespace paraDIS {
     }
 
     /*!
-      Accessor returns begin of arm vector. 
-    */ 
-    /* static vector<ArmSegment *>::const_iterator GetArmSegmentsBegin(void) { 
-      return mArmSegments.begin(); 
-      }*/
-    /*!
-      Accessor returns end of arm vector. 
-    */ 
-    /*
-    static vector<ArmSegment *>::const_iterator GetArmSegmentsEnd(void) {
-      return mArmSegments.end(); 
-    }
-    */
-
-    /*!
-      Accessor function
-    */
-    /*static ArmSegment *GetArmSegment(uint32_t segnum) { 
-      return mArmSegments[segnum]; 
-      }*/ 
-
-    /*! 
-      Accessor function. 
-    */ 
-    /* static uint32_t GetNumArmSegments(void)  { 
-      return mArmSegments.size(); 
-    }
-    */
-    /*!
       operator <() is required for set ordering.  All it requires is it be consistent, so we'll just see if our first node is less than the other's first node, if so, then yay, else if it is equal, then check the other endpoint.  Otherwise, it's false.  Pretty standard stuff. Important thing is this is all done by ID, not by pointer values.  
     */ 
     bool operator < (const ArmSegment &other) const {
@@ -1884,6 +1855,12 @@ namespace paraDIS {
     /*!
       if this is true, then create tag file.  
     */ 
+    void EnableJSONFileOutput(bool tf=true) {
+      mDoJSONFiles = tf; 
+    }
+    /*!
+      if this is true, then create tag file.  
+    */ 
     void EnableVTKFileOutput(bool tf=true) {
       mDoVTKFile = tf; 
     }
@@ -2032,6 +2009,12 @@ s      Tell the data set which file to read
       Write out a copy of the input file that has all FullNode tags in it.
     */
     void WriteTagFile(void); 
+
+    /*!
+      Write a json file for the nodes and another json file for the segments
+      in the given arms.  
+    */ 
+    void WriteJson(void);
 
     /*!
       Write out a vtk fileset containing all nodes and segments. 
@@ -2204,6 +2187,7 @@ s      Tell the data set which file to read
       mDoDebugOutput=false; 
       mDoTagFile = false;
       mDoVTKFile = false; 
+      mDoJSONFiles = false; 
       mDoStats = false; 
       mDoSummaryFile = false; 
       mOutputDir = "./paradis-debug";
@@ -2401,7 +2385,12 @@ s      Tell the data set which file to read
     */ 
     bool mDoVTKFile; 
 
-     /*!
+    /*!
+      if this is true, then create JSON files at end of analysis.  
+    */ 
+    bool mDoJSONFiles; 
+
+      /*!
       By default, this is "./paradis-output".  See mDoOutput.
     */ 
     std::string mOutputDir; 
