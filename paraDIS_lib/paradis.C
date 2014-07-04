@@ -28,6 +28,8 @@
 #include <boost/make_shared.hpp>
 #include <boost/shared_ptr.hpp>
 #include <boost/format.hpp>
+#include <boost/property_tree/ptree.hpp>
+#include <boost/property_tree/json_parser.hpp>
 
 // GRRR.  Visit hooks are lame.  This is bad code but if I don't structure it like this, the SVN hooks complain. 
 #ifdef  USE_ABORT
@@ -4029,6 +4031,77 @@ namespace paraDIS {
     return;
   }
   
+  // =========================================================================
+  // Dump a JSON file containing the indicated arms.
+  // JSON can be imported into python for use in blender scripts
+  void DataSet::WriteJson(void) {
+    using boost::property_tree::ptree; 
+    {
+      // Make a map of all nodes, to avoid creating duplicate nodes for endpoints, then we can add each map entry to the JSON ptree and write it out.  Memory explosion!
+      ptree pt;
+      map<int32_t, FullNode *> nodemap; 
+      uint32_t armnum = 0; 
+      for (vector<Arm*>::iterator arm = Arm::mArms.begin(); arm != Arm::mArms.end(); arm++, armnum++){
+        vector<FullNode*> armnodes = (*arm)->GetNodes(); 
+        int nodenum = 0; 
+        for (vector<FullNode*>::iterator node = armnodes.begin(); node != armnodes.end(); node++) {
+          if (*node) {
+            nodemap[(*node)->GetIndex()] = *node;  
+            pt.put(str(boost::format("Arms.Arm %1%.Node %2%.ID")
+                       % armnum % nodenum), 
+                   (*node)->GetIndex()); 
+            nodenum++;
+          }
+        }
+      }
+      for (map<int32_t, FullNode *>::iterator pos = nodemap.begin(); pos != nodemap.end(); pos++) {
+        FullNode *node = pos->second; 
+        vector<float>location = node->GetLocation(); 
+        pt.put(str(boost::format("Nodes.Node %1%.location")
+                   % (node->GetIndex())), 
+               str(boost::format("%1% %2% %3%")
+                   % location[0] % location[1] % location[2])); 
+        pt.put(str(boost::format("Nodes.Node %1%.NumNeighbors")
+                   % (node->GetIndex())), 
+               str(boost::format("%1%")
+                   % (node->GetNumNeighborSegments())));         
+      }
+      string jsonfile = str(boost::format("%s/%s-nodes.json")%mOutputDir%mOutputBasename);
+      write_json(jsonfile, pt); 
+      dbecho (0, str(boost::format("Wrote json node file %s\n")%jsonfile)); 
+    } // end node JSON
+    
+    {
+      ptree pt;
+      // For segments, we can just add them to the JSON ptree directly
+      uint32_t armnum = 0; 
+      for (vector<Arm*>::iterator arm = Arm::mArms.begin(); arm != Arm::mArms.end(); arm++, armnum++){
+        vector<ArmSegment*> armsegs = (*arm)->GetSegments(); 
+        int segnum = 0; 
+        for (vector<ArmSegment*>::iterator seg = armsegs.begin(); seg != armsegs.end(); seg++, segnum++) {
+          
+          pt.put(str(boost::format("Arms.Arm %1%.Segment %2%.ID")
+                     % armnum % segnum),
+                 (*seg)->GetID()); 
+          pt.put(str(boost::format("Segments.Segment %1%.burgers")
+                     % ((*seg)->GetID())), 
+                 (*seg)->GetBurgersType()); 
+          for (int i=0; i<2; i++) {
+            vector<float>location = (*seg)->GetEndpoint(i)->GetLocation(); 
+            pt.put(str(boost::format("Segments.Segment %1%.EP %2%") 
+                       % ((*seg)->GetID())%i), 
+                   str(boost::format("%1% %2% %3%")
+                       % location[0] % location[1] % location[2])); 
+          }    
+        }
+      }
+      string jsonfile = str(boost::format("%s/%s-segments.json")%mOutputDir%mOutputBasename);
+      write_json(jsonfile, pt); 
+      dbecho (0, str(boost::format("Wrote json segment file %s\n")%jsonfile)); 
+    }
+    return; 
+  }
+  
   //===========================================================================
   // Write a vtk fileset containing all nodes and segments.
   void DataSet::WriteVTKFiles(void) {
@@ -5038,6 +5111,10 @@ namespace paraDIS {
 
     if (mDoVTKFile) {
       WriteVTKFiles();
+    }
+
+    if (mDoJSONFiles) {
+      WriteJson();
     }
 
     dbprintf(1, "ReadData complete\n");
