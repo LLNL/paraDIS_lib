@@ -1,3 +1,16 @@
+The files in this distribution are for creating paraDIS_lib.  
+Files are built into $INSTALL_DIR if defined, else a directory called "./$SYS_TYPE" if SYS_TYPE is defined, else a directory called  "./uname -n". 
+
+Built files:
+$SYS_TYPE/lib/libparadis.a
+$SYS_TYPE/bin/analyzeParaDIS
+
+Also included are two example scripts for rendering the output of analyzeParaDIS to blender, in parallel:  
+blender_script.py
+render_parallel.sh
+
+
+========================================================================
 ParaDIS data is a set of disconnected undirected graphs, which may contain cycles.  
 All nodes in a paraDIS data set have at least one neighbor given in the paraDIS output file.  The connection, or neighbor relation, between two adjacent nodes is called an "arm segment."  A node is considered an "interior node" if it has exactly two neighbors, else it is considered a "terminal node."  The only exception to this is that loops always have one terminal node, which may have two neighbors.  
 An "arm" is a sequence of interior nodes terminated by one or two terminal nodes.  A loop is an arm that has only one terminal node.  
