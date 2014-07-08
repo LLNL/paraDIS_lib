@@ -1,0 +1,721 @@
+{
+    "Bounds": "-60 60 -60 50 -20 30",
+    "Arms":
+    {
+        "Arm 0":
+        {
+            "Nodes":
+            {
+                "Node 0":
+                {
+                    "ID": "58"
+                },
+                "Node 1":
+                {
+                    "ID": "0"
+                },
+                "Node 2":
+                {
+                    "ID": "3"
+                },
+                "Node 3":
+                {
+                    "ID": "42"
+                },
+                "Node 4":
+                {
+                    "ID": "67"
+                },
+                "Node 5":
+                {
+                    "ID": "66"
+                },
+                "Node 6":
+                {
+                    "ID": "48"
+                },
+                "Node 7":
+                {
+                    "ID": "49"
+                },
+                "Node 8":
+                {
+                    "ID": "50"
+                },
+                "Node 9":
+                {
+                    "ID": "51"
+                },
+                "Node 10":
+                {
+                    "ID": "71"
+                },
+                "Node 11":
+                {
+                    "ID": "70"
+                },
+                "Node 12":
+                {
+                    "ID": "58"
+                }
+            },
+            "Segments":
+            {
+                "Segment 0":
+                {
+                    "ID": "1"
+                },
+                "Segment 1":
+                {
+                    "ID": "0"
+                },
+                "Segment 2":
+                {
+                    "ID": "3"
+                },
+                "Segment 3":
+                {
+                    "ID": "7"
+                },
+                "Segment 4":
+                {
+                    "ID": "52"
+                },
+                "Segment 5":
+                {
+                    "ID": "36"
+                },
+                "Segment 6":
+                {
+                    "ID": "37"
+                },
+                "Segment 7":
+                {
+                    "ID": "38"
+                },
+                "Segment 8":
+                {
+                    "ID": "39"
+                },
+                "Segment 9":
+                {
+                    "ID": "54"
+                }
+            }
+        },
+        "Arm 9":
+        {
+            "Nodes":
+            {
+                "Node 0":
+                {
+                    "ID": "61"
+                },
+                "Node 1":
+                {
+                    "ID": "57"
+                },
+                "Node 2":
+                {
+                    "ID": "52"
+                },
+                "Node 3":
+                {
+                    "ID": "53"
+                },
+                "Node 4":
+                {
+                    "ID": "54"
+                },
+                "Node 5":
+                {
+                    "ID": "55"
+                },
+                "Node 6":
+                {
+                    "ID": "73"
+                },
+                "Node 7":
+                {
+                    "ID": "72"
+                },
+                "Node 8":
+                {
+                    "ID": "60"
+                },
+                "Node 9":
+                {
+                    "ID": "76"
+                },
+                "Node 10":
+                {
+                    "ID": "77"
+                },
+                "Node 11":
+                {
+                    "ID": "61"
+                }
+            },
+            "Segments":
+            {
+                "Segment 0":
+                {
+                    "ID": "45"
+                },
+                "Segment 1":
+                {
+                    "ID": "16"
+                },
+                "Segment 2":
+                {
+                    "ID": "40"
+                },
+                "Segment 3":
+                {
+                    "ID": "41"
+                },
+                "Segment 4":
+                {
+                    "ID": "42"
+                },
+                "Segment 5":
+                {
+                    "ID": "43"
+                },
+                "Segment 6":
+                {
+                    "ID": "55"
+                },
+                "Segment 7":
+                {
+                    "ID": "57"
+                },
+                "Segment 8":
+                {
+                    "ID": "47"
+                }
+            }
+        },
+        "Arm 10":
+        {
+            "Nodes":
+            {
+                "Node 0":
+                {
+                    "ID": "15"
+                },
+                "Node 1":
+                {
+                    "ID": "68"
+                },
+                "Node 2":
+                {
+                    "ID": "69"
+                },
+                "Node 3":
+                {
+                    "ID": "40"
+                },
+                "Node 4":
+                {
+                    "ID": "43"
+                },
+                "Node 5":
+                {
+                    "ID": "44"
+                },
+                "Node 6":
+                {
+                    "ID": "47"
+                },
+                "Node 7":
+                {
+                    "ID": "64"
+                },
+                "Node 8":
+                {
+                    "ID": "65"
+                },
+                "Node 9":
+                {
+                    "ID": "15"
+                }
+            },
+            "Segments":
+            {
+                "Segment 0":
+                {
+                    "ID": "53"
+                },
+                "Segment 1":
+                {
+                    "ID": "9"
+                },
+                "Segment 2":
+                {
+                    "ID": "30"
+                },
+                "Segment 3":
+                {
+                    "ID": "32"
+                },
+                "Segment 4":
+                {
+                    "ID": "33"
+                },
+                "Segment 5":
+                {
+                    "ID": "18"
+                },
+                "Segment 6":
+                {
+                    "ID": "50"
+                },
+                "Segment 7":
+                {
+                    "ID": "51"
+                }
+            }
+        },
+        "Arm 11":
+        {
+            "Nodes":
+            {
+                "Node 0":
+                {
+                    "ID": "15"
+                },
+                "Node 1":
+                {
+                    "ID": "63"
+                },
+                "Node 2":
+                {
+                    "ID": "62"
+                },
+                "Node 3":
+                {
+                    "ID": "59"
+                },
+                "Node 4":
+                {
+                    "ID": "74"
+                },
+                "Node 5":
+                {
+                    "ID": "75"
+                },
+                "Node 6":
+                {
+                    "ID": "15"
+                }
+            },
+            "Segments":
+            {
+                "Segment 0":
+                {
+                    "ID": "49"
+                },
+                "Segment 1":
+                {
+                    "ID": "48"
+                },
+                "Segment 2":
+                {
+                    "ID": "19"
+                },
+                "Segment 3":
+                {
+                    "ID": "56"
+                },
+                "Segment 4":
+                {
+                    "ID": "46"
+                }
+            }
+        }
+    },
+    "Segments":
+    {
+        "Segment 1":
+        {
+            "burgers": "10",
+            "EP 0": "-40 10 10",
+            "EP 1": "-50 -10 0"
+        },
+        "Segment 0":
+        {
+            "burgers": "10",
+            "EP 0": "-40 10 10",
+            "EP 1": "-30 40 10"
+        },
+        "Segment 3":
+        {
+            "burgers": "10",
+            "EP 0": "-30 40 10",
+            "EP 1": "30 40 20"
+        },
+        "Segment 7":
+        {
+            "burgers": "10",
+            "EP 0": "30 40 20",
+            "EP 1": "20 90 0"
+        },
+        "Segment 52":
+        {
+            "burgers": "10",
+            "EP 0": "30 -70 20",
+            "EP 1": "20 -20 0"
+        },
+        "Segment 36":
+        {
+            "burgers": "10",
+            "EP 0": "0 0 0",
+            "EP 1": "20 -20 0"
+        },
+        "Segment 37":
+        {
+            "burgers": "10",
+            "EP 0": "30 40 20",
+            "EP 1": "0 0 0"
+        },
+        "Segment 38":
+        {
+            "burgers": "10",
+            "EP 0": "30 40 20",
+            "EP 1": "50 40 20"
+        },
+        "Segment 39":
+        {
+            "burgers": "10",
+            "EP 0": "50 40 20",
+            "EP 1": "70 -10 0"
+        },
+        "Segment 54":
+        {
+            "burgers": "10",
+            "EP 0": "-70 40 20",
+            "EP 1": "-50 -10 0"
+        },
+        "Segment 45":
+        {
+            "burgers": "10",
+            "EP 0": "55 -20 20",
+            "EP 1": "30 -50 0"
+        },
+        "Segment 16":
+        {
+            "burgers": "10",
+            "EP 0": "30 -50 0",
+            "EP 1": "20 -20 0"
+        },
+        "Segment 40":
+        {
+            "burgers": "10",
+            "EP 0": "0 0 0",
+            "EP 1": "20 -20 0"
+        },
+        "Segment 41":
+        {
+            "burgers": "10",
+            "EP 0": "30 40 20",
+            "EP 1": "0 0 0"
+        },
+        "Segment 42":
+        {
+            "burgers": "10",
+            "EP 0": "30 40 20",
+            "EP 1": "50 40 20"
+        },
+        "Segment 43":
+        {
+            "burgers": "10",
+            "EP 0": "50 40 20",
+            "EP 1": "70 -10 0"
+        },
+        "Segment 55":
+        {
+            "burgers": "10",
+            "EP 0": "-70 40 20",
+            "EP 1": "-50 -10 0"
+        },
+        "Segment 57":
+        {
+            "burgers": "10",
+            "EP 0": "-65 -20 20",
+            "EP 1": "-50 -10 0"
+        },
+        "Segment 47":
+        {
+            "burgers": "10",
+            "EP 0": "55 -20 20",
+            "EP 1": "70 -10 0"
+        },
+        "Segment 53":
+        {
+            "burgers": "20",
+            "EP 0": "50 -70 20",
+            "EP 1": "55 -20 20"
+        },
+        "Segment 9":
+        {
+            "burgers": "20",
+            "EP 0": "50 40 20",
+            "EP 1": "55 90 20"
+        },
+        "Segment 30":
+        {
+            "burgers": "20",
+            "EP 0": "30 40 20",
+            "EP 1": "50 40 20"
+        },
+        "Segment 32":
+        {
+            "burgers": "20",
+            "EP 0": "30 40 20",
+            "EP 1": "0 0 0"
+        },
+        "Segment 33":
+        {
+            "burgers": "20",
+            "EP 0": "0 0 0",
+            "EP 1": "20 -20 0"
+        },
+        "Segment 18":
+        {
+            "burgers": "20",
+            "EP 0": "-10 -35 0",
+            "EP 1": "20 -20 0"
+        },
+        "Segment 50":
+        {
+            "burgers": "20",
+            "EP 0": "30 -50 0",
+            "EP 1": "-10 -35 0"
+        },
+        "Segment 51":
+        {
+            "burgers": "20",
+            "EP 0": "55 -20 20",
+            "EP 1": "30 -50 0"
+        },
+        "Segment 49":
+        {
+            "burgers": "10",
+            "EP 0": "55 -20 20",
+            "EP 1": "30 -50 0"
+        },
+        "Segment 48":
+        {
+            "burgers": "10",
+            "EP 0": "30 -50 0",
+            "EP 1": "-10 -35 0"
+        },
+        "Segment 19":
+        {
+            "burgers": "10",
+            "EP 0": "-10 -35 0",
+            "EP 1": "-50 -10 0"
+        },
+        "Segment 56":
+        {
+            "burgers": "10",
+            "EP 0": "-65 -20 20",
+            "EP 1": "-50 -10 0"
+        },
+        "Segment 46":
+        {
+            "burgers": "10",
+            "EP 0": "55 -20 20",
+            "EP 1": "70 -10 0"
+        }
+    },
+    "Nodes":
+    {
+        "Node 0":
+        {
+            "location": "-40 10 10",
+            "NumNeighbors": "2"
+        },
+        "Node 3":
+        {
+            "location": "-30 40 10",
+            "NumNeighbors": "2"
+        },
+        "Node 15":
+        {
+            "location": "55 -20 20",
+            "NumNeighbors": "4"
+        },
+        "Node 40":
+        {
+            "location": "50 40 20",
+            "NumNeighbors": "2"
+        },
+        "Node 42":
+        {
+            "location": "30 40 20",
+            "NumNeighbors": "2"
+        },
+        "Node 43":
+        {
+            "location": "30 40 20",
+            "NumNeighbors": "2"
+        },
+        "Node 44":
+        {
+            "location": "0 0 0",
+            "NumNeighbors": "2"
+        },
+        "Node 47":
+        {
+            "location": "20 -20 0",
+            "NumNeighbors": "2"
+        },
+        "Node 48":
+        {
+            "location": "20 -20 0",
+            "NumNeighbors": "2"
+        },
+        "Node 49":
+        {
+            "location": "0 0 0",
+            "NumNeighbors": "2"
+        },
+        "Node 50":
+        {
+            "location": "30 40 20",
+            "NumNeighbors": "2"
+        },
+        "Node 51":
+        {
+            "location": "50 40 20",
+            "NumNeighbors": "2"
+        },
+        "Node 52":
+        {
+            "location": "20 -20 0",
+            "NumNeighbors": "2"
+        },
+        "Node 53":
+        {
+            "location": "0 0 0",
+            "NumNeighbors": "2"
+        },
+        "Node 54":
+        {
+            "location": "30 40 20",
+            "NumNeighbors": "2"
+        },
+        "Node 55":
+        {
+            "location": "50 40 20",
+            "NumNeighbors": "2"
+        },
+        "Node 57":
+        {
+            "location": "30 -50 0",
+            "NumNeighbors": "2"
+        },
+        "Node 58":
+        {
+            "location": "-50 -10 0",
+            "NumNeighbors": "2"
+        },
+        "Node 59":
+        {
+            "location": "-50 -10 0",
+            "NumNeighbors": "2"
+        },
+        "Node 60":
+        {
+            "location": "-50 -10 0",
+            "NumNeighbors": "2"
+        },
+        "Node 61":
+        {
+            "location": "55 -20 20",
+            "NumNeighbors": "2"
+        },
+        "Node 62":
+        {
+            "location": "-10 -35 0",
+            "NumNeighbors": "2"
+        },
+        "Node 63":
+        {
+            "location": "30 -50 0",
+            "NumNeighbors": "2"
+        },
+        "Node 64":
+        {
+            "location": "-10 -35 0",
+            "NumNeighbors": "2"
+        },
+        "Node 65":
+        {
+            "location": "30 -50 0",
+            "NumNeighbors": "2"
+        },
+        "Node 66":
+        {
+            "location": "30 -70 20",
+            "NumNeighbors": "1"
+        },
+        "Node 67":
+        {
+            "location": "20 90 0",
+            "NumNeighbors": "1"
+        },
+        "Node 68":
+        {
+            "location": "50 -70 20",
+            "NumNeighbors": "1"
+        },
+        "Node 69":
+        {
+            "location": "55 90 20",
+            "NumNeighbors": "1"
+        },
+        "Node 70":
+        {
+            "location": "-70 40 20",
+            "NumNeighbors": "1"
+        },
+        "Node 71":
+        {
+            "location": "70 -10 0",
+            "NumNeighbors": "1"
+        },
+        "Node 72":
+        {
+            "location": "-70 40 20",
+            "NumNeighbors": "1"
+        },
+        "Node 73":
+        {
+            "location": "70 -10 0",
+            "NumNeighbors": "1"
+        },
+        "Node 74":
+        {
+            "location": "-65 -20 20",
+            "NumNeighbors": "1"
+        },
+        "Node 75":
+        {
+            "location": "70 -10 0",
+            "NumNeighbors": "1"
+        },
+        "Node 76":
+        {
+            "location": "-65 -20 20",
+            "NumNeighbors": "1"
+        },
+        "Node 77":
+        {
+            "location": "70 -10 0",
+            "NumNeighbors": "1"
+        }
+    }
+}
