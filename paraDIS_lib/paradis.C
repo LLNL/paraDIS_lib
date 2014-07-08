@@ -195,6 +195,36 @@ int InterpretBurgersType(float burg[3]) {
 }
 
 // =====================================================================
+// AngularDifference used in ScrewType calculations and blender rotations 
+// Since the other length is often known in those contexts, we save computation by taking it as a parameter
+
+double AngularDifference(vector<float>v1, vector<float>v2, double v1Length=-1, double v2Length=-1) {
+  double dotprod = 0.0; //dot product of segment vec and other vec
+  for (uint i=0; i<3; i++) {
+	dotprod += v1[i]*v2[i]; 
+  }
+  if (v1Length < 0) {
+	// compute length of v1:
+	double sum = 0; 
+	for (int i=0; i<3; i++) {
+	  sum += v1[i]*v1[i];
+	}
+	v1Length = sqrt(sum); 
+  }
+  if (v2Length < 0) {
+	// compute length of v2:
+	double sum = 0; 
+	for (int i=0; i<3; i++) {
+	  sum += v2[i]*v2[i];
+	}
+	v2Length = sqrt(sum); 
+  }
+  double ratio = dotprod / (v1Length * v2Length); 
+  double theta = acos(ratio); // always positive
+  return theta; 
+}
+
+// =====================================================================
 /*!
   This prints out a list of arms with their depths to a text file
   and a set of VTK files.
@@ -897,18 +927,36 @@ namespace paraDIS {
     return INDENT(indent) + s;
   }
 
+	
+
   //===========================================================================
-  vector<double> ArmSegment::SegmentDirection(void) {
-    vector<double> direction(3,0); 
+  std::string ArmSegment::BlenderRotationString(void) const {
+	double len = GetLength(); 
+	vector<float> X(3,0), Y(3,0);
+	X[0] = Y[1] = 1.0; 
+
+    vector<float> xzproj = SegmentDirection(); // remove Y component to get X rotation
+	vector<float> yzproj = xzproj; 
+	xzproj[1] = 0.0; 
+	yzproj[0] = 0.0; // remove X component to get YZ projection
+	return str(boost::format("%1% %2% 0")
+			   % (-AngularDifference(X, xzproj, 1.0)) 
+			   % (-AngularDifference(Y, yzproj, 1.0))); 
+  }
+
+  //===========================================================================
+  vector<float> ArmSegment::SegmentDirection(void) const {
+    vector<float> direction(3,0); 
     for (uint i=0; i<3; i++) {
       direction[i] = mEndpoints[1]->GetLocation(i) - mEndpoints[0]->GetLocation(i); 
     }
     return direction; 
   }
 
+	
   //===========================================================================
   int8_t ArmSegment::ComputeScrewType(void) {
-    vector<double> burg(3,1.0); 
+    vector<float> burg(3,1.0); 
     if (mScrewType != SCREW_UNDEFINED) 
       return mScrewType;
 
@@ -925,15 +973,9 @@ namespace paraDIS {
     else {
       return mScrewType; // mScrewType = BURGER_NO_SCREW; 
     }
+    vector<float> dirVec = SegmentDirection(); 
+	double theta =  AngularDifference(dirVec, burg, GetLength(), SQRT3);  
 
-    vector<double> dirVec = SegmentDirection(); 
-    double dotprod = 0.0; //dot product of segment vec and burger vec
-    for (uint i=0; i<3; i++) {
-      dotprod += burg[i]*dirVec[i]; 
-    }
-    double len = GetLength(); 
-    double ratio = dotprod / (SQRT3 * len); 
-    double theta = acos(ratio); // always positive
     if (theta < mScrewToleranceAngle || theta > M_PI - mScrewToleranceAngle) {
       mScrewType = BURGER_SCREW;
     } else if (theta > M_PI/2.0 - mScrewToleranceAngle && theta < M_PI/2.0 + mScrewToleranceAngle ) {
@@ -4074,6 +4116,9 @@ namespace paraDIS {
           pt.put(str(boost::format("Segments.Segment %1%.burgers")
                      % ((*seg)->GetID())), 
                  (*seg)->GetBurgersType()); 
+          pt.put(str(boost::format("Segments.Segment %1%.rotation")
+                     % ((*seg)->GetID())), 
+                 (*seg)->BlenderRotationString()); 
           for (int i=0; i<2; i++) {
             vector<float>location = (*seg)->GetEndpoint(i)->GetLocation(); 
             pt.put(str(boost::format("Segments.Segment %1%.EP %2%") 
