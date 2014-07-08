@@ -604,12 +604,13 @@ namespace paraDIS {
       mLocation[i] += shift; 
     }
 
+ 	  
     /*!
       Compute the distance to another node
     */
     double Distance(const FullNode &other, bool wrap=false) { 
-      double dist[3] = {0}, sum=0; 
-      int i=3; while (i--) {
+	  double dist[3] = {0}, sum=0; 
+	  int i=3; while (i--) {
         dist[i] = mLocation[i] - other.mLocation[i]; 
         if (wrap && fabs(dist[i]) > mBoundsSize[i]/2.0) {
           dist[i] = mBoundsSize[i] - fabs(dist[i]); 
@@ -617,12 +618,6 @@ namespace paraDIS {
         sum += dist[i]*dist[i]; 
       }
       return sqrt(sum); 
-      /*
-        double dx = mLocation[0]-other.mLocation[0],  
-        dy = mLocation[1]-other.mLocation[1],        
-        dz = mLocation[2]-other.mLocation[2];         
-        return sqrt(dx*dx + dy*dy + dz*dz); 
-      */ 
     } 
     /*!
       Accessor function.  
@@ -1043,10 +1038,14 @@ namespace paraDIS {
     */ 
     std::string Stringify(int indent=0) const; 
  
-    /*!
+	
+	// specific to JSON files for blender ingestion
+	std::string BlenderRotationString(void) const;
+	
+	/*!
       return a vector ep1 - ep0 
      */ 
-    vector<double> SegmentDirection(void);
+    vector<float> SegmentDirection(void) const;
 
     /*!
       Compute the mScrewType value
