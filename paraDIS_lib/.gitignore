@@ -1,2 +1,6 @@
-chaos_5_x86_64_ib
+chaos*
 mf-include
+*.pyc
+boost
+include
+Darwin*
