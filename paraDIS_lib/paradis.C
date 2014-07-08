@@ -4035,10 +4035,21 @@ namespace paraDIS {
   // Dump a JSON file containing the indicated arms.
   // JSON can be imported into python for use in blender scripts
   void DataSet::WriteJson(void) {
+    string jsonfile = str(boost::format("%s/%s.json")%mOutputDir%mOutputBasename);
+    dbecho (0, str(boost::format("Writing json file %s...")%jsonfile)); 
+
+    string bounds = str(boost::format("%1% %2% %3% %4% %5% %6%") 
+                        % FullNode::mBoundsMin[0] 
+                        % FullNode::mBoundsMax[0] 
+                        % FullNode::mBoundsMin[1] 
+                        % FullNode::mBoundsMax[1] 
+                        % FullNode::mBoundsMin[2] 
+                        % FullNode::mBoundsMax[2]);
     using boost::property_tree::ptree; 
     {
       // Make a map of all nodes, to avoid creating duplicate nodes for endpoints, then we can add each map entry to the JSON ptree and write it out.  Memory explosion!
       ptree pt;
+      pt.put("Bounds", bounds);
       map<int32_t, FullNode *> nodemap; 
       uint32_t armnum = 0; 
       for (vector<Arm*>::iterator arm = Arm::mArms.begin(); arm != Arm::mArms.end(); arm++, armnum++){
@@ -4047,40 +4058,17 @@ namespace paraDIS {
         for (vector<FullNode*>::iterator node = armnodes.begin(); node != armnodes.end(); node++) {
           if (*node) {
             nodemap[(*node)->GetIndex()] = *node;  
-            pt.put(str(boost::format("Arms.Arm %1%.Node %2%.ID")
+            pt.put(str(boost::format("Arms.Arm %1%.Nodes.Node %2%.ID")
                        % armnum % nodenum), 
                    (*node)->GetIndex()); 
             nodenum++;
           }
         }
-      }
-      for (map<int32_t, FullNode *>::iterator pos = nodemap.begin(); pos != nodemap.end(); pos++) {
-        FullNode *node = pos->second; 
-        vector<float>location = node->GetLocation(); 
-        pt.put(str(boost::format("Nodes.Node %1%.location")
-                   % (node->GetIndex())), 
-               str(boost::format("%1% %2% %3%")
-                   % location[0] % location[1] % location[2])); 
-        pt.put(str(boost::format("Nodes.Node %1%.NumNeighbors")
-                   % (node->GetIndex())), 
-               str(boost::format("%1%")
-                   % (node->GetNumNeighborSegments())));         
-      }
-      string jsonfile = str(boost::format("%s/%s-nodes.json")%mOutputDir%mOutputBasename);
-      write_json(jsonfile, pt); 
-      dbecho (0, str(boost::format("Wrote json node file %s\n")%jsonfile)); 
-    } // end node JSON
-    
-    {
-      ptree pt;
-      // For segments, we can just add them to the JSON ptree directly
-      uint32_t armnum = 0; 
-      for (vector<Arm*>::iterator arm = Arm::mArms.begin(); arm != Arm::mArms.end(); arm++, armnum++){
         vector<ArmSegment*> armsegs = (*arm)->GetSegments(); 
         int segnum = 0; 
         for (vector<ArmSegment*>::iterator seg = armsegs.begin(); seg != armsegs.end(); seg++, segnum++) {
           
-          pt.put(str(boost::format("Arms.Arm %1%.Segment %2%.ID")
+          pt.put(str(boost::format("Arms.Arm %1%.Segments.Segment %2%.ID")
                      % armnum % segnum),
                  (*seg)->GetID()); 
           pt.put(str(boost::format("Segments.Segment %1%.burgers")
@@ -4095,9 +4083,21 @@ namespace paraDIS {
           }    
         }
       }
-      string jsonfile = str(boost::format("%s/%s-segments.json")%mOutputDir%mOutputBasename);
+      for (map<int32_t, FullNode *>::iterator pos = nodemap.begin(); pos != nodemap.end(); pos++) {
+        FullNode *node = pos->second; 
+        vector<float>location = node->GetLocation(); 
+        pt.put(str(boost::format("Nodes.Node %1%.location")
+                   % (node->GetIndex())), 
+               str(boost::format("%1% %2% %3%")
+                   % location[0] % location[1] % location[2])); 
+        pt.put(str(boost::format("Nodes.Node %1%.NumNeighbors")
+                   % (node->GetIndex())), 
+               str(boost::format("%1%")
+                   % (node->GetNumNeighborSegments())));         
+      }
+      
       write_json(jsonfile, pt); 
-      dbecho (0, str(boost::format("Wrote json segment file %s\n")%jsonfile)); 
+      dbecho (0, "...done\n"); 
     }
     return; 
   }
