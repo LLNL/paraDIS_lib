@@ -931,7 +931,6 @@ namespace paraDIS {
 
   //===========================================================================
   std::string ArmSegment::BlenderRotationString(void) const {
-	double len = GetLength(); 
 	vector<float> X(3,0), Y(3,0);
 	X[0] = Y[1] = 1.0; 
 
