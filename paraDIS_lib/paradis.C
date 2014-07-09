@@ -936,6 +936,9 @@ namespace paraDIS {
 
   //===========================================================================
   // 	# Thanks to http://mcngraphics.com/thelab/blender/connect/
+  /* Computes a Y and Z rotation that take the segment from a Z orientation
+	 (the blender cylinder uv mesh default) to its proper orientation.
+  */
   std::string ArmSegment::BlenderRotationString(void) const {
 	vector<float> segdir = SegmentDirection(); 
 	dbprintf(5,str(boost::format("BlenderRotationString: SegmentDirection = <%f, %f, %f>\n") % segdir[0] % segdir[1] % segdir[2]).c_str()); 
