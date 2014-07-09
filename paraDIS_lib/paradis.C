@@ -944,7 +944,7 @@ namespace paraDIS {
 	}
 	distance = sqrt(distance); 
 	double theta = acos(segdir[2]/distance); 
-	double phi = atan(segdir[1]/segdir[0]); 
+	double phi =  atan2(segdir[1], segdir[0]); 
 	string s = str(boost::format("0 %1% %2%") % theta % phi); 
 	dbprintf(5,str(boost::format("BlenderRotationString: returning \"%s\"\n") % s).c_str()); 
 	return s;
