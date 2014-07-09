@@ -199,6 +199,10 @@ int InterpretBurgersType(float burg[3]) {
 // Since the other length is often known in those contexts, we save computation by taking it as a parameter
 
 double AngularDifference(vector<float>v1, vector<float>v2, double v1Length=-1, double v2Length=-1) {
+  dbprintf(5, str(boost::format("AngularDifference(<%f %f %f>, <%f, %f, %f>, %f, %f)\n") 
+				  % v1[0] % v1[1] % v1[2] % v2[0] % v2[1] % v2[2] 
+				  % v1Length % v2Length).c_str()); 
+				  
   double dotprod = 0.0; //dot product of segment vec and other vec
   for (uint i=0; i<3; i++) {
 	dotprod += v1[i]*v2[i]; 
@@ -221,6 +225,7 @@ double AngularDifference(vector<float>v1, vector<float>v2, double v1Length=-1, d
   }
   double ratio = dotprod / (v1Length * v2Length); 
   double theta = acos(ratio); // always positive
+  dbprintf(5, str(boost::format("AngularDifference: dotprod = %f, v1Length = %f, v2Length = %f, ratio = %f, theta = %f\n") % dotprod % v1Length % v2Length % ratio % theta).c_str()); 
   return theta; 
 }
 
@@ -931,16 +936,18 @@ namespace paraDIS {
 
   //===========================================================================
   std::string ArmSegment::BlenderRotationString(void) const {
-	vector<float> X(3,0), Y(3,0);
-	X[0] = Y[1] = 1.0; 
-
-    vector<float> xzproj = SegmentDirection(); // remove Y component to get X rotation
-	vector<float> yzproj = xzproj; 
-	xzproj[1] = 0.0; 
-	yzproj[0] = 0.0; // remove X component to get YZ projection
-	return str(boost::format("%1% %2% 0")
-			   % (-AngularDifference(X, xzproj, 1.0)) 
-			   % (-AngularDifference(Y, yzproj, 1.0))); 
+	vector<float> segdir = SegmentDirection(); 
+	dbprintf(5,str(boost::format("BlenderRotationString: SegmentDirection = <%f, %f, %f>\n") % segdir[0] % segdir[1] % segdir[2]).c_str()); 
+	double distance = 0.0; 
+	for (int i = 0; i<3; i++) {
+	  distance += segdir[i]*segdir[i]; 
+	}
+	distance = sqrt(distance); 
+	double theta = acos(segdir[2]/distance); 
+	double phi = atan(segdir[1]/segdir[0]); 
+	string s = str(boost::format("0 %1% %2%") % theta % phi); 
+	dbprintf(5,str(boost::format("BlenderRotationString: returning \"%s\"\n") % s).c_str()); 
+	return s;
   }
 
   //===========================================================================
