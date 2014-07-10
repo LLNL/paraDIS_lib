@@ -115,23 +115,6 @@ def select_names(keynamelist, extend = False ):
 				bpy.context.scene.objects.active = o
 	return found
 
-# ====================================================================
-# Create a pyramind mesh (for future reference?)
-def CreatePyramidMesh(name, ep1, ep2, radius):
-	# Define the coordinates of the vertices. Each vertex is defined by a tuple of 3 floats.
-	coords=[(-1.0, -1.0, -1.0), (1.0, -1.0, -1.0), (1.0, 1.0 ,-1.0), \
-			(-1.0, 1.0,-1.0), (0.0, 0.0, 1.0)]	
-	# Define the faces by index numbers of its vertices. Each face is defined by a tuple of 3 or more integers.
-	# N-gons would require a tuple of size N.
-	faces=[ (2,1,0,3), (0,1,4), (1,2,4), (2,3,4), (3,0,4)]	
-	me = bpy.data.meshes.new("PyramidMesh")   # create a new mesh  	
-	ob = bpy.data.objects.new("Pyramid", me)          # create an object with that mesh
-	ob.location = (0,0,0)   # position object at 3d-cursor
-	bpy.context.scene.objects.link(ob)                # Link object to scene 
-	# Fill the mesh with verts, edges, faces 
-	me.from_pydata(coords,[],faces)   # edges or faces should be [], or you ask for problems
-	me.update(calc_edges=True)    # Update mesh with new data	
-	return
 
 #========================================================================
 # Select a list of objects
@@ -226,7 +209,7 @@ def FindRotation(ep1, ep2):
 
 
 # ====================================================================
-def MakeCylinder(name, ep1, ep2, radius, orientation, burgers=None, endcaps=True):
+def MakeCylinder(name, ep1, ep2, radius, orientation):
 	# print ("Make cylinder %s from ep1 %s to ep2 %s, in orientation %s"%(name, ep1,ep2,orientation))
 	cylvector = ep2 - ep1
 	center = ep1 + 0.5 * cylvector
@@ -247,7 +230,14 @@ def MakeCylinder(name, ep1, ep2, radius, orientation, burgers=None, endcaps=True
 		# compare = FindRotation(ep1, ep2)
 		# print ("computed rotation %s"%str(cyl.rotation_euler ))
 		# print ("compare rotation %s"%str(compare ))
-	burgers = None
+	return cyl
+
+# ===========================================================================
+# I broke this out so I could test textures easier. 
+def MakeSegment(segname, radius, endcaps=True):
+	seg = data["Segments"][segname]
+	cyl = MakeCylinder(segname, FloatArrayFromString(seg['EP 0']),  FloatArrayFromString(seg['EP 1']), radius, FloatArrayFromString(seg['rotation']))
+	burgers = int(seg['burgers'])
 	if burgers:
 		objs = [cyl]
 		if endcaps:
@@ -283,9 +273,6 @@ def MakeCylinder(name, ep1, ep2, radius, orientation, burgers=None, endcaps=True
 			outnode = mat.node_tree.nodes['Material Output']
 			mat.node_tree.links.new(mixnode.outputs['Shader'], outnode.inputs['Surface'])
 	return 
-
-# deleteObjectsByName('Segment')
-# MakeCylinder('Testing', (0,0,0), (0,100,0), 2, None, 10)
 
 #========================================================================
 # create light plane: 
@@ -557,11 +544,6 @@ def MakeLimits(fraction, offset):
 # MakeSegments(data, limits=tenpercentCenterLimits)
 # MakeSegments(data, limits=MakeLimits(0.30, 0.50)) # 20 percent
 
-# ===========================================================================
-# I broke this out so I could test textures easier. 
-def MakeSegment(segname, radius):
-	seg = data["Segments"][segname]
-	MakeCylinder(segname, FloatArrayFromString(seg['EP 0']),  FloatArrayFromString(seg['EP 1']), radius, FloatArrayFromString(seg['rotation']), int(seg['burgers']))
 	
 # ===========================================================================
 def MakeSegments(data, radius=None, limits=None):
