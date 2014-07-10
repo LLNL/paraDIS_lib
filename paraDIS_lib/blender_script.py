@@ -25,13 +25,19 @@ exec(compile(open(filename).read(), filename, 'exec'))
 
 # To load the data, setup the scene, and draw all the segments:
 datafile = 'rs0001.json'
-LoadAndSetup(datafile)
+# datafile = 'rs0240.json'
+# LoadAndSetup(datafile)
 
 # Or choose from a subset of LoadSetupRender(): 
+datafile = 'rs0001.json'
+# datafile = 'rs0240.json'
 SetupContext()
 LoadData(datafile)
-MakeSegments(data)
 CreateScene(data)
+# MakeNodes(data)
+MakeSegments(data, limits=MakeLimits(0.10, 0.50)) # 10 percent of data
+# MakeSegments(data)
+# SetupAnimation()  # careful with this one; it will mess with the camera
 
 # Useful: :-)
 deleteObjectsByName('.001')
@@ -41,7 +47,7 @@ Remember:  Anything you do in blender shows up as a python command in the info w
 """
 from math import *
 from mathutils import *
-import	sys, json, os, bpy
+import	sys, json, os, bpy, time
 import numpy
 projdir = os.path.expanduser('~/current_projects/paraDIS/paraDIS_lib')
 sys.path.append(os.getcwd())
@@ -52,9 +58,11 @@ from diverging_map import *
 #========================================================================
 def FloatArrayFromString(s):
 	tokens = s.split()
-	array = []
+	array = numpy.zeros(len(tokens))
+	n = 0
 	for token in tokens:
-		array.append(float(token))
+		array[n] = float(token)
+		n=n+1
 	return array
 
 #========================================================================
@@ -107,6 +115,24 @@ def select_names(keynamelist, extend = False ):
 				bpy.context.scene.objects.active = o
 	return found
 
+# ====================================================================
+# Create a pyramind mesh (for future reference?)
+def CreatePyramidMesh(name, ep1, ep2, radius):
+	# Define the coordinates of the vertices. Each vertex is defined by a tuple of 3 floats.
+	coords=[(-1.0, -1.0, -1.0), (1.0, -1.0, -1.0), (1.0, 1.0 ,-1.0), \
+			(-1.0, 1.0,-1.0), (0.0, 0.0, 1.0)]	
+	# Define the faces by index numbers of its vertices. Each face is defined by a tuple of 3 or more integers.
+	# N-gons would require a tuple of size N.
+	faces=[ (2,1,0,3), (0,1,4), (1,2,4), (2,3,4), (3,0,4)]	
+	me = bpy.data.meshes.new("PyramidMesh")   # create a new mesh  	
+	ob = bpy.data.objects.new("Pyramid", me)          # create an object with that mesh
+	ob.location = (0,0,0)   # position object at 3d-cursor
+	bpy.context.scene.objects.link(ob)                # Link object to scene 
+	# Fill the mesh with verts, edges, faces 
+	me.from_pydata(coords,[],faces)   # edges or faces should be [], or you ask for problems
+	me.update(calc_edges=True)    # Update mesh with new data	
+	return
+
 #========================================================================
 # Select a list of objects
 def select_objs(objlist, extend = False):
@@ -141,9 +167,9 @@ def getView3Dspace(n=0):
 
 # ====================================================================
 # ColorFromBurgers(): burgers type as integer --> color
-# Got good 8-color map from http://colorbrewer2.org, move it into blender color space by normalizing each one:
+# Got good 11-color map from http://colorbrewer2.org, move it into blender color space by normalizing each one:
 colors = []
-for color in  [numpy.array((228,26,28)), numpy.array((55,126,184)), numpy.array((77,175,74)), numpy.array((152,78,163)), numpy.array((255,127,0)), numpy.array((255,255,51)), numpy.array((166,86,40)), numpy.array((247,129,191))]:
+for color in  [numpy.array((141,211,199)), numpy.array((255,255,179)), numpy.array((190,186,218)), numpy.array((251,128,114)), numpy.array((128,177,211)), numpy.array((253,180,98)), numpy.array((179,222,105)), numpy.array((252,205,229)), numpy.array((217,217,217)), numpy.array((188,128,189)), numpy.array((204,235,197))]:
 	colors.append(color/numpy.linalg.norm(color))
 
 def ColorFromBurgers(burgers):
@@ -152,18 +178,24 @@ def ColorFromBurgers(burgers):
 		color = colors[0]
 	elif burgers == 0:
 		color = colors[1]
-	elif burgers < 20: # 10 - 13
-		color = ( 0.25 + ( burgers - 10.0 ) / 4.0 ) * colors[2]
+	elif burgers == 10: # 10 - 13 -- the most common case
+		color = colors[2]
+	elif burgers == 11: # 10 - 13 -- the most common case
+		color = colors[3]
+	elif burgers == 12: # 10 - 13 -- the most common case
+		color = colors[4]
+	elif burgers == 13: # 10 - 13 -- the most common case
+		color = colors[5]
 	elif burgers < 30: # 20 - 22
-		color = ( 0.33 + ( burgers - 20.0 ) / 3.0 ) * colors[3]
+		color = ( 0.33 + ( burgers - 20.0 ) / 3.0 ) * colors[6]
 	elif burgers < 40: # 30 - 32
-		color = ( 0.33 + ( burgers - 30.0 ) / 3.0 ) * colors[4]
+		color = ( 0.33 + ( burgers - 30.0 ) / 3.0 ) * colors[7]
 	elif burgers < 50: # 40 - 42
-		color = ( 0.33 + ( burgers - 40.0 ) / 4.0 ) * colors[5]
+		color = ( 0.33 + ( burgers - 40.0 ) / 4.0 ) * colors[8]
 	elif burgers == 50:
-		color = colors[6]
+		color = colors[9]
 	elif burgers == 60:
-		color = colors[7]
+		color = colors[10]
 	else:
 		print("Bad burgers value: %d"%burgers)
 		return None
@@ -171,6 +203,11 @@ def ColorFromBurgers(burgers):
 	return color # require opacity value
 
 # ====================================================================
+# FindRotation
+# Computes a Y and Z rotation that take the segment from a Z orientation
+#	 (the blender cylinder uv mesh default) to its proper orientation.
+# This it the same formula for rotating cylinders used in the paradis.C code.
+# Reproduced here for reference.  
 def FindRotation(ep1, ep2):
 	# Thanks to http://mcngraphics.com/thelab/blender/connect/
 	ep1 = numpy.array(ep1)
@@ -187,87 +224,68 @@ def FindRotation(ep1, ep2):
 	phi = math.atan2( ep2new[1], ep2new[0])
 	return (0,theta, phi)
 
-# ====================================================================
-# Create a pyramind mesh (for future reference?)
-def CreatePyramidMesh(name, ep1, ep2, radius):
-	# Define the coordinates of the vertices. Each vertex is defined by a tuple of 3 floats.
-	coords=[(-1.0, -1.0, -1.0), (1.0, -1.0, -1.0), (1.0, 1.0 ,-1.0), \
-			(-1.0, 1.0,-1.0), (0.0, 0.0, 1.0)]	
-	# Define the faces by index numbers of its vertices. Each face is defined by a tuple of 3 or more integers.
-	# N-gons would require a tuple of size N.
-	faces=[ (2,1,0,3), (0,1,4), (1,2,4), (2,3,4), (3,0,4)]	
-	me = bpy.data.meshes.new("PyramidMesh")   # create a new mesh  	
-	ob = bpy.data.objects.new("Pyramid", me)          # create an object with that mesh
-	ob.location = (0,0,0)   # position object at 3d-cursor
-	bpy.context.scene.objects.link(ob)                # Link object to scene 
-	# Fill the mesh with verts, edges, faces 
-	me.from_pydata(coords,[],faces)   # edges or faces should be [], or you ask for problems
-	me.update(calc_edges=True)    # Update mesh with new data	
-	return
 
 # ====================================================================
-def MakeCylinder(name, ep1, ep2, radius, orientation, burgers=None):
-	print ("Make cylinder %s from ep1 %s to ep2 %s, in orientation %s"%(name, ep1,ep2,orientation))
-	cylvector = numpy.array(ep2) - numpy.array(ep1)
-	center = numpy.array(ep1) + 0.5 * cylvector
+def MakeCylinder(name, ep1, ep2, radius, orientation, burgers=None, endcaps=True):
+	# print ("Make cylinder %s from ep1 %s to ep2 %s, in orientation %s"%(name, ep1,ep2,orientation))
+	cylvector = ep2 - ep1
+	center = ep1 + 0.5 * cylvector
 	depth = numpy.linalg.norm(cylvector)
 	# print ("cylvector is %s, center is %s, and depth is %s"% (cylvector, center, depth))
 	bpy.ops.mesh.primitive_cylinder_add(radius = radius, depth = depth, location = center)
-	obj = bpy.data.objects['Cylinder']
-	obj.name = name
+	cyl = bpy.data.objects['Cylinder']
+	cyl.name = name
 	if orientation == 'X':
-		obj.rotation_euler = [0, pi/2.0, 0]
-	if orientation == 'Y':
-		obj.rotation_euler = [pi/2.0, 0, 0]
-	if orientation == 'Z':
-		obj.rotation_euler = [0, 0, 0]
+		cyl.rotation_euler = [0, pi/2.0, 0]
+	elif orientation == 'Y':
+		cyl.rotation_euler = [pi/2.0, 0, 0]
+	elif orientation == 'Z':
+		cyl.rotation_euler = [0, 0, 0]
 	else:
-		# obj.rotation_euler = FindRotation(ep1, ep2)
-		obj.rotation_euler = orientation
+		# cyl.rotation_euler = FindRotation(ep1, ep2)
+		cyl.rotation_euler = orientation
 		# compare = FindRotation(ep1, ep2)
-		# print ("computed rotation %s"%str(obj.rotation_euler ))
+		# print ("computed rotation %s"%str(cyl.rotation_euler ))
 		# print ("compare rotation %s"%str(compare ))
+	burgers = None
 	if burgers:
-		color = ColorFromBurgers(burgers)
-		bpy.ops.object.shade_smooth()
-		bpy.data.materials.new('%s_material'%name)
-		mat = bpy.data.materials['%s_material'%name]
-		obj.data.materials.append(mat)
-		mat.use_nodes = True
-		# node = mat.node_tree.nodes.new("ShaderNodeBsdfDiffuse")
-		# node.name = "diffuse_%s"%name
-		node = mat.node_tree.nodes.new("ShaderNodeBsdfGlossy")
-		node.name = "gloss_%s"%name
-		node.inputs['Roughness'].default_value = 0.9
-		node.inputs['Color'].default_value = ColorFromBurgers(burgers)
-		outnode = mat.node_tree.nodes['Material Output']
-		mat.node_tree.links.new(node.outputs['BSDF'], outnode.inputs['Surface'])
-	return
+		objs = [cyl]
+		if endcaps:
+			bpy.ops.mesh.primitive_uv_sphere_add(location=ep1, size = radius )
+			ep1s = bpy.data.objects['Sphere']
+			ep1s.name = "%s ep1"%name
+			bpy.ops.mesh.primitive_uv_sphere_add(location=ep2, size = radius )
+			ep2s = bpy.data.objects['Sphere']
+			ep2s.name = "%s ep2"%name
+			objs = objs + [ep1s, ep2s]
+		for obj in objs:
+			name = obj.name
+			color = ColorFromBurgers(burgers)
+			bpy.ops.object.shade_smooth()
+			bpy.data.materials.new('%s_material'%name)
+			mat = bpy.data.materials['%s_material'%name]
+			obj.data.materials.append(mat)
+			mat.use_nodes = True
+			# node = mat.node_tree.nodes.new("ShaderNodeBsdfDiffuse")
+			# node.name = "diffuse_%s"%name
+			colornode = mat.node_tree.nodes.new("ShaderNodeBsdfGlossy")
+			colornode.name = "%s color"%name
+			colornode.inputs['Roughness'].default_value = 0.6
+			color = ColorFromBurgers(burgers)
+			colornode.inputs['Color'].default_value = color
+			emission = mat.node_tree.nodes.new("ShaderNodeEmission")
+			emission.name = "%s emission"%name
+			emission.inputs['Color'].default_value = color		
+			mixnode = mat.node_tree.nodes.new("ShaderNodeMixShader")
+			mixnode.name = "%s mixnode"%name
+			mat.node_tree.links.new(colornode.outputs['BSDF'], mixnode.inputs[1])
+			mat.node_tree.links.new(emission.outputs['Emission'], mixnode.inputs[2]) 
+			outnode = mat.node_tree.nodes['Material Output']
+			mat.node_tree.links.new(mixnode.outputs['Shader'], outnode.inputs['Surface'])
+	return 
 
+# deleteObjectsByName('Segment')
 # MakeCylinder('Testing', (0,0,0), (0,100,0), 2, None, 10)
-
-# ======================================================================
-def CreateBoundingBox(data):
-	bounds = data["bounds"]
-	print ("bounds = %s"%bounds)
-	radius = 1
-	verts = []
-	for i in range(2):
-		for j in range(2):
-			for k in range(2):
-				verts.append((bounds[0][i], bounds[1][j], bounds[2][k]))
-	cylnum = 0
-	for z in range(0,8,2):
-		MakeCylinder("Cylinder %d"%cylnum, verts[z], verts[z+1], radius, 'Z')
-		cylnum = cylnum + 1
-	for y in [0,1,4,5]:
-		MakeCylinder("Cylinder %d"%cylnum, verts[y], verts[y+2], radius, 'Y')
-		cylnum = cylnum + 1
-	for x in range(4):
-		MakeCylinder("Cylinder %d"%cylnum, verts[x], verts[x+4], radius, 'X')
-		cylnum = cylnum + 1
-	return	  
-
 
 #========================================================================
 # create light plane: 
@@ -288,30 +306,47 @@ def create_light_plane(name, radius, rotation, location, value=1):
 	 return light
 
 # ============================================================
-def CreateLight(location, brightness, name):
-	bpy.ops.object.lamp_add(type="POINT")
-	point = bpy.data.objects['Point']
-	point.name =  name	  
-	point.data.node_tree.nodes['Emission'].inputs['Strength'].default_value = brightness
-	point.location = location
-	point.data.shadow_soft_size = 50
-	#location = (0, 0, bounds[2][0] + boundsSize[2]*0.9)
+def CreateAreaLight(location, strength, name, size=1200):
+	bpy.ops.object.lamp_add(type="AREA")
+	light = bpy.data.objects['Area']
+	light.name = name	  
+	light.data.node_tree.nodes['Emission'].inputs['Strength'].default_value = strength
+	light.location = location
+	light.data.shadow_soft_size = 50
+	light.data.size = size
+	#location = (0, 0, bounds[4] + boundsSize[2]*0.9)
 	# create_light(name, radius, rotation, location, value=1):
 	#create_light_plane("light1", 500, (0,0,0), location, 10.0)
 	# bpy.data.objects['light1'].scale = [boundsSize[0]/4.0, boundsSize[1]/4.0, 1]
 	return
 
 # ============================================================
-def CreateLights(data, brightness):
-	bounds = data["bounds"]
-	boundsSize = data["size"]
+def CreateSunLight(name, strength, rotation=(0,0,0)):
+	bpy.ops.object.lamp_add(type="SUN")
+	light = bpy.data.objects['Sun']
+	light.name = name	  
+	light.data.node_tree.nodes['Emission'].inputs['Strength'].default_value = strength
+
+# ============================================================
+def CreateLights(data, doSun = True, brightness = 200*1000*1000, size=1200):
+	bounds = numpy.copy(data["bounds"])
+	boundsSize = numpy.copy(data["size"])
 	i = 0
-	for xfac in [ 0.25, 0.75 ]:
-		for yfac in [ 0.5, 0.75 ]: 
-			location = (bounds[0][0] + boundsSize[0] * xfac, bounds[1][0] + boundsSize[1] * yfac, bounds[2][0] + boundsSize[2]*0.8)
-			CreateLight(location, brightness, "light %d"%i)
-			i = i+1
+	if doSun:
+		CreateSunLight("Sun light", 1)
+	if brightness > 0:
+		for xfac in [ -0.1, 0.5, 1.1 ]:
+			for yfac in [ -0.1, 0.5, 1.1 ]: 
+				location = (bounds[0] + boundsSize[0] * xfac, bounds[2] + boundsSize[1] * yfac, bounds[4] + boundsSize[2]*1.2)
+				CreateAreaLight(location, brightness, "Area light %d"%i, size)
+				i = i+1
 	return
+
+# ============================================================
+#	exec(compile(open(filename).read(), filename, 'exec'))
+def TestLights():
+	deleteObjectsByName('light')
+	CreateLights(data, 10*1000*1000)
 
 #========================================================================
 # No longer used; just keep for later reference
@@ -325,14 +360,13 @@ def pointCamera(camobj, lookat):
 #========================================================================
 # Set up camera and frustrum
 def SetupCameraAndFrustrum(data):
-	bounds = data["bounds"]
-	boundsSize = data["size"]
-	center =  data["center"]
-	diag = data["diagonal"]
+	bounds = numpy.copy(data["bounds"])
+	boundsSize = numpy.copy(data["size"])
+	center =  numpy.copy(data["center"])
 	#
 	# Set up camera, lights, 
 	camobj = bpy.data.objects['Camera']
-	camobj.location = [50, -50, 25]
+	camobj.location = numpy.add(center, [0, 2.6*boundsSize[1], 0.1*boundsSize[2]])
 	cam = bpy.data.cameras['Camera']
 	cam.show_limits = True
 	cam.clip_end = 20*boundsSize[2]
@@ -344,9 +378,8 @@ def SetupCameraAndFrustrum(data):
 		bpy.ops.object.empty_add()
 		bpy.data.objects['Empty'].name= "lookat"
 		lookat = bpy.data.objects["lookat"]
-		lookat.location = (-39, 37, 0)
-
-		
+		lookat.location = center
+	#
 	camobj.constraints.new(type='TRACK_TO')
 	camobj.constraints['Track To'].target = lookat
 	camobj.constraints['Track To'].track_axis = 'TRACK_NEGATIVE_Z'
@@ -382,46 +415,77 @@ def SetupAnimation():
 	camobj.keyframe_insert(data_path="location", frame=300)
 
 
+# ======================================================================
+def CreateBoundingBox(data):
+	bounds = numpy.copy(data["bounds"])
+	boundsSize = numpy.copy(data["size"])
+	print ("bounds = %s"%bounds)
+	verts = []
+	for i in range(2):
+		for j in range(2):
+			for k in range(2):
+				verts.append(numpy.array((bounds[i], bounds[2+j], bounds[4+k])))
+	cylnum = 0
+	for z in range(0,8,2): 
+		MakeCylinder("Cylinder-Z %d"%cylnum, verts[z], verts[z+1], 0.005 * boundsSize[0], 'Z')
+		cylnum = cylnum + 1
+	for y in [0,1,4,5]:
+		MakeCylinder("Cylinder-Y %d"%cylnum, verts[y], verts[y+2], 0.005 * boundsSize[0], 'Y')
+		cylnum = cylnum + 1
+	for x in range(4):
+		MakeCylinder("Cylinder-X %d"%cylnum, verts[x], verts[x+4], 0.005 * boundsSize[0], 'X')
+		cylnum = cylnum + 1
+	return	  
+
+
 #========================================================================
 def createBoundsPlane(name, rotation, location, scale):
-	bpy.ops.mesh.primitive_plane_add(radius=1, rotation=rotation, location=location) 
+	# Making radius = 0.5 means scaling works as expected
+	bpy.ops.mesh.primitive_plane_add(radius=0.5, rotation=rotation, location=location)
 	plane = bpy.data.objects['Plane']
 	plane.name = name
 	plane.scale = scale
 	bpy.data.materials.new('%s_material'%name)
-	planemat = bpy.data.materials['%s_material'%name]
-	plane.data.materials.append(planemat)
-	planemat.use_nodes = True
-	diffuseNode = planemat.node_tree.nodes["Diffuse BSDF"]
-	diffuseNode.inputs['Color'].default_value = [0.2,0.2,0.2,1]	   
-	#planemat.node_tree.nodes.remove(planemat.node_tree.nodes["Diffuse BSDF"])
-	#glossnode = planemat.node_tree.nodes.new("ShaderNodeBsdfGlossy")
-	#glossnode.name = 'glossnode_%s'%name
-	#glossnode.inputs['Roughness'].default_value = 0.35
-	#glossnode.inputs['Color'].default_value = [0.2,0.2,0.2,1]
-	#outnode = planemat.node_tree.nodes['Material Output']
-	#planemat.node_tree.links.new(glossnode.outputs['BSDF'], outnode.inputs['Surface'])
+	mat = bpy.data.materials['%s_material'%name]
+	plane.data.materials.append(mat)
+	mat.use_nodes = True
+	node = mat.node_tree.nodes.new("ShaderNodeBsdfVelvet")
+	# node = mat.node_tree.nodes["Diffuse BSDF"]
+	node.inputs['Color'].default_value = [0.5, 0.5, 0.5, 1]	   
+	# node.inputs['Roughness'].default_value = 1.0
+	# mat.node_tree.nodes.remove(mat.node_tree.nodes["Diffuse BSDF"])
+	# node = mat.node_tree.nodes.new("ShaderNodeBsdfGlossy")
+	# node.name = 'glossnode_%s'%name
+	# node.inputs['Roughness'].default_value = 0.35
+	# node.inputs['Color'].default_value = [0.2,0.2,0.2,1]
+	outnode = mat.node_tree.nodes['Material Output']
+	mat.node_tree.links.new(node.outputs['BSDF'], outnode.inputs['Surface'])
 	return
 
-#========================================================================
+# ========================================================================
 def createBoundsPlanes(data):
-	bounds = data["bounds"]
-	boundsSize = data["size"]
-	center =  data["center"]
-	diag = data["diagonal"]
-	# XY plane:
-	createBoundsPlane("XY_Plane", (0, 0, 0), (data["center"][0], data["center"][1], -25.0), [boundsSize[0]*10.0, boundsSize[1]*10.0, 1] )	 
-	# YZ plane (rotate Y into Z)
-	# createBoundsPlane("YZ_Plane", (0, pi/2.0, 0), (bounds[0][0], center[1], center[2]), [boundsSize[2]/2.0, boundsSize[1]/2.0, 1])	
+	bounds = numpy.copy(data["bounds"])
+	boundsSize = numpy.copy(data["size"])
+	center =  numpy.copy(data["center"])
+	# YZ planes (rotate Y into Z)
+	# createBoundsPlane("YZ_Plane 0", (0, pi/2.0, 0), (bounds[0] - 0.2*boundsSize[0], center[1], center[2]), [10*boundsSize[2], 10*boundsSize[1], 10])	
+	# createBoundsPlane("YZ_Plane 1", (0, pi/2.0, 0), (bounds[1] + 0.2*boundsSize[0], center[1], center[2]), [boundsSize[2], boundsSize[1], 1])	
 	# XZ plane (rotate X into Z)
-	# createBoundsPlane("XZ_Plane", (pi/2.0, 0, 0), (center[0], bounds[1][0], center[2]), [boundsSize[0]/2.0, boundsSize[2]/2.0, 1])	
+	createBoundsPlane("XZ_Plane 0", (pi/2.0, 0, 0), (center[0], bounds[2] - 0.2*boundsSize[1], center[2]), [10*boundsSize[0], 10*boundsSize[2], 10])	
+	# createBoundsPlane("XZ_Plane 1", (pi/2.0, 0, 0), (center[0], bounds[3] + 0.2*boundsSize[1], center[2]), [boundsSize[0], boundsSize[2], 1])	
+	# XY planes (no rotation, default orientation):
+	createBoundsPlane("XY_Plane 0", (0, 0, 0), (data["center"][0], data["center"][1], bounds[4] - 0.2*boundsSize[2]), [10*boundsSize[0], 10*boundsSize[1], 1] )	 
+	# createBoundsPlane("XY_Plane 1", (0, 0, 0), (data["center"][0], data["center"][1], bounds[5] + 0.2*boundsSize[2]), [boundsSize[0], boundsSize[1], 1] )	 
 	return
 
-#========================================================================
+# deleteObjectsByName('Plane')
+#	exec(compile(open(filename).read(), filename, 'exec'))
+
+# ========================================================================
 def CreateTexturedCube(data):
-	bounds = data["bounds"]
-	boundsSize = data["size"]
-	center =  data["center"]
+	bounds = numpy.copy(data["bounds"])
+	boundsSize = numpy.copy(data["size"])
+	center =  numpy.copy(data["center"])
 	bpy.ops.mesh.primitive_cube_add()
 	cube = bpy.data.objects['Cube']
 	name = "Textured Cube"
@@ -459,14 +523,63 @@ def MakeColorRamp(mat, linknode, colors):
 	return ramp
 
 
+# ===========================================================================
+def InBounds(seg, limits):
+	if limits == None:
+		return True
+	# If one endpoint is in, the segment is in
+	for epname in ['EP 0', 'EP 1']:
+		point = FloatArrayFromString(seg[epname])
+		inbounds = True
+		for i in range(3):
+			if point[i] < limits[2*i] or point[i] > limits[2*i+1]:
+				inbounds = False
+		if inbounds:
+			return True
+	return False
+
+# ======================================================================
+def MakeLimits(fraction, offset):
+	global data
+	bounds = numpy.copy(data['bounds'])
+	limits = numpy.copy(data['bounds'])
+	center = numpy.copy(data['center'])
+	boundsSize = numpy.copy(data['size'])
+	limits[0] = bounds[0] + (offset - fraction/2.0) * boundsSize[0]
+	limits[1] = bounds[0] + (offset + fraction/2.0) * boundsSize[0]
+	return limits
+
+# deleteObjectsByName('Segment')
+# exec(compile(open(filename).read(), filename, 'exec'))
+# onepercentCenterLimits = MakeLimits(0.01, 0.5)
+# tenpercentCenterLimits = MakeLimits(0.1, 0.5)
+# threepercentCenterLimits = MakeLimits(0.03, 0.5)
+# MakeSegments(data, limits=tenpercentCenterLimits)
+# MakeSegments(data, limits=MakeLimits(0.30, 0.50)) # 20 percent
+
+# ===========================================================================
+# I broke this out so I could test textures easier. 
+def MakeSegment(segname, radius):
+	seg = data["Segments"][segname]
+	MakeCylinder(segname, FloatArrayFromString(seg['EP 0']),  FloatArrayFromString(seg['EP 1']), radius, FloatArrayFromString(seg['rotation']), int(seg['burgers']))
 	
 # ===========================================================================
-def MakeSegments(data):
-	radius = 2
+def MakeSegments(data, radius=None, limits=None):
+	starttime = time.time()
+	if radius == None:
+		radius = 0.001 * data['size'][0]
+	print ("radius is %s"%str(radius))
+	numsegs = 0
 	for segname in data["Segments"].keys():
 		seg = data["Segments"][segname]
-		# MakeCylinder(segname, FloatArrayFromString(seg['EP 0']), FloatArrayFromString(seg['EP 1']), radius, None, int(seg['burgers']))
-		MakeCylinder(segname, FloatArrayFromString(seg['EP 0']), FloatArrayFromString(seg['EP 1']), radius, FloatArrayFromString(seg['rotation']), int(seg['burgers']))
+		if not InBounds(seg, limits):
+			continue
+		MakeSegment(segname, radius)
+		numsegs = numsegs + 1
+	endtime = time.time()
+	secs = endtime - starttime
+	
+	print ("MakeSegments took %d seconds to make %d segments, or %f segments/sec\n"%(secs, numsegs, float(numsegs)/secs))
 
 #========================================================================
 # Ideally, I would combine all nodes into a single mesh for drawing efficiency, but each node needs its own color, so...
@@ -506,14 +619,18 @@ def MakeNodes(data):
 
 #========================================================================
 def CreateScene(data):
-	# createBoundsPlanes(data)
-	CreateTexturedCube(data)
+	createBoundsPlanes(data)
+	# CreateTexturedCube(data)
 	SetupCameraAndFrustrum(data)
-	CreateLights(data, 100000)
-	# CreateBoundingBox(data)
+	CreateLights(data, brightness=200*1000*1000)
+	CreateBoundingBox(data)
 
 #========================================================================
-data = {"nothing":None}
+try:
+	test = len(data['Segments'])
+except:
+	data = {"nothing":None}
+	
 def LoadData(datafile=""):
 	global data
 	if datafile == "":
@@ -524,11 +641,11 @@ def LoadData(datafile=""):
 	infile = open(datafile)		   
 	data = json.load(infile)
 	data['bounds'] = FloatArrayFromString(data['Bounds'])
-	data['size'] = []
-	data['center'] = []
+	data['size'] = numpy.zeros(3)
+	data['center'] = numpy.zeros(3)
 	for i in range(3):
-		data['size'].append (data['bounds'][i+1] - data['bounds'][i])
-		data['center'].append(data['bounds'][i] + 0.5 * data['size'][i])
+		data['size'][i] = data['bounds'][2*i+1] - data['bounds'][2*i]
+		data['center'][i] = data['bounds'][2*i] + 0.5 * data['size'][i]
 	return 
 
 
@@ -536,9 +653,10 @@ def LoadData(datafile=""):
 def LoadAndSetup(datafile=""):
 	SetupContext()
 	LoadData(datafile)
-	MakeNodes(data)
+	# MakeNodes(data)
 	CreateScene(data)
-	SetupAnimation()
+	MakeSegments(data)
+	# SetupAnimation()
 
 #========================================================================
 if __name__ == "__main__":
