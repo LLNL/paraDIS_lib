@@ -28,9 +28,10 @@ class ColorMapCreator:
     Create diverging colormaps from RGB1 to RGB2 using the method of Moreland
     or a simple CIELAB-interpolation. numColors controls the number of color
     values to output (odd number) and divide gives the possibility to output
-    RGB-values from 0.0-1.0 instead of 0-255. If a filename different than
-    "" is given, the colormap will be saved to this file, otherwise a simple
-    output using print will be given.
+    RGB-values from 0.0-1.0 instead of 0-255. If a filename "-" is given, then
+	colormap is printed to stdout.  If a filename different than
+    "-" is given, the colormap will be saved to this file.  Otherwise colormap
+	is quietly initialized for use in other purposes.  
     """
 
     # ======================== Global Variables ===============================
@@ -69,10 +70,10 @@ class ColorMapCreator:
             colorMap = self.generateColorMapLab(RGB1, RGB2, divide)
 
         # print out the colormap of save it to file named filename
-        if filename == "":
+        if filename == "-":
             for c in colorMap:
                     print ("{0}, {1}, {2}".format(c[0], c[1], c[2]))
-        else:
+        elif filename != "":
             with open(filename, "w") as f:
                 for c in colorMap:
                     f.write("{0}, {1}, {2}\n".format(c[0], c[1], c[2]))
