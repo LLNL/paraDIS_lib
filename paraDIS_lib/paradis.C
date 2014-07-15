@@ -721,7 +721,7 @@ namespace paraDIS {
   std::string FullNode::Stringify(int indent, bool shortform) const {
     int ntype = mNodeType ;
     vector<int> idarray = GetNeighborArmIDs();
-    string armids = arrayToString(idarray);
+    string armids = arrayToString(idarray);	
     std::string s = INDENT(indent) +
       str(boost::format("FullNode index %1%, %2%, type %3%, neighbor arms: %4%, %5% neighbor segments, location: (%6% %7% %8%), address %9%")
           % mNodeIndex % mID.Stringify(0) % ntype % armids % mNeighborSegments.size() % mLocation[0] % mLocation[1] % mLocation[2] % this);
@@ -1502,35 +1502,33 @@ namespace paraDIS {
       if (mDecomposing && !startSegment->mGhostEndpoints.size() ) {
         dbprintf(6, "Arm::GetNodes(arm %d): startNode has only one neighbor and we are decomposing the arm and there are no ghost endpoints, so this is assumed to be the result of decomposition and this is in fact a legitimate endpoint.\n", mArmID);
       } else {
-        /*
-          This is a special case.  Here the initial segment is wrapped and we are starting on the non-wrapped side.  We do want to draw the wrapped double, so we will make our start node be the ghost instead.
-        */
-        if (startSegment->mGhostEndpoints.size() != 1) {
-          dbprintf(0, "Arm::GetNodes(arm %d): ERROR: We have an endpoint with only one neighbor on a segment with %d ghost nodes.\n");
-          return nodes;
-        }
-
-        startNode = startSegment->mGhostEndpoints[0];
-        dbprintf(6, "Arm::GetNodes(arm %d): We had a node with only one neighbor as the startNode.  This would leave an undrawn segment, which is its ghost neighbor.  We must instead start with the ghost node of the start segment and corresponding parent segment and let them get wrapped naturally later.\n", mArmID);
-
-        startSegment = NULL;
-        segnum = startNode->GetNumNeighborSegments();
-        while (!startSegment && segnum--) {
-          if (startNode->GetNeighborSegment(segnum)->mParentArm == this)
-            startSegment =  startNode->GetNeighborSegment(segnum);
-          // do not switch node though.
-        }
-
-        if (!startSegment) {
-          dbprintf(0, "GetNodes(): Cannot find matching terminal segment in arm %d for known good start node!\n", mArmID);
-          errexit1;
-        }
-      }
+        if (startSegment->mGhostEndpoints.size() == 1) {
+		  /*
+			This is a special case.  Here the initial segment is wrapped and we are starting on the non-wrapped side.  We do want to draw the wrapped double, so we will make our start node be the ghost instead.
+		  */
+		  
+		  startNode = startSegment->mGhostEndpoints[0];
+		  dbprintf(6, "Arm::GetNodes(arm %d): We had a node with only one neighbor as the startNode.  This would leave an undrawn segment, which is its ghost neighbor.  We must instead start with the ghost node of the start segment and corresponding parent segment and let them get wrapped naturally later.\n", mArmID);
+		  
+		  startSegment = NULL;
+		  segnum = startNode->GetNumNeighborSegments();
+		  while (!startSegment && segnum--) {
+			if (startNode->GetNeighborSegment(segnum)->mParentArm == this)
+			  startSegment =  startNode->GetNeighborSegment(segnum);
+			// do not switch node though.
+		  }
+		  
+		  if (!startSegment) {
+			dbprintf(0, "GetNodes(): Cannot find matching terminal segment in arm %d for known good start node!\n", mArmID);
+			errexit1;
+		  }
+		} 
+		else {
+		  dbprintf(0, "Arm::GetNodes(arm %d): WARNING: We have an endpoint with only one neighbor on a segment with %d ghost nodes.  We are treating this as a legitimate endpoint in non-periodic data.\n");
+		}
+	  }
     }
-    
-    if (mArmID == 538) {
-      dbprintf(6, "Arm::GetNodes(arm %d): Arm is %s\n", mArmID, Stringify(0).c_str());
-    }
+
     FullNode *currentNode = startNode;
     nodes.push_back(currentNode);
     dbprintf(6, "Arm::GetNodes(arm %d): pushed back startNode: %s\n", mArmID, currentNode->Stringify(0,true).c_str());
@@ -1548,10 +1546,10 @@ namespace paraDIS {
         FullNode *wrappedPrevious = NULL;
         const ArmSegment *wDouble =  currentSegment->SwitchToWrappedDouble(currentNode, &currentNode, &wrappedPrevious);
         if (!wDouble) {
-          if (mDecomposing) {
-            dbprintf(6, "Arm::GetNodes(arm %d): currentNode has only one neighbor and no matching ghost node from current Segment.  We are decomposing, so this is the end of the arm, we assume.\n", mArmID);
+          //if (mDecomposing) {
+            dbprintf(6, "Arm::GetNodes(arm %d): currentNode has only one neighbor and no matching ghost node from current Segment.  This is the end of the arm, we assume.\n", mArmID);
             break;
-          }
+			// }
           dbprintf(0, "Arm::GetNodes(arm %d): ERROR:  We have a node with only one neighbor which is not a ghost node.  Things are going to get bad from here.\n", mArmID);
         }
         nodes.push_back(NULL);
@@ -1625,7 +1623,7 @@ namespace paraDIS {
     dbprintf(6, "Arm::GetSegments(%d): startNode: %s\n", mArmID, startNode->Stringify(0,true).c_str());
     FullNode *currentNode = startNode;
     
-
+	
     ArmSegment *currentSegment = startSegment;
     while (true) {
       segments.push_back(currentSegment);
@@ -1635,17 +1633,24 @@ namespace paraDIS {
       }
       currentNode = currentSegment->GetOtherEndpoint(currentNode);
       if (currentNode->GetNumNeighborSegments() == 1) {
-        ArmSegment *wDouble =  currentSegment->SwitchToWrappedDouble(currentNode, &currentNode, NULL);
-        if (!wDouble) {
-          dbprintf(0, "Arm::GetSegments(%d): ERROR:  We have a node with only one neighbor which is not a ghost node.  Things are going to get bad from here.\n");
-        }
-        dbprintf(6, "Arm::GetSegments(%d): found a wrapped node and successfully switched to new node.\n", mArmID);
-        segments.push_back(wDouble);
-        currentSegment = wDouble;
-      }
-
+        if (startSegment->mGhostEndpoints.size() == 1) {
+		  ArmSegment *wDouble =  currentSegment->SwitchToWrappedDouble(currentNode, &currentNode, NULL);
+		  if (!wDouble) {
+			dbprintf(0, "Arm::GetSegments(%d): ERROR:  Cannot get ghost endpoing for arm with a single neighbor.\n", mArmID); 
+			abort(); 
+		  }
+		  dbprintf(6, "Arm::GetSegments(%d): found a wrapped node and successfully switched to new node.\n", mArmID);
+		  segments.push_back(wDouble);
+		  currentSegment = wDouble;
+		}
+		else {
+		  dbprintf(4, "Arm::GetSegments(%d): We have a node with only one neighbor attached to a segment which has no ghost nodes.  Treating as non-periodic boundary arm terminal node.\n", mArmID);
+		  break;
+		}
+	  }
+	  
       dbprintf(6, "Arm::GetSegments(%d): next node: %s\n", mArmID, currentNode->Stringify(0,true).c_str());
-
+	  
       if (currentNode->GetNumNeighborSegments() != 2 || currentNode == startNode) {
         break;
       }
@@ -1654,7 +1659,7 @@ namespace paraDIS {
     dbprintf(5, "Arm::GetSegments(%d): Found %d segments\n\n", mArmID, segments.size());
     return segments;
   }
-
+  
   //===========================================================================
   void Arm::Classify(void) {
 #ifdef RC_CPP_VISIT_BUILD
@@ -1668,28 +1673,37 @@ namespace paraDIS {
       dbprintf(5, "Arm::Classify(%d): no segments in arm.\n", mArmID);
       return;
     }
-    if (mTerminalNodes.size() == 1) {
-      mArmType = ARM_LOOP;
-    } else {
-      if (mTerminalNodes[0]->IsTypeM() && mTerminalNodes[1]->IsTypeM()) {
-        mArmType = ARM_MM_111;
-      } else if (mTerminalNodes[0]->IsTypeM() || mTerminalNodes[1]->IsTypeM()){
-        mArmType = ARM_MN_111;
-      } else {
-        mArmType = ARM_NN_111;
-      }
-
-      // This changes _111 to _200 by definition
-      int btype = mTerminalSegments[0]->GetBurgersType();
-      if (btype == BURGERS_NONE || btype == BURGERS_UNKNOWN) {
-        mArmType = ARM_UNKNOWN;
-      }
-      else if (btype != BURGERS_PPP && btype != BURGERS_PPM &&
-               btype != BURGERS_PMP && btype != BURGERS_PMM) {
-        dbprintf(0, "Error:  All non-loop arms should be type 111 now.\n");
-        errexit;
-      }
-    }
+	int termnode = mTerminalNodes.size(); 
+	while (termnode--) {
+	  if (mTerminalNodes[termnode]->GetNumNeighborSegments() == 1) {
+		dbprintf(4, "Arm::Classify(%d): Found terminal node with a single neighbor.  Marking as ARM_BOUNDARY.\n", mArmID); 
+		mArmType = ARM_BOUNDARY; 
+	  }
+	}  
+	if (mArmType != ARM_BOUNDARY) {
+	  if (mTerminalNodes.size() == 1) {
+		mArmType = ARM_LOOP;
+	  } else {
+		if (mTerminalNodes[0]->IsTypeM() && mTerminalNodes[1]->IsTypeM()) {
+		  mArmType = ARM_MM_111;
+		} else if (mTerminalNodes[0]->IsTypeM() || mTerminalNodes[1]->IsTypeM()){
+		  mArmType = ARM_MN_111;
+		} else {
+		  mArmType = ARM_NN_111;
+		}
+		
+		// This changes _111 to _200 by definition
+		int btype = mTerminalSegments[0]->GetBurgersType();
+		if (btype == BURGERS_NONE || btype == BURGERS_UNKNOWN) {
+		  mArmType = ARM_UNKNOWN;
+		}
+		else if (btype != BURGERS_PPP && btype != BURGERS_PPM &&
+				 btype != BURGERS_PMP && btype != BURGERS_PMM) {
+		  dbprintf(0, "Error:  All non-loop arms should be type 111 now.\n");
+		  errexit;
+		}
+	  }
+	}
     
     if (mThreshold > 0 && mArmLength < mThreshold) {
       if (mArmType == ARM_NN_111) mArmType = ARM_SHORT_NN_111;
@@ -2022,15 +2036,26 @@ namespace paraDIS {
     Decompose an arm by absorbing its nodes and segments into lower-energy neighbors
   */
   bool Arm::Decompose(int energy) {
-
-    int8_t burgtype = GetBurgersType();
+	
+	int termnode = mTerminalNodes.size(); 
+	while (termnode--) {
+	  if (mTerminalNodes[termnode]->GetNumNeighborSegments() == 1) {
+		dbprintf(4, "Arm::Classify(%d): Found terminal node with a single neighbor.  Marking as ARM_BOUNDARY.\n", mArmID); 
+		mArmType = ARM_BOUNDARY; 
+		dbprintf(4, "Arm::Decompose(energy %d, arm %d): found ARM_BOUNDARY arm; will not decompose.\n", energy,  mArmID); 
+		return false;
+	  }
+	}
+	
+	
+	int8_t burgtype = GetBurgersType();
     if (burgtype/10 != energy)
       return false; // not yet
-
+	
     if (energy == 1) {
       return false;
     }
-
+	
     mDecomposing = true;
     
     // Find which terminal node to use in decomposing ourself.
@@ -2048,7 +2073,8 @@ namespace paraDIS {
       WriteTraceFiles("0-loop-no-decomposition");
       mDecomposing = false;
       return false;
-    }
+    } 
+	
 
     vector<int> allNeighborArmIDs;
     dbprintf(5, "\n================================================================\n Arm::Decompose(energy %d, arm %d): Found arm : %s\n", energy, mArmID, Stringify(0, false).c_str());
@@ -2455,7 +2481,6 @@ namespace paraDIS {
       return;
     }
     
-    
     // consider this to be a completely self contained metaarm.
     // Best algorithm:
     
@@ -2468,8 +2493,12 @@ namespace paraDIS {
     bool seedIsTerminal = false;
     while (nodenum <  seed->mTerminalNodes.size() && mMetaArmType != METAARM_LOOP_111) {
       FullNode * node = seed->mTerminalNodes[nodenum];
-      if (node->GetNodeType() < 0) {
-        dbprintf(4, "FindEndpoints(metaarm %d) (seed %d): Terminal node %d is a monster node. Add seed as terminal arm and node as terminal node.\n", mMetaArmID, seed->mArmID, nodenum);
+      if (node->GetNodeType() < 0 || node->GetNodeType() == 1) {
+		string nodetype("monster"); 
+		if ( node->GetNodeType() == 1) {
+		  nodetype = "single-neighbor"; 
+		}
+        dbprintf(4, "FindEndpoints(metaarm %d) (seed %d): Terminal node %d is a %s node. Add seed as terminal arm and node as terminal node.\n", mMetaArmID, seed->mArmID, nodenum, nodetype.c_str());
         // Monster node
         if (!mTerminalArms.size() || mTerminalArms[0] != seed) {
           AddTerminalArm(seed);
@@ -2483,7 +2512,7 @@ namespace paraDIS {
         while (neighborNum--) {
           Arm *arm = node->mNeighborArms[neighborNum];
           if (arm == seed) {
-            dbprintf(4, "FindEndpoints(metaarm %d) (seed %d): Node neighbor %d is seed.  Ignore.\n", seed->mArmID, nodenum);
+            dbprintf(4, "FindEndpoints(metaarm %d) (seed %d): Node neighbor %d is seed.  Ignore.\n", mMetaArmID, seed->mArmID, nodenum);
             continue;
           }
           dbprintf(4, "FindEndpoints(metaarm %d) (seed %d): call FindEndpoint on neighbor %d...\n", mMetaArmID, seed->mArmID, nodenum);
@@ -2558,7 +2587,7 @@ namespace paraDIS {
       dbprintf(5, "MetaArm::GetNodes(MetaArm %d): Get all loop node locations for all member arms.\n", mMetaArmID);
 
       vector<Arm*>::iterator armpos = mAllArms.begin(), endpos = mAllArms.end();
-      FullNode *lastNode = mTerminalNodes[0];
+      FullNode *lastNode = mTerminalNodes[0]; 
 
       while (armpos != endpos) {
         Arm *currentArm = *armpos;
@@ -2837,7 +2866,7 @@ namespace paraDIS {
     
     FullNode *matchNode = nodehash[theID.Hash()];
     if (!matchNode) {
-      throw str(boost::format("DataSet::CopyNodeFromFile line %1%: cannot match NodeID %s in FullNodes hash")% __LINE__%(theID.Stringify(0)));
+      throw str(boost::format("DataSet::CopyNodeFromFile line %1%: cannot match NodeID %2% in FullNodes hash")% __LINE__%(theID.Stringify(0)));
     }
 
     // match the ID to our fullNode
@@ -4514,6 +4543,7 @@ namespace paraDIS {
     map<uint64_t, FullNode*> nodehash;
     for (map<uint32_t, FullNode*>::iterator pos = FullNode::mFullNodes.begin();
          pos != FullNode::mFullNodes.end(); pos++) {
+	  dbprintf(5, "Added FullNode %d (ID %s) to nodehash with hash %ld\n", pos->second->GetIndex(), pos->second->GetNodeIDString().c_str(), pos->second->Hash()); 
       nodehash[pos->second->Hash()] = pos->second;
     }
 
