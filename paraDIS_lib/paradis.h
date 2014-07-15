@@ -108,6 +108,7 @@ int InterpretBurgersType(float burg[3]) ;
 #define ARM_MN_111         4
 #define ARM_NN_111         5 
 #define ARM_SHORT_NN_111   6
+#define ARM_BOUNDARY       7  // Has a terminal node with one neighbor segment; happens in non-periodic data
 
 // MetaArm types:
 #define METAARM_UNKNOWN     0  // Not defined, error, or some other odd state
@@ -484,6 +485,7 @@ namespace paraDIS {
     */ 
     ~FullNode()  {
       if (mFullNodes.find(mNodeIndex) != mFullNodes.end()){
+		dbprintf(5, "Deleting node %d\n", mNodeIndex); 
         mFullNodes.erase(mNodeIndex); // mFullNodes[mNodeIndex] = NULL; 
       }
       return; 
@@ -1751,7 +1753,7 @@ namespace paraDIS {
     /* Just to clean the code, I encapsulate this to make debugging easier */
     void AddArm(Arm *candidate ) {
       if (candidate->GetParentMetaArm() == this)  {
-        dbprintf(0, "WARNING! Already added arm %d to this metaarm!\n"); 
+        dbprintf(0, "WARNING! Already added arm %d to this metaarm!\n", candidate->mArmID); 
       }
       candidate->SetParentMetaArm(this);
       mLength += candidate->GetLength(); 
