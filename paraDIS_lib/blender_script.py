@@ -37,6 +37,7 @@ SetupContext()
 LoadData(datafile)
 CreateScene(data)
 ExtrudeArms(data)
+
 # MakeNodes(data)
 # MakeSegmentsCylinderMeshes(data)
 # MakeSegmentsDupliverts(data)
@@ -218,6 +219,7 @@ def FindRotation(ep1, ep2):
 
 	
 # ====================================================================
+# Used for drawing bounding box frame cylinders
 def MakeCylinder(name, ep1, ep2, radius, orientation=None):
 	# print ("Make cylinder %s from ep1 %s to ep2 %s, in orientation %s"%(name, ep1,ep2,orientation))
 	ep1 = numpy.array(ep1)
@@ -245,13 +247,44 @@ def MakeCylinder(name, ep1, ep2, radius, orientation=None):
 		cyl.rotation_euler = FindRotation(ep1, ep2)
 	return cyl
 
-#  ===========================================================================
-def ExtrudePolyLine(name, locations, circleobj, burgers):  
+# ===========================================================================
+# Color segment object
+def CreateBurgersMaterial(burgers):
+	color = ColorFromBurgers(burgers)
+	name = "burgers %d"%burgers
+	bpy.data.materials.new('%s material'%name)
+	mat = bpy.data.materials['%s material'%name]
+	mat.use_nodes = True
+	# node = mat.node_tree.nodes.new("ShaderNodeBsdfDiffuse")
+	# node.name = "diffuse_%s"%name
+	colornode = mat.node_tree.nodes.new("ShaderNodeBsdfGlossy")
+	colornode.name = "%s color"%name
+	colornode.inputs['Roughness'].default_value = 0.2
+	color = ColorFromBurgers(burgers)
+	colornode.inputs['Color'].default_value = color
+	emission = mat.node_tree.nodes.new("ShaderNodeEmission")
+	emission.name = "%s emission"%name
+	emission.inputs['Color'].default_value = color		
+	mixnode = mat.node_tree.nodes.new("ShaderNodeMixShader")
+	mixnode.name = "%s mixnode"%name
+	mixnode.inputs['Fac'].default_value = 0.2
+	mat.node_tree.links.new(colornode.outputs['BSDF'], mixnode.inputs[1])
+	mat.node_tree.links.new(emission.outputs['Emission'], mixnode.inputs[2]) 
+	outnode = mat.node_tree.nodes['Material Output']
+	mat.node_tree.links.new(mixnode.outputs['Shader'], outnode.inputs['Surface'])
+	return mat
+
+# ===========================================================================
+# Used for drawing segments. 
+def ExtrudePolyLine(name, locations, bevelobj, material):  
 	curvedata = bpy.data.curves.new(name="%s line curve"%name, type='CURVE')  
 	curvedata.dimensions = '3D'	 
 	#
 	obj = bpy.data.objects.new("%s line obj"%name, curvedata)  
-	obj.location = (0,0,0) #object origin  
+	obj.location = (0,0,0) #object origin	
+	obj.data.materials.append(material)
+	bpy.ops.object.shade_smooth()
+	# obj.active_material = material
 	#	
 	polyline = curvedata.splines.new('NURBS')  
 	polyline.points.add(len(locations)-1)  
@@ -260,32 +293,42 @@ def ExtrudePolyLine(name, locations, circleobj, burgers):
 		toadd = (locations[num])
 		print ("Adding point %s"%toadd)
 		polyline.points[num].co = toadd 
-	#		
+	#
 	polyline.order_u = len(polyline.points)-1
 	polyline.use_endpoint_u = True
-	obj.data.bevel_object = circleobj
+	obj.data.bevel_object = bevelobj
 	return
 
-#  ===========================================================================
+# ===========================================================================
 def ExtrudeArms(data):
-	bpy.ops.curve.primitive_bezier_circle_add(radius = 1)
+	data['curve materials'] = {}
+	materials = data['curve materials']
+	bpy.ops.curve.primitive_bezier_circle_add(radius = 50)
 	circleobj = bpy.data.objects["BezierCircle"]
 	circleobj.name = "Segment base circle"
+	data['circleobj'] = circleobj
 	for armname in data['Arms']:
 		arm = data['Arms'][armname]
 		# burgers = int(data['Segments']['Segment %s'%arm['Segments']['Segment 0']['ID']]['burgers'])
 		burgers = int(arm['burgers'])
+		if burgers not in materials:
+			materials[burgers] = CreateBurgersMaterial(burgers)
+			# bpy.data.materials.new("burgers %d texture"%burgers)
+		material = materials[burgers]
+		curvenum = 0
 		locations = []
 		for nodenum in range(len(data['Arms'][armname]['Nodes'])):
 			nodeID = data['Arms'][armname]['Nodes']['Node %s'%nodenum]['ID']
 			if nodeID == "WRAP":
-				ExtrudePolyLine(armname, locations, circleobj, burgers)
+				ExtrudePolyLine("%s curve %d"%(armname, curvenum), locations, circleobj, material)
 				locations = []
+				curvename = "%s curve %d"%(armname, curvenum)
+				curvenum = curvenum + 1
 			else:
 				node = data['Nodes']['Node %s'%nodeID]
 				locations.append(FloatArrayFromString(node['location'], append = 1.0))
 		if locations:
-			ExtrudePolyLine(armname, locations, circleobj, burgers)
+			ExtrudePolyLine("%s curve %d"%(armname, curvenum), locations, circleobj, material)
 	return
 
 # ===========================================================================
@@ -352,6 +395,8 @@ def MakeSegmentCylinder(name, radius, top, bottom, sectors):
 	return (new_cylinder, new_cups)
 
 # ===========================================================================
+# NOT USED.  This was an attempt to create the meshes for segments "by hand"
+# It works, but is slow.  Does not scale above a few arms (hundreds of segments)
 def MakeSegmentsCylinderMeshes(data):
 	print("burgerMaterials called\n")
 	timeout = 60
@@ -399,6 +444,7 @@ def MakeSegmentsCylinderMeshes(data):
 	return
 
 # ===========================================================================
+# NOT USED.  Too slow.  Does not scale above a few hundred segments, much less arms. 
 # Function, which draws the segments with help of the dupliverts technique.
 # Return: list of dupliverts structures.
 # Code based on PDB reader in blender
@@ -529,11 +575,6 @@ def MakeSegmentsDupliverts(data):
 		SegmentLists[energy]['mesh'] = new_mesh
 	endtime = time.time()
 	print("Creating meshes and updating scened took %f seconds"%(endtime-starttime))		
-
-def MakeSphere(name, loc, radius=0.2):
-	bpy.ops.mesh.primitive_uv_sphere_add(location=loc, size = radius)
-	bpy.data.objects['Sphere'].name = "%s-Sphere"%name
-	return
 
 # ===========================================================================
 # I broke this out so I could test textures easier. 
@@ -867,6 +908,12 @@ def MakeSegments(data, radius=None, limits=None):
 	secs = endtime - starttime
 	
 	print ("MakeSegments took %d seconds to make %d segments, or %f segments/sec\n"%(secs, numsegs, float(numsegs)/secs))
+
+# ===========================================================================
+def MakeSphere(name, loc, radius=0.2):
+	bpy.ops.mesh.primitive_uv_sphere_add(location=loc, size = radius)
+	bpy.data.objects['Sphere'].name = "%s-Sphere"%name
+	return
 
 #========================================================================
 # Ideally, I would combine all nodes into a single mesh for drawing efficiency, but each node needs its own color, so...
