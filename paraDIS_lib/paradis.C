@@ -4135,20 +4135,29 @@ namespace paraDIS {
       uint32_t armnum = 0; 
       for (vector<Arm*>::iterator arm = Arm::mArms.begin(); arm != Arm::mArms.end(); arm++, armnum++){
         vector<FullNode*> armnodes = (*arm)->GetNodes(); 
+		if (!armnodes.size()){
+		  continue;
+		}
+			   
         int nodenum = 0; 
         for (vector<FullNode*>::iterator node = armnodes.begin(); node != armnodes.end(); node++) {
-          if (*node) {
+          if (*node) {			
             nodemap[(*node)->GetIndex()] = *node;  
             pt.put(str(boost::format("Arms.Arm %1%.Nodes.Node %2%.ID")
                        % armnum % nodenum), 
                    (*node)->GetIndex()); 
-            nodenum++;
-          }
+          } else {
+            pt.put(str(boost::format("Arms.Arm %1%.Nodes.Node %2%.ID")
+                       % armnum % nodenum), 
+                   "WRAP"); 
+		  }			
+		  nodenum++;
         }
         vector<ArmSegment*> armsegs = (*arm)->GetSegments(); 
         int segnum = 0; 
-        for (vector<ArmSegment*>::iterator seg = armsegs.begin(); seg != armsegs.end(); seg++, segnum++) {
-          
+		pt.put(str(boost::format("Arms.Arm %1%.burgers") % armnum), 
+			   armsegs[0]->GetBurgersType()); 
+        for (vector<ArmSegment*>::iterator seg = armsegs.begin(); seg != armsegs.end(); seg++, segnum++) {          
           pt.put(str(boost::format("Arms.Arm %1%.Segments.Segment %2%.ID")
                      % armnum % segnum),
                  (*seg)->GetID()); 
