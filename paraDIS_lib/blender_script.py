@@ -26,16 +26,21 @@ exec(compile(open(filename).read(), filename, 'exec'))
 # To load the data, setup the scene, and draw all the segments:
 datafile = 'rs0001.json'
 # datafile = 'rs0240.json'
+# datafile = 'rs0032.json'
 # LoadAndSetup(datafile)
 
 # Or choose from a subset of LoadSetupRender(): 
-datafile = 'rs0001.json'
-# datafile = 'rs0240.json'
+# datafile = 'rs0001.json'
+# datafile = 'rs0032.json'
+datafile = 'rs0240.json'
 SetupContext()
 LoadData(datafile)
 CreateScene(data)
+ExtrudeArms(data)
 # MakeNodes(data)
-MakeSegments(data, limits=MakeLimits(0.10, 0.50)) # 10 percent of data
+# MakeSegmentsCylinderMeshes(data)
+# MakeSegmentsDupliverts(data)
+# MakeSegments(data, limits=MakeLimits(0.10, 0.50)) # 10 percent of data
 # MakeSegments(data)
 # SetupAnimation()  # careful with this one; it will mess with the camera
 
@@ -56,9 +61,13 @@ os.chdir(projdir)
 from diverging_map import *
 
 #========================================================================
-def FloatArrayFromString(s):
+def FloatArrayFromString(s, append = None):
 	tokens = s.split()
-	array = numpy.zeros(len(tokens))
+	arrlen = len(tokens)
+	if append != None:
+		arrlen = len(tokens)+1
+		tokens.append(append)
+	array = numpy.zeros(arrlen)
 	n = 0
 	for token in tokens:
 		array[n] = float(token)
@@ -203,14 +212,16 @@ def FindRotation(ep1, ep2):
 	# Spherical coordinates (radius r, inclination theta, azimuth phi) from 
 	# the Cartesian coordinates (x, y, z) of o1 on our imaginary sphere
 	r = numpy.linalg.norm(ep2new) # radius of sphere
-	theta = math.acos(ep2new[2]/r)
-	phi = math.atan2( ep2new[1], ep2new[0])
+	theta = acos(ep2new[2]/r)
+	phi = atan2( ep2new[1], ep2new[0])
 	return (0,theta, phi)
 
-
+	
 # ====================================================================
-def MakeCylinder(name, ep1, ep2, radius, orientation):
+def MakeCylinder(name, ep1, ep2, radius, orientation=None):
 	# print ("Make cylinder %s from ep1 %s to ep2 %s, in orientation %s"%(name, ep1,ep2,orientation))
+	ep1 = numpy.array(ep1)
+	ep2 = numpy.array(ep2)
 	cylvector = ep2 - ep1
 	center = ep1 + 0.5 * cylvector
 	depth = numpy.linalg.norm(cylvector)
@@ -224,17 +235,309 @@ def MakeCylinder(name, ep1, ep2, radius, orientation):
 		cyl.rotation_euler = [pi/2.0, 0, 0]
 	elif orientation == 'Z':
 		cyl.rotation_euler = [0, 0, 0]
-	else:
-		# cyl.rotation_euler = FindRotation(ep1, ep2)
-		cyl.rotation_euler = orientation
-		# compare = FindRotation(ep1, ep2)
+	elif orientation != None:
+		# rotation = FindRotation(ep1, ep2)
+		# cyl.rotation_euler = rotation 
+		cyl.rotation_euler = orientation		
 		# print ("computed rotation %s"%str(cyl.rotation_euler ))
-		# print ("compare rotation %s"%str(compare ))
+		# print ("compare rotation %s"%str(rotation ))
+	else:
+		cyl.rotation_euler = FindRotation(ep1, ep2)
 	return cyl
+
+#  ===========================================================================
+def ExtrudePolyLine(name, locations, circleobj, burgers):  
+	curvedata = bpy.data.curves.new(name="%s line curve"%name, type='CURVE')  
+	curvedata.dimensions = '3D'	 
+	#
+	obj = bpy.data.objects.new("%s line obj"%name, curvedata)  
+	obj.location = (0,0,0) #object origin  
+	#	
+	polyline = curvedata.splines.new('NURBS')  
+	polyline.points.add(len(locations)-1)  
+	bpy.context.scene.objects.link(obj)	
+	for num in range(len(locations)):
+		toadd = (locations[num])
+		print ("Adding point %s"%toadd)
+		polyline.points[num].co = toadd 
+	#		
+	polyline.order_u = len(polyline.points)-1
+	polyline.use_endpoint_u = True
+	obj.data.bevel_object = circleobj
+	return
+
+#  ===========================================================================
+def ExtrudeArms(data):
+	bpy.ops.curve.primitive_bezier_circle_add(radius = 1)
+	circleobj = bpy.data.objects["BezierCircle"]
+	circleobj.name = "Segment base circle"
+	for armname in data['Arms']:
+		arm = data['Arms'][armname]
+		# burgers = int(data['Segments']['Segment %s'%arm['Segments']['Segment 0']['ID']]['burgers'])
+		burgers = int(arm['burgers'])
+		locations = []
+		for nodenum in range(len(data['Arms'][armname]['Nodes'])):
+			nodeID = data['Arms'][armname]['Nodes']['Node %s'%nodenum]['ID']
+			if nodeID == "WRAP":
+				ExtrudePolyLine(armname, locations, circleobj, burgers)
+				locations = []
+			else:
+				node = data['Nodes']['Node %s'%nodeID]
+				locations.append(FloatArrayFromString(node['location'], append = 1.0))
+		if locations:
+			ExtrudePolyLine(armname, locations, circleobj, burgers)
+	return
+
+# ===========================================================================
+# Function, which produces a cylinder. All is somewhat easy to understand.
+# Stolen from build_stick() in import_pdb.py in Blender install directory
+def MakeSegmentCylinder(name, radius, top, bottom, sectors):
+	dphi = 2.0 * pi/(float(sectors)-1)
+	length = numpy.linalg.norm(top-bottom)
+	vertices_top = [top]
+	vertices_bottom = [bottom]
+	vertices = []
+	for i in range(sectors-1):
+		x = radius * cos( dphi * i )
+		y = radius * sin( dphi * i )
+		z =	 length / 2.0
+		vertex = Vector((x,y,z))
+		vertices_top.append(vertex)
+		z = -length / 2.0
+		vertex = Vector((x,y,z))
+		vertices_bottom.append(vertex)
+	vertices = vertices_top + vertices_bottom
+		
+	# Side facets (Cylinder)
+	faces1 = []	   
+	for i in range(sectors-1):
+		if i == sectors-2:
+			faces1.append(	[i+1, 1, 1+sectors, i+1+sectors] )
+		else:
+			faces1.append(	[i+1, i+2, i+2+sectors, i+1+sectors] )
+	
+	# Top facets
+	faces2 = []	   
+	for i in range(sectors-1):
+		if i == sectors-2:
+			face_top = [0,sectors-1,1]
+			face_bottom = [sectors,2*sectors-1,sectors+1]
+		else:
+			face_top	= [0]
+			face_bottom = [sectors]
+			for j in range(2):
+				face_top.append(i+j+1)
+				face_bottom.append(i+j+1+sectors)
+		faces2.append(face_top)
+		faces2.append(face_bottom)
+	
+	# Build the mesh, Cylinder
+	cylinder = bpy.data.meshes.new("%s Cylinder mesh"%name)
+	cylinder.from_pydata(vertices, [], faces1)
+	cylinder.update()
+	new_cylinder = bpy.data.objects.new("%s Cylinder object"%name, cylinder)
+	new_cylinder.rotation_euler = FindRotation(top,bottom)
+	new_cylinder.location = bottom + 0.5 * (top-bottom)
+	bpy.context.scene.objects.link(new_cylinder)
+	
+	# Build the mesh, Cups
+	cups = bpy.data.meshes.new("%s Cups mesh"%name)
+	cups.from_pydata(vertices, [], faces2)
+	cups.update()
+	new_cups = bpy.data.objects.new("%s Cups object"%name, cylinder)
+	new_cups.location = bottom + 0.5 * (top-bottom)
+	new_cups.rotation_euler = FindRotation(top,bottom)
+	bpy.context.scene.objects.link(new_cups)
+	
+	return (new_cylinder, new_cups)
+
+# ===========================================================================
+def MakeSegmentsCylinderMeshes(data):
+	print("burgerMaterials called\n")
+	timeout = 60
+	cyl_h = 0.2 # length of component cylinders forming segments
+	cyl_segs = 10
+	segDiameter = 2.0
+	starttime = time.time()
+	data['SegmentLists'] = {}# organized by burgers, each with its own material
+	SegmentLists = data['SegmentLists']
+	for segname in data['Segments'].keys():
+		seg = data['Segments'][segname]
+		sys.stdout.flush()
+		burgers = int(seg['burgers'])
+		energy = floor(burgers/10)
+		if energy not in SegmentLists:			
+			# dbfile.write("Initialize the SegmentList for energy level %d\n"%energy)
+			SegmentLists[energy] = {"vertices": [], "faces": []}
+			bpy.ops.object.material_slot_add()
+			SegmentLists[energy]['material'] = bpy.data.materials.new("material energy %d"%energy)
+			
+		# Now create and add the vertices and faces for the current segment
+		# We need an two orthogonal vectors to our segment.
+		atom1 = FloatArrayFromString(seg['EP 0'])
+		atom2 = FloatArrayFromString(seg['EP 1'])
+		
+		# CreateBurgerEnergyMaterial(energy)
+		
+		print("%s. Build the object. Get the cylinder from the 'build_segment' function."%segname)
+		segmentObject = MakeSegmentCylinder(segname, segDiameter, atom2, atom1, cyl_segs)
+		segment_cylinder = segmentObject[0]
+		segment_cylinder.active_material = SegmentLists[energy]['material']
+		segment_cups = segmentObject[1]
+		segment_cups.active_material = SegmentLists[energy]['material']          
+		
+		print("%s. Smooth the segment."%segname)
+		bpy.ops.object.select_all(action='DESELECT')
+		segment_cylinder.select = True
+		segment_cups.select = True
+		bpy.ops.object.shade_smooth()
+		if timeout > 0 and time.time() - starttime > timeout:
+			break
+	elapsed = time.time() - starttime
+	numsegs = len(data['Segments'])
+	print("Creating %d segments and updating scene took %f seconds, %f segments/second"%(numsegs, elapsed, numsegs/elapsed))		
+	return
+
+# ===========================================================================
+# Function, which draws the segments with help of the dupliverts technique.
+# Return: list of dupliverts structures.
+# Code based on PDB reader in blender
+def MakeSegmentsDupliverts(data):
+	if not 'SegmentLists' in data:
+		data['SegmentLists'] = {} # organized by burgers, each with its own material
+	SegmentLists = data['SegmentLists']
+	print("MakeSegmentsDupliverts called\n")
+	SegmentLists = {} # organized by burgers, each with its own material
+	cyl_h = 0.2 # length of component cylinders forming segments
+	cyl_segs = 10
+	segDiameter = 0.1
+	debug = False
+	starttime = time.time()
+	if 'debug' in data and data['debug']:
+		debug = True
+		dbfilename = 'debug-loop.out'
+		dbfile = open(dbfilename, 'w')
+		print ("Writing info to %s"%dbfilename)
+	for segname in data['Segments'].keys():
+		seg = data['Segments'][segname]
+		sys.stdout.flush()
+		burgers = int(seg['burgers'])
+		energy = floor(burgers/10)
+		if energy not in SegmentLists:			
+			# dbfile.write("Initialize the SegmentList for energy level %d\n"%energy)
+			SegmentLists[energy] = {"vertices": [], "faces": []}
+			
+		# Now create and add the vertices and faces for the current segment
+		# We need an two orthogonal vectors to our segment.
+		atom1 = FloatArrayFromString(seg['EP 0'])
+		atom2 = FloatArrayFromString(seg['EP 1'])
+		dv = atom2 - atom1
+		dvlen = numpy.linalg.norm(atom2-atom1)
+		n  = dv / dvlen  # unit normal vector in direction of segment
+		# Simpler method:  Find cross product of an arbitrary vector with n	
+		cross_a = numpy.cross(n,(0,0,1))  # b is orthogonal to n
+		if numpy.linalg.norm(cross_a) == 0: # oops, n == (0,0,1), try again
+			cross_a = numpy.cross(n,(0,1,0))
+		n_cross_a = cross_a / numpy.linalg.norm(cross_a)   # unit normal orthogonal to n
+		cross_b = numpy.cross(n_cross_a, n) # orthogonal to both n and n_cross_a
+		n_cross_b = cross_b / numpy.linalg.norm(cross_b)
+		# make a stack of faces to locate the cylinders in the segment
+		numcyls = int(ceil(dvlen / cyl_h))		
+		if debug:
+			for item in ["atom1", "atom2", "energy", "dv", "dvlen", "n", "cross_a", "n_cross_a", "cross_b", "n_cross_b", "numcyls"]:
+				exec("dbfile.write(\"%s is %%s\\n\"%%%s)"%(item,item))
+				dbfile.flush()	
+		for j in range(numcyls):
+			# make a square face at each midpoint of the cylinder
+			g  = atom1 + n * cyl_h * (j - 0.5)
+			p1 = g + n_cross_a * 0.5* segDiameter
+			p2 = g - n_cross_a * 0.5* segDiameter
+			p3 = g - n_cross_b * 0.5* segDiameter
+			p4 = g + n_cross_b * 0.5* segDiameter
+			# facenum = len(SegmentLists[energy]["facenum"])
+			SegmentLists[energy]["vertices"].append(p1)
+			SegmentLists[energy]["vertices"].append(p2)
+			SegmentLists[energy]["vertices"].append(p3)
+			SegmentLists[energy]["vertices"].append(p4)
+			numfaces = len(SegmentLists[energy]["faces"])
+			faceverts = (numfaces*4+0,numfaces*4+2,numfaces*4+1,numfaces*4+3)		
+			SegmentLists[energy]["faces"].append(faceverts)
+			numverts = len(	SegmentLists[energy]["vertices"])
+			numfaces = len(SegmentLists[energy]["faces"])
+			if debug:
+				for item in ["numfaces", "numverts", "g", "p1", "p2", "p3", "p4", "faceverts"]:	
+					exec("dbfile.write(\"%s: %s is %%s\\n\"%%str(%s))"%(segname, item,item))
+					dbfile.flush()
+	if debug:
+		dbfile.close()
+	endtime = time.time()
+	numsecs = endtime - starttime
+	numsegs = len(data['Segments'])
+	print ("Creating %d segments took %d seconds, for %f segments/sec"%(numsegs, numsecs, float(numsegs)/(endtime - starttime)))
+	print ("Got segment %s, now with %d faces, %d vertices\n"%(seg, numfaces, numverts))
+	print("MakeSegmentsDupliverts done with segment list creation\n")
+	if debug:
+		dbfilename = 'debug-SegmentList.out'
+		dbfile = open(dbfilename, 'w')
+		starttime = time.time()
+		print ("Writing info to %s"%dbfilename)
+		for energy in SegmentLists:
+			for etype in ['faces', 'vertices']:
+				dbfile.write ("BEGIN SegmentLists[%d][%s] (%d items) ===================== \n"%(energy, etype, len(SegmentLists[energy][etype])))
+				for itemnum in range(len(SegmentLists[energy][etype])):
+					dbfile.write ("%s[%d] is %s\n"%(etype, itemnum, SegmentLists[energy][etype][itemnum]))
+					dbfile.flush()			
+				
+		dbfile.close()
+		endtime = time.time()
+		print("Writing segment list file took %f seconds"%(endtime-starttime))
+
+	starttime = time.time()		
+	for energy in SegmentLists.keys():
+		# for now, just put a bland texture in
+		bpy.ops.object.material_slot_add()
+		SegmentLists[energy]['material'] = bpy.data.materials.new("testing")
+		# CreateBurgerEnergyMaterial(energy)
+
+		print("Energy %s. Build a mesh from the segments."%energy)
+		mesh = bpy.data.meshes.new("Energy level %d mesh"%energy)
+		mesh.from_pydata(SegmentLists[energy]["vertices"], [], SegmentLists[energy]["faces"])
+		mesh.update()
+		new_mesh = bpy.data.objects.new("Energy level %d object"%energy, mesh)
+		bpy.context.scene.objects.link(new_mesh)
+		
+		print("Energy %s. Build the object. Get the cylinder from the 'build_segment' function."%energy)
+		top    = Vector((0,0,cyl_h  / 2.0))
+		bottom = Vector((0,0,-cyl_h / 2.0))
+		segmentObject = MakeSegmentCylinder("Energy level %d"%energy, segDiameter, top, bottom, cyl_segs)
+		segment_cylinder = segmentObject[0]
+		segment_cylinder.active_material = SegmentLists[energy]['material']
+		segment_cups = segmentObject[1]
+		segment_cups.active_material = SegmentLists[energy]['material']          
+		
+		print("Energy %s. Smooth the cylinders."%energy)
+		bpy.ops.object.select_all(action='DESELECT')
+		segment_cylinder.select = True
+		segment_cups.select = True
+		bpy.ops.object.shade_smooth()
+		
+		print("Energy %s. Parenting the mesh to the cylinder."%energy)
+		segment_cylinder.parent = new_mesh
+		segment_cups.parent = new_mesh
+		new_mesh.dupli_type = 'FACES'
+		new_mesh.location = data['center']
+		SegmentLists[energy]['mesh'] = new_mesh
+	endtime = time.time()
+	print("Creating meshes and updating scened took %f seconds"%(endtime-starttime))		
+
+def MakeSphere(name, loc, radius=0.2):
+	bpy.ops.mesh.primitive_uv_sphere_add(location=loc, size = radius)
+	bpy.data.objects['Sphere'].name = "%s-Sphere"%name
+	return
 
 # ===========================================================================
 # I broke this out so I could test textures easier. 
-def MakeSegment(segname, radius, endcaps=True):
+def MakeSegmentOld(segname, radius, endcaps=True):
 	seg = data["Segments"][segname]
 	cyl = MakeCylinder(segname, FloatArrayFromString(seg['EP 0']),  FloatArrayFromString(seg['EP 1']), radius, FloatArrayFromString(seg['rotation']))
 	burgers = int(seg['burgers'])
@@ -315,9 +618,11 @@ def CreateSunLight(name, strength, rotation=(0,0,0)):
 	light.data.node_tree.nodes['Emission'].inputs['Strength'].default_value = strength
 
 # ============================================================
-def CreateLights(data, doSun = True, brightness = 200*1000*1000, size=1200):
+def CreateLights(data, doSun = True, brightness = 2*1000*1000, size=1200):
 	bounds = numpy.copy(data["bounds"])
 	boundsSize = numpy.copy(data["size"])
+	if not brightness:
+		brightness = 8 * boundsSize[2]
 	i = 0
 	if doSun:
 		CreateSunLight("Sun light", 1)
@@ -604,7 +909,7 @@ def CreateScene(data):
 	createBoundsPlanes(data)
 	# CreateTexturedCube(data)
 	SetupCameraAndFrustrum(data)
-	CreateLights(data, brightness=200*1000*1000)
+	CreateLights(data)
 	CreateBoundingBox(data)
 
 #========================================================================
