@@ -7,6 +7,7 @@
 #include <tclap/CmdLine.h>
 #include "tclap/Arg.h"
 #include <boost/algorithm/string/erase.hpp> 
+#include <boost/filesystem.hpp>
 
 paraDIS::DataSet *gDataSet = NULL; 
 
@@ -127,13 +128,16 @@ int main(int argc, char *argv[]) {
         if (basename == *dfile) {          
           errexit(cmd, str(boost::format("Data file name %s does not end with '.dat' or '.data'.")%*dfile)); 
         }
-      } 
+	  }			
 
+	  string outdir = outdirFlag.getValue(); 
+	  if (outdir == "") {
+		outdir = basename + "-output"; 
+		basename = boost::filesystem::path(basename).filename();
+	  }
       string fileout = fileoutFlag.getValue(); 
       if (fileout == "") fileout = basename + ".out"; 
       
-      string outdir = outdirFlag.getValue(); 
-      if (outdir == "") outdir = basename + "-output"; 
  
       gDataSet = new paraDIS::DataSet; 
       
