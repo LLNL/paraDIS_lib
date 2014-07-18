@@ -1,0 +1,2 @@
+This directory should go away soon -- need to move its capabilities of creating povray output into paradis.C in paraDIS_lib directory.  In its current form, was used to generate povray output for ScienceCover and other animations. 
+
