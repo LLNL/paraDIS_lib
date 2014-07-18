@@ -1,4 +1,4 @@
-#!/usr/local/bin/bash
+#!/usr/bin/env bash
 # $Id: lights.sh,v 1.1 2005/02/25 17:33:30 rcook Exp $
 # generate 27 different lighting angles
 nodes=${nodes:-8}

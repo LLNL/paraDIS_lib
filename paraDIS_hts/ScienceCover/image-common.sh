@@ -1,4 +1,4 @@
-#!/usr/local/bin/bash
+#!/usr/bin/env bash
 # $Id: image-common.sh,v 1.7 2006/02/27 16:40:50 rcook Exp $
 # functions for decomposing an image according to the processor being run in batch
 

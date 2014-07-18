@@ -1,4 +1,4 @@
-#!/usr/local/bin/bash
+#!/usr/bin/env bash
 #cat $0
 echo $Id: povray-launch-stitch.sh,v 1.8 2005/08/18 21:26:29 rcook Exp $
 function usage () {

@@ -1,4 +1,4 @@
-#!/usr/local/bin/bash 
+#!/usr/bin/env bash 
 # $Id: quicklook.sh,v 1.3 2006/01/20 19:09:03 rcook Exp $
 # This script is for quick and dirty looks at the current image, using multires and other speedups
 #  

@@ -1,4 +1,4 @@
-#!/usr/local/bin/bash
+#!/usr/bin/env bash
 # purpose:  wait until the given job id terminates, then call stitch.sh in the given directory. 
 
 # one of the most useful things I ever fucking wrote: 

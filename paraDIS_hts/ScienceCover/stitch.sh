@@ -1,4 +1,4 @@
-#!/usr/local/bin/bash
+#!/usr/bin/env bash
 # $Id: stitch.sh,v 1.5 2005/02/14 18:47:30 rcook Exp $
 # stitch together images made with povray-batch.sh
 echo '$Id: stitch.sh,v 1.5 2005/02/14 18:47:30 rcook Exp $'

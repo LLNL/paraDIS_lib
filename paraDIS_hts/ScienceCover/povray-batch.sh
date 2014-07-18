@@ -1,4 +1,4 @@
-#!/usr/local/bin/bash 
+#!/usr/bin/env bash 
 # $Id: povray-batch.sh,v 1.7 2005/03/19 02:03:58 rcook Exp $
 # This script is intended to be run from pscript.sh, but for some reason does not pick up SLURM_PROCID when run that way.  It seems to work from a batch xterm, though. 
 #  

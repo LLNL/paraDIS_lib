@@ -1,4 +1,4 @@
-#!/usr/local/bin/bash
+#!/usr/bin/env bash
 # recreate an image from a subdirectory of ScienceCover
 #$Id: recreate-from-subdir.sh,v 1.4 2006/02/12 17:38:49 rcook Exp $
 . $HOME/RC_bash_lib/shellfuncs.sh || exit 1
