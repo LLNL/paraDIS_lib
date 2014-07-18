@@ -1,6 +1,0 @@
-This directory contains tools for making a large image from povray files. 
-The main script is povray-launch-stitch.sh.  I would tweak wormparams.inc, then use povray-launch-stitch.sh to save all my changes to a whole directory and run povray-batch.sh in that directory. 
-
-To recreate an image in one of those directories, do something like: 
-# change the height and width settings
-sedfiles -e "s/height=.*/height=${height}/" -e "s/width=.*/width=${width}/"  */image-common.sh 
