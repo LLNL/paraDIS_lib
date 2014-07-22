@@ -18,7 +18,7 @@ echo SLURM_PROCID is $SLURM_PROCID
 rm -f tmpy.pov
 cat wormparams.inc > tmpy.pov
 sed 's/#include "wormparams.inc"//' ${basename}_${step}.pov >> tmpy.pov
-cmd='povray generic.ini declare=wormcolor=${color}  +Itmpy.pov +o${basename}_quickie.png +H${height} +W${width} $debug  +Ft +SP256 +P'
+cmd='povray monstercolor.ini declare=wormcolor=${color}  +Itmpy.pov +o${basename}_quickie.png +H${height} +W${width} $debug  +Ft +SP256 +P'
 #cmd='povray generic.ini declare=wormcolor=${color}  +I${basename}_${step}.pov +o${basename}_quickie.png +H${height} +W${width} $debug  +Ft +SP256 '
 eval echo $cmd
 eval $cmd

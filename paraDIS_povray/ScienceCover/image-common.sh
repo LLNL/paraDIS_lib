@@ -20,7 +20,7 @@ export step=5300
 export basename=${basename:-worms-5300-2004-04-04}
 #export basename=worms-2712-2004-04-04
 #export basename=boxed-5300-2004-04-04
-#export basename=boxed
+export basename=boxed
 #export basename=${basename:-tester}
 export verbose=5
 #debug=Declare=debug=yes
