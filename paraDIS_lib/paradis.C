@@ -4112,6 +4112,7 @@ namespace paraDIS {
     return;
   }
   
+
   // =========================================================================
   // Dump a JSON file containing the indicated arms.
   // JSON can be imported into python for use in blender scripts
@@ -4132,62 +4133,70 @@ namespace paraDIS {
       ptree pt;
       pt.put("Bounds", bounds);
       map<int32_t, FullNode *> nodemap; 
-      uint32_t armnum = 0; 
-      for (vector<Arm*>::iterator arm = Arm::mArms.begin(); arm != Arm::mArms.end(); arm++, armnum++){
-        vector<FullNode*> armnodes = (*arm)->GetNodes(); 
-		if (!armnodes.size()){
-		  continue;
-		}
+	  for (vector<boost::shared_ptr<MetaArm> >::iterator marm = mMetaArms.begin(); marm != mMetaArms.end(); marm++) {
+		
+		vector<Arm*> &arms = (*marm)->mAllArms; 
+		uint32_t armnum = 0; 
+		for (vector<Arm*>::iterator arm = arms.begin(); arm != arms.end(); arm++, armnum++){
+		  vector<FullNode*> armnodes = (*arm)->GetNodes(); 
+		  if (!armnodes.size()){
+			continue;
+		  }
+		  int32_t armid = (*arm)->mArmID; 
+		  pt.put(str(boost::format("MetaArms.MetaArm %1%.Arms.Arm %2%.ID")
+					 % ((*marm)->mMetaArmID) % armnum), 
+				 armid); 
 			   
-        int nodenum = 0; 
-        for (vector<FullNode*>::iterator node = armnodes.begin(); node != armnodes.end(); node++) {
-          if (*node) {			
-            nodemap[(*node)->GetIndex()] = *node;  
-            pt.put(str(boost::format("Arms.Arm %1%.Nodes.Node %2%.ID")
-                       % armnum % nodenum), 
-                   (*node)->GetIndex()); 
-          } else {
-            pt.put(str(boost::format("Arms.Arm %1%.Nodes.Node %2%.ID")
-                       % armnum % nodenum), 
-                   "WRAP"); 
-		  }			
-		  nodenum++;
-        }
-        vector<ArmSegment*> armsegs = (*arm)->GetSegments(); 
-        int segnum = 0; 
-		pt.put(str(boost::format("Arms.Arm %1%.burgers") % armnum), 
-			   armsegs[0]->GetBurgersType()); 
-        for (vector<ArmSegment*>::iterator seg = armsegs.begin(); seg != armsegs.end(); seg++, segnum++) {          
-          pt.put(str(boost::format("Arms.Arm %1%.Segments.Segment %2%.ID")
-                     % armnum % segnum),
-                 (*seg)->GetID()); 
-          pt.put(str(boost::format("Segments.Segment %1%.burgers")
-                     % ((*seg)->GetID())), 
-                 (*seg)->GetBurgersType()); 
-          pt.put(str(boost::format("Segments.Segment %1%.rotation")
-                     % ((*seg)->GetID())), 
-                 (*seg)->BlenderRotationString()); 
-          for (int i=0; i<2; i++) {
-            vector<float>location = (*seg)->GetEndpoint(i)->GetLocation(); 
-            pt.put(str(boost::format("Segments.Segment %1%.EP %2%") 
-                       % ((*seg)->GetID())%i), 
-                   str(boost::format("%1% %2% %3%")
-                       % location[0] % location[1] % location[2])); 
-          }    
-        }
-      }
-      for (map<int32_t, FullNode *>::iterator pos = nodemap.begin(); pos != nodemap.end(); pos++) {
-        FullNode *node = pos->second; 
-        vector<float>location = node->GetLocation(); 
-        pt.put(str(boost::format("Nodes.Node %1%.location")
-                   % (node->GetIndex())), 
-               str(boost::format("%1% %2% %3%")
-                   % location[0] % location[1] % location[2])); 
-        pt.put(str(boost::format("Nodes.Node %1%.NumNeighbors")
-                   % (node->GetIndex())), 
-               str(boost::format("%1%")
-                   % (node->GetNumNeighborSegments())));         
-      }
+		  int nodenum = 0; 
+		  for (vector<FullNode*>::iterator node = armnodes.begin(); node != armnodes.end(); node++) {
+			if (*node) {			
+			  nodemap[(*node)->GetIndex()] = *node;  
+			  pt.put(str(boost::format("Arms.Arm %1%.Nodes.Node %2%.ID")
+						 % armid % nodenum), 
+					 (*node)->GetIndex()); 
+			} else {
+			  pt.put(str(boost::format("Arms.Arm %1%.Nodes.Node %2%.ID")
+						 % armid % nodenum), 
+					 "WRAP"); 
+			}			
+			nodenum++;
+		  }
+		  vector<ArmSegment*> armsegs = (*arm)->GetSegments(); 
+		  int segnum = 0; 
+		  pt.put(str(boost::format("Arms.Arm %1%.burgers") % armid), 
+				 armsegs[0]->GetBurgersType()); 
+		  for (vector<ArmSegment*>::iterator seg = armsegs.begin(); seg != armsegs.end(); seg++, segnum++) {          
+			pt.put(str(boost::format("Arms.Arm %1%.Segments.Segment %2%.ID")
+					   % armid % segnum),
+				   (*seg)->GetID()); 
+			pt.put(str(boost::format("Segments.Segment %1%.burgers")
+					   % ((*seg)->GetID())), 
+				   (*seg)->GetBurgersType()); 
+			pt.put(str(boost::format("Segments.Segment %1%.rotation")
+					   % ((*seg)->GetID())), 
+				   (*seg)->BlenderRotationString()); 
+			for (int i=0; i<2; i++) {
+			  vector<float>location = (*seg)->GetEndpoint(i)->GetLocation(); 
+			  pt.put(str(boost::format("Segments.Segment %1%.EP %2%") 
+						 % ((*seg)->GetID())%i), 
+					 str(boost::format("%1% %2% %3%")
+						 % location[0] % location[1] % location[2])); 
+			}    
+		  }
+		}
+		for (map<int32_t, FullNode *>::iterator pos = nodemap.begin(); pos != nodemap.end(); pos++) {
+		  FullNode *node = pos->second; 
+		  vector<float>location = node->GetLocation(); 
+		  pt.put(str(boost::format("Nodes.Node %1%.location")
+					 % (node->GetIndex())), 
+				 str(boost::format("%1% %2% %3%")
+					 % location[0] % location[1] % location[2])); 
+		  pt.put(str(boost::format("Nodes.Node %1%.NumNeighbors")
+					 % (node->GetIndex())), 
+				 str(boost::format("%1%")
+					 % (node->GetNumNeighborSegments())));         
+		}
+	  }
       
       write_json(jsonfile, pt); 
       dbecho (0, "...done\n"); 
@@ -4195,6 +4204,7 @@ namespace paraDIS {
     return; 
   }
   
+	
   //===========================================================================
   // Write a vtk fileset containing all nodes and segments.
   void DataSet::WriteVTKFiles(void) {
