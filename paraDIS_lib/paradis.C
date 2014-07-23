@@ -4118,7 +4118,7 @@ namespace paraDIS {
   // JSON can be imported into python for use in blender scripts
   void DataSet::WriteJson(void) {
     string jsonfile = str(boost::format("%s/%s.json")%mOutputDir%mOutputBasename);
-    dbecho (0, str(boost::format("Writing json file %s...")%jsonfile)); 
+    dbecho (0, str(boost::format("Writing json file %s...\n")%jsonfile)); 
 
     string bounds = str(boost::format("%1% %2% %3% %4% %5% %6%") 
                         % FullNode::mBoundsMin[0] 
@@ -4133,18 +4133,23 @@ namespace paraDIS {
       ptree pt;
       pt.put("Bounds", bounds);
       map<int32_t, FullNode *> nodemap; 
-	  for (vector<boost::shared_ptr<MetaArm> >::iterator marm = mMetaArms.begin(); marm != mMetaArms.end(); marm++) {
+	  uint32_t metaArmNum = 1, numMetaArms = mMetaArms.size(); 	
+	  for (vector<boost::shared_ptr<MetaArm> >::iterator marm = mMetaArms.begin(); marm != mMetaArms.end(); marm++, metaArmNum++) {
 		
+		fprintf(stderr, "Writing metaarm %d of %d ( %4.1f%% )\r", metaArmNum, numMetaArms, 100.0 * metaArmNum/numMetaArms); 
+
 		vector<Arm*> &arms = (*marm)->mAllArms; 
-		uint32_t armnum = 0; 
+		uint32_t armnum = 0; 		
 		for (vector<Arm*>::iterator arm = arms.begin(); arm != arms.end(); arm++, armnum++){
 		  vector<FullNode*> armnodes = (*arm)->GetNodes(); 
 		  if (!armnodes.size()){
 			continue;
 		  }
 		  int32_t armid = (*arm)->mArmID; 
+		  pt.put(str(boost::format("MetaArms.MetaArm %1%.ID") % metaArmNum), 
+				 (*marm)->mMetaArmID);
 		  pt.put(str(boost::format("MetaArms.MetaArm %1%.Arms.Arm %2%.ID")
-					 % ((*marm)->mMetaArmID) % armnum), 
+					 % metaArmNum % armnum), 
 				 armid); 
 			   
 		  int nodenum = 0; 
@@ -4199,7 +4204,7 @@ namespace paraDIS {
 	  }
       
       write_json(jsonfile, pt); 
-      dbecho (0, "...done\n"); 
+      dbecho (0, "\n...done\n"); 
     }
     return; 
   }
