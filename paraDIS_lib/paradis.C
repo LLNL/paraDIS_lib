@@ -4133,10 +4133,10 @@ namespace paraDIS {
       ptree pt;
       pt.put("Bounds", bounds);
       map<int32_t, FullNode *> nodemap; 
-	  uint32_t metaArmNum = 1, numMetaArms = mMetaArms.size(); 	
+	  uint32_t metaArmNum = 0, numMetaArms = mMetaArms.size(); 	
 	  for (vector<boost::shared_ptr<MetaArm> >::iterator marm = mMetaArms.begin(); marm != mMetaArms.end(); marm++, metaArmNum++) {
 		
-		fprintf(stderr, "Writing metaarm %d of %d ( %4.1f%% )\r", metaArmNum, numMetaArms, 100.0 * metaArmNum/numMetaArms); 
+		fprintf(stderr, "Writing metaarm %d of %d ( %4.1f%% )\r", metaArmNum+1, numMetaArms, 100.0 * (metaArmNum+1.0)/numMetaArms); 
 
 		vector<Arm*> &arms = (*marm)->mAllArms; 
 		uint32_t armnum = 0; 		
