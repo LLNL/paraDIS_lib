@@ -1803,7 +1803,7 @@ namespace paraDIS {
     int32_t GetMetaArmID(void) { return mMetaArmID; }
 
      
-   vector<FullNode *>mTerminalNodes; // 
+	vector<FullNode *>mTerminalNodes; // 
     vector<Arm*> mTerminalArms; // one or two arms
     double mLength; 
     int8_t mMetaArmType; 
