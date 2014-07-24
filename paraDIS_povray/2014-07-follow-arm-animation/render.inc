@@ -1,68 +1,59 @@
 #include "colors.inc"
 #include "textures.inc"
-//#include "stereocam.inc"
-//good 11-color map from http://colorbrewer2.org
+
+// #include "stereocam.inc"
+// good 11-color map from http://colorbrewer2.org
 #macro ColorFromBurgers(burgers)
 #switch(burgers)
 range (-5,-1)
-rgb <141,211,199>
+rgb <141,211,199>/255.0
 #break
 #case (0)
-rgb <255,255,179>
+rgb <255,255,179>/255.0
 #break
 #case (10)
-rgb <190,186,218>
+rgb <190,186,218>/255.0
 #break
 #case (11)
-rgb <251,128,114>
+rgb <251,128,114>/255.0
 #break
 case (12)
-rgb <128,177,211>
+rgb <128,177,211>/255.0
 #break
 #case (13)
-rgb <253,180,98>
+rgb <253,180,98>/255.0
 #break
 range (20,29)
-rgb <179,222,105>
+rgb <179,222,105>/255.0
 #break
 #range (30,39)
-rgb <252,205,229>
+rgb <252,205,229>/255.0
 #break
 #range (40,49)
-rgb <217,217,217>
+rgb <217,217,217>/255.0
 #break
 #case (50)
-rgb <188,128,189>
+rgb <188,128,189>/255.0
 #break
 #case (60)
-rgb <204,235,197>
+rgb <204,235,197>/255.0
 #break
 #end 
 #end
 
-
-
+#declare shiny=0;
 // ===========================================================
 // making a segment
 // armDistance is how far from the arm's first endpoint we are from 0.0-1.0
 // metaarmDistance is analogous but for metaArm from 0.0-1.0
 // ep0 and ep1 are locations (3 element vectors)
-#macro segment(arm,meetaarm,ep0,ep1,burger)
-make_radius(weight);
-cylinder { ep0,ep1, myradius 
+#macro segment(segid, armid,meetaarmid,ep0,ep1,burger)
+cylinder { ep0,ep1, 15 
     texture {
     pigment  { 
-#local cyl_v=<loc10-loc00,loc11-loc01,loc12-loc02>;
-      gradient cyl_v
-	color_map { 
-	[ 0.0 make_endpoint_color(node0distance,burger) ]
-	  [ 0.5 make_endpoint_color(segdistance,burger) ]
-	  [ 1.0 make_endpoint_color(node1distance,burger) ]
-	  }
-      scale vlength(cyl_v*1.002)
-	translate <loc00, loc01, loc02>-cyl_v*0.001
-	}
+  color ColorFromBurgers(burger)
   }
+	}
 #if (shiny)
 // overdriven green sparkle texture: 
   texture {
@@ -103,8 +94,6 @@ cylinder { ep0,ep1, myradius
 #declare finish06 = dullfinish
 #declare finish07 = dullfinish
 #declare finish08 = dullfinish
-
-#declare boxcolor=rgb <0.9,0.9,0.9>;
 
 
 global_settings {
@@ -324,6 +313,17 @@ light_source {
     pigment {     color Red }    }
 */
 
+#declare boxcolor=rgb <0.9,0.9,0.9>;
+
+#macro setbounds(x0, x1, y0, y1, z0, z1)
+cylinder { x0, x1, 10
+  texture {
+  pigment {
+  color rgbf 0.9
+  }
+  }
+}
+#end
 
 #ifdef (box)
 box {

@@ -12,7 +12,7 @@ echo; echo; echo beginning $0; echo; echo
 #sleep 5
 echo SLURM_PROCID is $SLURM_PROCID
 # cat the files together instead of using #include to speed parsing
-rm -f tmpy.pov
+povfile=${1:-rs0240.pov}
 
 cat <<EOF >tmpy.ini
 ;; Library_Path="/usr/local/tools/povray/share/povray-3.6"
@@ -30,8 +30,8 @@ Sampling_Method=2
 Declare=Shadows=1
 EOF
 
-cat renderparams.inc > tmpy.pov
-cat ${basename}_${step}.pov >> tmpy.pov
+cat render.inc ${povfile} > tmpy.pov
+# cat ${basename}_${step}.pov >> tmpy.pov
 cmd='povray -Itmpy.ini   +o${basename}_quickie.png +H${height} +W${width} $debug  +SP256 +P tmpy.pov'
 eval echo $cmd
 eval $cmd
