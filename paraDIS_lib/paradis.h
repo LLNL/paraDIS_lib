@@ -600,6 +600,13 @@ namespace paraDIS {
     }
 
     /*!
+      Accessor
+    */
+	string GetPovrayLocationString(void) {
+	  return str(boost::format("<%f, %f, %f>")%(mLocation[0])%(mLocation[1])%(mLocation[2])); 
+    }
+	  
+    /*!
       Special Accessor.  Add the given amount to mLocation[index]; 
     */ 
     void AddToLocation(int i, float shift){
@@ -1856,6 +1863,12 @@ namespace paraDIS {
     /*!
       if this is true, then create tag file.  
     */ 
+    void EnablePovRayFileOutput(bool tf=true) {
+      mDoPovRayFiles = tf; 
+    }
+     /*!
+      if this is true, then create tag file.  
+    */ 
     void EnableJSONFileOutput(bool tf=true) {
       mDoJSONFiles = tf; 
     }
@@ -2010,6 +2023,12 @@ s      Tell the data set which file to read
       Write out a copy of the input file that has all FullNode tags in it.
     */
     void WriteTagFile(void); 
+
+    /*!
+      Write a json file for the nodes and another json file for the segments
+      in the given arms.  
+    */ 
+    void WritePov(void);
 
     /*!
       Write a json file for the nodes and another json file for the segments
@@ -2189,6 +2208,7 @@ s      Tell the data set which file to read
       mDoTagFile = false;
       mDoVTKFile = false; 
       mDoJSONFiles = false; 
+      mDoPovRayFiles = false; 
       mDoStats = false; 
       mDoSummaryFile = false; 
       mOutputDir = "./paradis-debug";
@@ -2386,6 +2406,10 @@ s      Tell the data set which file to read
     */ 
     bool mDoVTKFile; 
 
+    /*!
+      if this is true, then create JSON files at end of analysis.  
+    */ 
+    bool mDoPovRayFiles; 
     /*!
       if this is true, then create JSON files at end of analysis.  
     */ 

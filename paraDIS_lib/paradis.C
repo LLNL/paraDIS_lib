@@ -76,14 +76,18 @@ std::string INDENT(int i) {
 }
 #define STARTPROGRESS()                                 \
   timer theTimer;  theTimer.start();                    \
-  double theTime=theTimer.elapsed_time(), thePercent=0;
+  double theTime=theTimer.elapsed_time(), thePercent=0
+
 
 #define UPDATEPROGRESS(count, total, description)                       \
   if (dbg_isverbose()) {                                                \
     Progress(theTimer, count, total, thePercent, 1, theTime, 1, description);  }
 
 #define COMPLETEPROGRESS(total, description)                        \
-  UPDATEPROGRESS(total,total,description); fprintf(stderr, "\n");
+  UPDATEPROGRESS(total,total,description); fprintf(stderr, "\n");	\
+  theTimer.restart();													\
+  theTime=theTimer.elapsed_time();									\
+  thePercent=0
 
 string BurgersTypeNames(int btype) {
   switch (btype) {
@@ -4112,7 +4116,40 @@ namespace paraDIS {
     return;
   }
   
+  // =========================================================================
+  // Write a PovRay file with lots of segments
+  void DataSet::WritePov(void) {
+    string povfilename = str(boost::format("%s/%s.pov")%mOutputDir%mOutputBasename);
+	STARTPROGRESS()   ;
+    dbecho (0, str(boost::format("Writing POV file %s...\n")%povfilename)); 
+	FILE * povfile = fopen(povfilename.c_str(), "w");
+	fprintf(povfile, str(boost::format("setbounds(%1%, %2%, %3%, %4%, %5%, %6%)\n") 
+						 % FullNode::mBoundsMin[0] 
+						 % FullNode::mBoundsMax[0] 
+						 % FullNode::mBoundsMin[1] 
+						 % FullNode::mBoundsMax[1] 
+						 % FullNode::mBoundsMin[2] 
+						 % FullNode::mBoundsMax[2]).c_str());
 
+	fprintf(povfile, "union {\n\tunion {\n");
+	uint32_t segnum = 0, numsegs = ArmSegment::mArmSegments.size(); 
+	map <uint32_t, ArmSegment *>::iterator segpos; 
+	for (segpos = ArmSegment::mArmSegments.begin(); 
+		 segpos !=  ArmSegment::mArmSegments.end(); 
+		 segpos++, segnum++) {
+	  ArmSegment * seg = segpos->second;
+	  Arm *arm = seg->mParentArm; 
+	  MetaArm *marm = arm->	GetParentMetaArm(); 
+	  string ep0loc = seg->GetEndpoint(0)->GetPovrayLocationString(); 
+	  string ep1loc = seg->GetEndpoint(1)->GetPovrayLocationString(); 
+	  fprintf(povfile, "\t\tsegment(%d, %d, %d, %s, %s, %d)\n", seg->GetID(), arm->mArmID, marm->GetMetaArmID(), ep0loc.c_str(), ep1loc.c_str(), seg->GetBurgersType() ); 
+	  UPDATEPROGRESS(segnum, numsegs, "Writing segments to povray file");
+	}
+	COMPLETEPROGRESS(numsegs, "Writing segments to povray file");
+	fprintf(povfile, "\t}\n}\n");
+	fclose(povfile); 
+  }
+	  
   // =========================================================================
   // Dump a JSON file containing the indicated arms.
   // JSON can be imported into python for use in blender scripts
@@ -4130,13 +4167,14 @@ namespace paraDIS {
     using boost::property_tree::ptree; 
     {
       // Make a map of all nodes, to avoid creating duplicate nodes for endpoints, then we can add each map entry to the JSON ptree and write it out.  Memory explosion!
-      ptree pt;
+      STARTPROGRESS()   ;
+	  ptree pt;
       pt.put("Bounds", bounds);
       map<int32_t, FullNode *> nodemap; 
 	  uint32_t metaArmNum = 0, numMetaArms = mMetaArms.size(); 	
 	  for (vector<boost::shared_ptr<MetaArm> >::iterator marm = mMetaArms.begin(); marm != mMetaArms.end(); marm++, metaArmNum++) {
-		
-		fprintf(stderr, "Writing metaarm %d of %d ( %4.1f%% )\r", metaArmNum+1, numMetaArms, 100.0 * (metaArmNum+1.0)/numMetaArms); 
+		UPDATEPROGRESS(metaArmNum+1.0, numMetaArms, "Writing metaarms to povray");
+		//fprintf(stderr, "Writing metaarm %d of %d ( %4.1f%%, %f remaining )\r", metaArmNum+1, numMetaArms, 100.0 * (metaArmNum+1.0)/numMetaArms); 
 
 		vector<Arm*> &arms = (*marm)->mAllArms; 
 		uint32_t armnum = 0; 		
@@ -4204,6 +4242,7 @@ namespace paraDIS {
 	  }
       
       write_json(jsonfile, pt); 
+	  COMPLETEPROGRESS(numMetaArms, "Writing metaarms");
       dbecho (0, "\n...done\n"); 
     }
     return; 
@@ -4235,6 +4274,7 @@ namespace paraDIS {
     // WRITE THE SEGMENT FILES
     float armsperfile = (float)(Arm::mArms.size())/segfiles.size();
     for (uint32_t fileno = 0; fileno < segfiles.size(); fileno++) {
+	  STARTPROGRESS()   ;
       FILE *segfile = segfiles[fileno];
       string filename = segfilenames[fileno];
       uint32_t firstarm =  armsperfile * fileno;
@@ -4277,7 +4317,9 @@ namespace paraDIS {
           }
           previous = *node;
         }
+		UPDATEPROGRESS(armnum, numarms, "Writing points for arms"); 
       }
+	  COMPLETEPROGRESS(numarms,  "Writing points for arms"); 
 
       // ----------------------------------------------------------
       // 3. Segment file: Segments (connectivity)
@@ -4320,14 +4362,16 @@ namespace paraDIS {
           ++nodenum;
         }
 
-        dbprintf(5, "DataSet::WriteVTKFiles(): For arm %d with %d segments, %d wrapped segments, wrote %d segments. Current node is now %d. \n", theArm->mArmID, theArm->mNumSegments, theArm->mNumWrappedSegments, armsegs, nodenum);
+		//dbprintf(5, "DataSet::WriteVTKFiles(): For arm %d with %d segments, %d wrapped segments, wrote %d segments. Current node is now %d. \n", theArm->mArmID, theArm->mNumSegments, theArm->mNumWrappedSegments, armsegs, nodenum);
         if (nodenum - previousnodenum != nodecounts[armnum]) {
           dbecho(0, str(boost::format("DataSet::WriteVTKFiles(): ERROR! nodenum - previousnodenum + 1 != nodecounts[armnum] %d for arm %d\n") %(nodecounts[armnum])%(theArm->mArmID)));
           theArm->Stringify(0);
         }
         previousnodenum = nodenum;
+		UPDATEPROGRESS(armnum, numarms, "Writing segment locations for arms"); 
 
       }
+	  COMPLETEPROGRESS(numarms,  "Writing segment locations for arms"); 
 
       // ----------------------------------------------------------
       // 4. Segment file: Segment Arm numbers -- this should be much more straightforward as we do not need to reference any nodes now.
@@ -4343,9 +4387,11 @@ namespace paraDIS {
           fprintf(segfile, "%d ", armnum);
           ++testsegs;
         }
+		UPDATEPROGRESS(armnum, numarms, "Writing segment arm numbers for arms"); 
       }
       fprintf(segfile, "\n");
-      if (testsegs != numsegs) {
+      COMPLETEPROGRESS(numarms,  "Writing segment arm numbers for arms"); 
+	  if (testsegs != numsegs) {
         dbecho(0, str(boost::format("DataSet::WriteVTKFiles(): ERROR!  testsegs %d != numsegs %d\n")%testsegs%numsegs));
       }
       // ----------------------------------------------------------
@@ -4360,8 +4406,10 @@ namespace paraDIS {
         for (uint32_t segnum = 0; segnum < theArm->mNumSegments; segnum++) {
           fprintf(segfile, "%d ", burgertype);
         }
+		UPDATEPROGRESS(armnum, numarms, "Writing segment burgers types for arms"); 
       }
       fprintf(segfile, "\n");
+	  COMPLETEPROGRESS(numarms, "Writing segment burgers types for arms"); 
 
       // ----------------------------------------------------------
       // 6. Segment file: Segment metaarm type
@@ -4376,8 +4424,10 @@ namespace paraDIS {
         for (uint32_t segnum = 0; segnum < theArm->mNumSegments; segnum++) {
           fprintf(segfile, "%d ", matype);
         }
-      }
+ 		UPDATEPROGRESS(armnum, numarms, "Writing segment metaarm types for arms"); 
+     }
       fprintf(segfile, "\n");
+ 		COMPLETEPROGRESS(numarms, "Writing segment metaarm types for arms"); 
 
       // ----------------------------------------------------------
       // 7. Segment file: block (file) number
@@ -4391,8 +4441,10 @@ namespace paraDIS {
         for (uint32_t segnum = 0; segnum < theArm->mNumSegments; segnum++) {
           fprintf(segfile, "%d ", fileno);
         }
+ 		UPDATEPROGRESS(armnum, numarms, "Writing segment block (file) numbers for arms"); 
       }
       fprintf(segfile, "\n");
+      COMPLETEPROGRESS(numarms, "Writing segment block (file) numbers for arms"); 
 
       // ----------------------------------------------------------
       // 8. Segment file: segment Screw Type for Jaime Marian
@@ -4411,10 +4463,12 @@ namespace paraDIS {
           ++segnum; 
               
         }
+ 		UPDATEPROGRESS(armnum, numarms, "Writing segment screw types for arms"); 
       }
-      fprintf(segfile, "\n");
+	  fprintf(segfile, "\n");
+      COMPLETEPROGRESS(numarms, "Writing segment screw types for arms"); 
 
-
+	  COMPLETEPROGRESS(numarms, str(boost::format("Writing segment file %s\n")% filename));
       // ----------------------------------------------------------
       dbecho(1, str(boost::format("DataSet::WriteVTKFiles(): Wrote segment file %s\n")% filename));
       fclose(segfile);
@@ -5224,6 +5278,10 @@ namespace paraDIS {
 
     if (mDoJSONFiles) {
       WriteJson();
+    }
+
+    if (mDoPovRayFiles) {
+      WritePov();
     }
 
     dbprintf(1, "ReadData complete\n");
