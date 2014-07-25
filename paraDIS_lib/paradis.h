@@ -1809,6 +1809,12 @@ namespace paraDIS {
     int8_t GetMetaArmType(void) { return mMetaArmType; }
     int32_t GetMetaArmID(void) { return mMetaArmID; }
 
+	int8_t GetBurgersType(void) const {
+	  if (mTerminalArms.size()) {
+		return mTerminalArms[0]->GetBurgersType(); 
+	  }
+	  return BURGERS_UNKNOWN; 	  
+	}
      
 	vector<FullNode *>mTerminalNodes; // 
     vector<Arm*> mTerminalArms; // one or two arms

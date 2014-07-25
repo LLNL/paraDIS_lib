@@ -4132,7 +4132,7 @@ namespace paraDIS {
 						 % FullNode::mBoundsMax[2]).c_str());
 
 	fprintf(povfile, "union {\n\tunion {\n");
-	uint32_t segnum = 0, numsegs = ArmSegment::mArmSegments.size(); 
+	/*	uint32_t segnum = 0, numsegs = ArmSegment::mArmSegments.size(); 
 	map <uint32_t, ArmSegment *>::iterator segpos; 
 	for (segpos = ArmSegment::mArmSegments.begin(); 
 		 segpos !=  ArmSegment::mArmSegments.end(); 
@@ -4146,6 +4146,35 @@ namespace paraDIS {
 	  UPDATEPROGRESS(segnum, numsegs, "Writing segments to povray file");
 	}
 	COMPLETEPROGRESS(numsegs, "Writing segments to povray file");
+	fprintf(povfile, "\t}\n}\n");
+	*/
+	std::vector<boost::shared_ptr<MetaArm> >::iterator marm; 
+	uint32_t marmnum = 0, numMarms = mMetaArms.size(); 
+	for (marm = mMetaArms.begin(); marm != mMetaArms.end(); marm++, marmnum++) {
+	  UPDATEPROGRESS(marmnum, numMarms, "Writing MetaArms to povray file");
+	  vector<FullNode *> armnodes = (*marm)->GetNodes();
+	  if (!armnodes.size()) continue;
+	  int32_t metaArmID = (*marm)->GetMetaArmID(); 
+	  int8_t metaArmType = (*marm)->GetMetaArmType(), 
+		burgers = (*marm)->GetBurgersType(); 
+	  uint32_t numnodes = armnodes.size();
+	  fprintf(povfile, "makeMetaArm(%d, %d, %d, array[%d] {", metaArmID, metaArmType, burgers, numnodes);
+	  int nodenum = 0; 
+	  string povLocString; 
+	  for (vector<FullNode*>::iterator node = armnodes.begin(); 
+		   node != armnodes.end(); node++, nodenum++) {
+		if (*node) {			  
+		  povLocString = (*node)->GetPovrayLocationString(); 
+		}			
+		if (nodenum) fprintf(povfile, ", "); 
+		if (!*node) {
+		  fprintf(povfile, "/* WRAP */ ");
+		}
+		fprintf(povfile, "%s", povLocString.c_str()); 
+	  }
+	  fprintf(povfile, "})\n"); 
+	} 
+	COMPLETEPROGRESS(numMarms, "Writing MetaArms to povray file");
 	fprintf(povfile, "\t}\n}\n");
 	fclose(povfile); 
   }
