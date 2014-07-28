@@ -8,30 +8,34 @@ def errexit(msg, errno=1):
 	sys.exit(errno)
 	
 if len(sys.argv) < 2:
-	print "usage: json2pov.py infile [outfile]"
+	print "usage: json2pov.py infile [segfile]"
 	sys.exit(1)
 
-infilename = sys.argv[1]
-if infilename[-5:] != '.json':
+# ===================================================================
+# open JSON file
+jsonfilename = sys.argv[1]
+if jsonfilename[-5:] != '.json':
 	errexit("Input file must have .json extension.")
 	
-if len(sys.argv) == 3:
-	outfilename = sys.argv[2]
-else:
-	outfilename = infilename.replace('.json', '.pov')
-	
-# open JSON file
-data = json.load(open(infilename, 'r'))
+data = json.load(open(jsonfilename, 'r'))
 
-povfile = open(outfilename, 'w')
+# ===================================================================
+if len(sys.argv) == 3:
+	segfilename = sys.argv[2]
+else:
+	segfilename = jsonfilename[-5:0] + "-segments.pov" 
+	
+segfile = open(segfilename, 'w')
 numMetaArms = len(data['MetaArms'])
 manum = 1
-povfile.write("setbounds(%s)\n"%data['Bounds'].replace(' ',', '));
-povfile.write("union {\n\tunion {\n");
+segfile.write("setbounds(%s)\n"%data['Bounds'].replace(' ',', '));
+segfile.write("union {\n\tunion {\n");
+
 for metaarmname in data['MetaArms']:
-	sys.stdout.write("Processing metaarm %d of %d\r"%(manum, numMetaArms))
+	sys.stdout.write("Segfile: processing metaarm %d of %d\r"%(manum, numMetaArms))
 	metaarm = data['MetaArms'][metaarmname]
 	MAID = metaarm['ID']
+	nodes = []
 	for armname in metaarm['Arms']:
 		armid = metaarm['Arms'][armname]['ID']
 		arm = data['Arms']["Arm %s"%armid]
@@ -41,7 +45,14 @@ for metaarmname in data['MetaArms']:
 			seg = data['Segments']['Segment %s'%segid] 
 			ep0loc = "<%s>"%seg['EP 0'].replace(' ',', ')
 			ep1loc = "<%s>"%seg['EP 1'].replace(' ',', ')
-			povfile.write("segment(%s %s, %s, %s, %s, %s)\n"%(segid, armid, MAID, ep0loc, ep1loc, burger))
-			
-povfile.write("\t}\n}\n");
-povfile.close()
+			segfile.write("segment(%s %s, %s, %s, %s, %s)\n"%(segid, armid, MAID, ep0loc, ep1loc, burger))
+		for nodename in arm['Nodes']:
+			nodeid = arm['Nodes']['nodename']['ID']
+			node = data['Nodes']['Node '+nodeid]
+			nodes.append("<" + node['location'].replace(' ',', ') + ">")
+		
+sys.stdout.write("\n")
+
+segfile.write("\t}\n}\n");
+segfile.close()
+

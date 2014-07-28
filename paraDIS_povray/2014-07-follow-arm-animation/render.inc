@@ -1,6 +1,7 @@
 #include "colors.inc"
 #include "textures.inc"
-
+#include "strings.inc"
+#include "math.inc"
 /*  #include "stereocam.inc" */
 
 /*  ============================================================== */
@@ -50,50 +51,154 @@ rgb <1.0,1.0,1.0>
 #end
 
 /* =========================================================== */
-#declare shiny=0;
+#declare shiny = 1; 
+#macro textureFromBurgers(burger)
+  texture {
+	pigment  { 
+	  color ColorFromBurgers(burger)
+	}
+  }
+  #if (shiny)
+	/* overdriven green sparkle texture: 
+  texture {
+  pigment {
+  granite       /*  pre-defined in textures.inc */
+	/*  turbulence 0.3 */
+	color_map {
+	  [0.0 color rgbf <1,1,1,1>]	    
+	  [0.5 color rgbf <1,1,1,1>]	    
+	  [0.5 color rgbf <0,2,0,0>]
+	  [1.0 color rgbf <0,2,0,0>]
+	}
+	scale 1        /*  scale by the same amount in all */
+	/*  directions */
+  }
+	/* normal { bumps 2 scale 0.5 } */
+  } */
+  #end /*  shiny */
+#end /* textureFromBurgers(burger) */ 
+
+/* =========================================================== */
 /* =========================================================== */
 /* making a segment
 /*  armDistance is how far from the arm's first endpoint we are from 0.0-1.0 */
 /*  metaarmDistance is analogous but for metaArm from 0.0-1.0 */
 /*  ep0 and ep1 are locations (3 element vectors) */
 */
-#macro segment(segid, armid,meetaarmid,ep0,ep1,burger)
-cylinder { ep0,ep1, 15 
-    texture {
-    pigment  { 
-  color ColorFromBurgers(burger)
+
+#ifndef (CylinderRadius) 
+  #declare CylinderRadius = 60; 
+#end
+
+#macro segment4(ep0,ep1,burger, shiny)
+cylinder { ep0,ep1, CylinderRadius
+  textureFromBurgers(burger)
+}
+#end /* macro Segment */
+  
+#macro segment(segid, armid, maid, ep0,ep1,burger)
+cylinder { ep0,ep1, CylinderRadius
+  textureFromBurgers(burger)
+}
+  sphere { ep0, CylinderRadius
+	textureFromBurgers(burger) 
   }
-	}
-#if (shiny)
-/* overdriven green sparkle texture: 
-  texture {
-       pigment {
-        granite       /*  pre-defined in textures.inc */
-	  /*  turbulence 0.3 */
-       color_map {
-          [0.0 color rgbf <1,1,1,1>]	    
-	     [0.5 color rgbf <1,1,1,1>]	    
-	    [0.5 color rgbf <0,2,0,0>]
-	    [1.0 color rgbf <0,2,0,0>]
-       }
-          scale 1        /*  scale by the same amount in all */
-                       /*  directions */
-       }
-       /* normal { bumps 2 scale 0.5 } */
-  } */
-#end /*  shiny */
-} /*  end cylinder */
+  sphere { ep1, CylinderRadius
+	textureFromBurgers(burger) 
+  }
+#end /* macro Segment */
+  
+  
 /* cylinder { <7.316932e+03,8.636240e+03,4.983278e+03>, <7.307937e+03,8.640321e+03,4.951756e+03>, radius00 pigment { color cylindercolor00 transmit transmit00 } finish { finish00 } } */
 /* cylinder { <loc00,loc01,loc02>, <loc10,loc11,loc12>, myradius 
     pigment  { color makeintcolor(burger) transmit 0 } 
   finish { dullfinish } 
   } */
-#end /* macro Segment */
 
-#macro amIlegal(thing1, array1)
   
+/* ================================================================ */
+/* Example:  makeMetaArm(5.0, 5, 12, array[2] { <1,1,2>, <3,4,5> }) */
+#macro makeMetaArm(marmID, mArmType, burgers, points)
+#declare shiny=0;
+  #declare last = dimension_size(points,1); 
+  #declare index = 0; 
+  #while (index < last - 1)
+	/*  #if (last > 0)
+  #declare index = 0; */
+	#declare current = points[index]; 
+	#declare index = index + 1; 
+	#declare nextpoint = points[index];
+	/* #warning concat("current point: ",VStr(current),", nextpoint: ",VStr(nextpoint),"\n") */ 
+	#if (VEq(current,nextpoint))		
+	  #warning "WRAP detected\n"
+	#else
+	  segment4(current, nextpoint, burgers, 0)
+	  #warning "segment detected\n"
+	#end
+  #end
 #end
   
+/* ===================================================== */
+/* test drawing an arm using a spline supplied from rsxxx.pov */ 
+#if (0) 
+  #declare c=0;
+  #while (c<=1)
+	sphere { ParaDIS_MetaArmSplines[0](c) 150 pigment { rgb<c,0,1-c> }}
+	#declare c=c+0.0001;
+  #end
+#end
+
+/* ===================================================== */
+/* test drawing an arm using a sweep supplied from rsxxx.pov */ 
+#if (0) 
+  #declare sweepnum = 0; 
+  #while (sweepnum < ParaDIS_NumMetaArms)
+	object {
+	  ParaDIS_MetaArmSweeps[sweepnum]
+	  textureFromBurgers(ParaDIS_MetaArmBurgers[sweepnum])
+	}
+	#declare sweepnum = sweepnum + 1;
+  #end
+#end
+
+/* ===================================================== */
+/* test drawing arms using segments from rsxxx.pov */ 
+#if (0) 
+  #declare sweepnum = 0; 
+  #while (sweepnum < ParaDIS_NumMetaArms)
+	object {
+	  ParaDIS_MetaArmSweeps[sweepnum]
+	  textureFromBurgers(ParaDIS_MetaArmBurgers[sweepnum])
+	}
+	#declare sweepnum = sweepnum + 1;
+  #end
+#end
+
+/* ===================================================== */
+/* test drawing an object including two sphere sweeps  */ 
+#if (0)
+  union {
+	sphere_sweep { linear_spline 
+	  4 
+	  <-8522.228516, -2723.805420, 3733.772705>, 30
+	  <-8574.898438, -2820.153076, 3822.468262>, 30
+	  <-8659.490234, -2968.449219, 3910.256348>, 30
+	  <-8552.521484, -3020.665527, 3989.028076>, 30
+	}
+	sphere_sweep { linear_spline 
+	  5 
+	  <-8099.788574, -3396.696533, 4420.531738>, 30
+	  <-8021.464844, -3481.914551, 4504.170410>, 30
+	  <-7959.227051, -3552.609863, 4569.908203>, 30
+	  <-7877.412598, -3651.507568, 4653.834473>, 30
+	  <-7799.574707, -3753.822266, 4736.366211>, 30
+	}
+	pigment { rgb<1,0,0> }
+  }
+#end
+
+/* ================================================================ */
+
 #declare myfinish = finish { phong .5 }
 #declare dullfinish = finish { ambient .0 }
 #declare brightfinish = finish { phong .5 ambient 0.5 }	
@@ -127,10 +232,12 @@ background { 0.2*(0.333*Yellow + Brown) }
 /* ========================================================= */
 /* WORKING (DUPLICATES MEIJIE'S VIEW) */
 
+#declare ParaDIS_Size = ParaDIS_Bounds[1] - ParaDIS_Bounds[0]; 
+#declare ParaDIS_Center = ParaDIS_Bounds[0] + 0.5 * ParaDIS_Size;
 
 #declare L=8750;
 #declare LL = 2*L;
-#declare LLL = 3*L;
+#declare LLL = 3.5*L;
 #declare zero = 0.01;
 #declare near = L/2;
 #declare cameraLocSpline =
@@ -197,8 +304,9 @@ sphere { cameraLocSpline(c) 500 pigment { rgb<c,1,1> }}
 #else /*  not (camPath) */
    #declare cameraPos = cameraLocSpline(cameraSpline);
    #declare cameraLookAt = cameraLookatSpline(cameraSpline);
-/* #declare cameraPos = 1.8*L ; */
-/* #declare cameraLookAt = <0,10,0>; */
+
+  #declare cameraPos = ParaDIS_Center + <0,0,1.6*ParaDIS_Size.z> ;
+  #declare cameraLookAt = ParaDIS_Center; 
 #end
 
 #macro wormAxes (axisLocation, axisSize, axisDiameter) 
@@ -328,16 +436,28 @@ light_source {
 */
 
 #declare boxcolor=rgb <0.9,0.9,0.9>;
-
-#macro setbounds(x0, x1, y0, y1, z0, z1)
-cylinder { <x0,y0,z0>, <x1,y1,z1>, 10
-  texture {
-  pigment {
-  color rgbf 0.9
-  }
-  }
-}
+#ifndef (BoundsRadius)
+  #declare BoundsRadius = 200;
 #end
+#macro setbounds(x0, x1, y0, y1, z0, z1)  
+  #declare boundsTexture = texture { pigment { color boxcolor } }
+  
+  cylinder { <x0,y0,z0>, <x1,y0,z0>, BoundsRadius texture { boundsTexture } }
+  cylinder { <x0,y0,z1>, <x1,y0,z1>, BoundsRadius texture { boundsTexture } }
+  cylinder { <x0,y1,z0>, <x1,y1,z0>, BoundsRadius texture { boundsTexture } }
+  cylinder { <x0,y1,z1>, <x1,y1,z1>, BoundsRadius texture { boundsTexture } }
+  
+  cylinder { <x0,y0,z0>, <x0,y1,z0>, BoundsRadius texture { boundsTexture } }
+  cylinder { <x0,y0,z1>, <x0,y1,z1>, BoundsRadius texture { boundsTexture } }
+  cylinder { <x1,y0,z0>, <x1,y1,z0>, BoundsRadius texture { boundsTexture } }
+  cylinder { <x1,y0,z1>, <x1,y1,z1>, BoundsRadius texture { boundsTexture } }
+  
+  cylinder { <x0,y0,z0>, <x0,y0,z1>, BoundsRadius texture { boundsTexture } }
+  cylinder { <x0,y1,z0>, <x0,y1,z1>, BoundsRadius texture { boundsTexture } }
+  cylinder { <x1,y0,z0>, <x1,y0,z1>, BoundsRadius texture { boundsTexture } }
+  cylinder { <x1,y1,z0>, <x1,y1,z1>, BoundsRadius texture { boundsTexture } }
+#end
+setbounds(ParaDIS_Bounds[0].x, ParaDIS_Bounds[1].x, ParaDIS_Bounds[0].y, ParaDIS_Bounds[1].y, ParaDIS_Bounds[0].z, ParaDIS_Bounds[1].z)
 
 #ifdef (box)
 box {
@@ -428,3 +548,11 @@ fog {
     color Gray30
 }
 #end
+
+
+/* 
+ =================================================================
+ End render.inc file contents
+ =================================================================
+*/
+
