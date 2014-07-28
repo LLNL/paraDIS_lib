@@ -2578,9 +2578,10 @@ namespace paraDIS {
 
   }
 
+
   //===========================================================================
   /*!
-    Return a list of nodes in the metaArm.  If the MetaArm
+    Return a list of nodes in the metaArm, in order.  If the MetaArm
     contains any wrapped segments, then the interruption will be notated with
     mWrappedNode.
   */
@@ -4119,64 +4120,193 @@ namespace paraDIS {
   // =========================================================================
   // Write a PovRay file with lots of segments
   void DataSet::WritePov(void) {
-    string povfilename = str(boost::format("%s/%s.pov")%mOutputDir%mOutputBasename);
-	STARTPROGRESS()   ;
-    dbecho (0, str(boost::format("Writing POV file %s...\n")%povfilename)); 
-	FILE * povfile = fopen(povfilename.c_str(), "w");
-	fprintf(povfile, str(boost::format("setbounds(%1%, %2%, %3%, %4%, %5%, %6%)\n") 
-						 % FullNode::mBoundsMin[0] 
-						 % FullNode::mBoundsMax[0] 
-						 % FullNode::mBoundsMin[1] 
-						 % FullNode::mBoundsMax[1] 
-						 % FullNode::mBoundsMin[2] 
-						 % FullNode::mBoundsMax[2]).c_str());
 
-	fprintf(povfile, "union {\n\tunion {\n");
-	/*	uint32_t segnum = 0, numsegs = ArmSegment::mArmSegments.size(); 
-	map <uint32_t, ArmSegment *>::iterator segpos; 
-	for (segpos = ArmSegment::mArmSegments.begin(); 
-		 segpos !=  ArmSegment::mArmSegments.end(); 
-		 segpos++, segnum++) {
-	  ArmSegment * seg = segpos->second;
-	  Arm *arm = seg->mParentArm; 
-	  MetaArm *marm = arm->	GetParentMetaArm(); 
-	  string ep0loc = seg->GetEndpoint(0)->GetPovrayLocationString(); 
-	  string ep1loc = seg->GetEndpoint(1)->GetPovrayLocationString(); 
-	  fprintf(povfile, "\t\tsegment(%d, %d, %d, %s, %s, %d)\n", seg->GetID(), arm->mArmID, marm->GetMetaArmID(), ep0loc.c_str(), ep1loc.c_str(), seg->GetBurgersType() ); 
-	  UPDATEPROGRESS(segnum, numsegs, "Writing segments to povray file");
-	}
-	COMPLETEPROGRESS(numsegs, "Writing segments to povray file");
-	fprintf(povfile, "\t}\n}\n");
-	*/
-	std::vector<boost::shared_ptr<MetaArm> >::iterator marm; 
+	/* Write two povray files simultaneously.  "povdeclfile" is a set of declarations of things that can be used to create objects in the povray scene, but contains no actual objects.  
+	   "povobjfile" creates scene objects that requires functions to operate correctly, such as setting the color of a sweep based on burgers value. 
+	   Because the order of includes is different between the two, it's convenient to break them into two separate files.  The order is povdeclfile --> render.inc --> povobjfile
+	*/ 
+
+	STARTPROGRESS()   ;
+
+    string povobjfilename = str(boost::format("%s/%s-obj.pov")%mOutputDir%mOutputBasename);
+    dbecho (0, str(boost::format("Writing POV object file %s...\n")%povobjfilename)); 
+	FILE * povobjfile = fopen(povobjfilename.c_str(), "w");
+	// ===============================================================================
+    string povdeclfilename = str(boost::format("%s/%s-decl.pov")%mOutputDir%mOutputBasename);
+    dbecho (0, str(boost::format("Writing POV declarations file %s...\n")%povdeclfilename));
+	FILE * povdeclfile = fopen(povdeclfilename.c_str(), "w");
+	fprintf(povdeclfile, "/* %s: generated automatically by analyzeParaDIS\n */\n", povdeclfilename.c_str()); 
+
 	uint32_t marmnum = 0, numMarms = mMetaArms.size(); 
+	fprintf(povdeclfile, "#include \"math.inc\"\n"); 
+	fprintf(povdeclfile, "#declare ParaDIS_NumMetaArms = %d;\n", numMarms); 
+	fprintf(povdeclfile, "#declare ParaDIS_MetaArmPoints = array[%d]\n", numMarms);  
+	fprintf(povdeclfile, "#declare ParaDIS_MetaArmSegments = array[%d]\n", numMarms);  
+	fprintf(povdeclfile, "#declare ParaDIS_MetaArmSplines = array[%d]\n", numMarms);  
+	fprintf(povdeclfile, "#declare ParaDIS_MetaArmSweeps = array[%d]\n", numMarms);  
+	fprintf(povdeclfile, "#declare ParaDIS_MetaArmIDs = array[%d]\n", numMarms);  
+	fprintf(povdeclfile, "#declare ParaDIS_MetaArmBurgers = array[%d]\n", numMarms);  
+	fprintf(povdeclfile, "#declare ParaDIS_MetaArmTypes = array[%d]\n", numMarms); 
+	fprintf(povdeclfile, "#macro InterpVCos(GC, GS, GE, TS, TE, Method)\n\t <Interpolate(GC, GS, GE, TS.x, TE.x, Method), Interpolate(GC, GS, GE, TS.y, TE.y, Method), Interpolate(GC, GS, GE, TS.z, TE.z, Method)>\n#end\n"); 
+	
+	fprintf(povdeclfile, 
+			str(boost::format("#declare ParaDIS_Bounds = array[2] { <%1%, %2%, %3%>, <%4%, %5%, %6%> }\n")
+				% FullNode::mBoundsMin[0] 
+				% FullNode::mBoundsMax[0] 
+				% FullNode::mBoundsMin[1] 
+				% FullNode::mBoundsMax[1] 
+				% FullNode::mBoundsMin[2] 
+				% FullNode::mBoundsMax[2]).c_str());
+			
+	// ===============================================================================
+	// NOW the sweep file.  This needs to be done here, because getting it from JSON can jumble the node order due to the undefined order of python dictionary iteratiion
+    FILE * povsweepfile = povdeclfile; 
+	/*string povsweepfilename = str(boost::format("%s/%s.pov")%mOutputDir%mOutputBasename);
+    dbecho (0, str(boost::format("Writing POV file %s...\n")%povsweepfilename)); 
+	FILE * povsweepfile = fopen(povsweepfilename.c_str(), "w");
+
+	fprintf(povsweepfile, "// %s: generated automatically by analyzeParaDIS\n \n", povsweepfilename.c_str()); 
+	fprintf(povsweepfile, "#include \"math.inc\"\n");  
+	fprintf(povsweepfile, "#declare ParaDIS_NumMetaArms = %d;\n", numMarms); 
+
+	fprintf(povsweepfile, 
+			str(boost::format("#declare ParaDIS_Bounds = array[2] { <%1%, %2%, %3%>, <%4%, %5%, %6%> }\n")
+				% FullNode::mBoundsMin[0] 
+				% FullNode::mBoundsMax[0] 
+				% FullNode::mBoundsMin[1] 
+				% FullNode::mBoundsMax[1] 
+				% FullNode::mBoundsMin[2] 
+				% FullNode::mBoundsMax[2]).c_str());
+	*/
+	fprintf(povsweepfile, "#ifndef (SweepRadius)\n#declare SweepRadius = 50;\n#end\n"); 
+	// ===============================================================================
+	std::vector<boost::shared_ptr<MetaArm> >::iterator marm; 
+	fprintf(povdeclfile, "/* ======================================== */ \n"); 
+	fprintf(povdeclfile, "/* BEGIN METAARM LIST */ \n"); 
+	  fprintf(povdeclfile, "/* ======================================== */ \n"); 
+
+	//	fprintf(povdeclfile, "union {\n\tunion {\n");
 	for (marm = mMetaArms.begin(); marm != mMetaArms.end(); marm++, marmnum++) {
 	  UPDATEPROGRESS(marmnum, numMarms, "Writing MetaArms to povray file");
-	  vector<FullNode *> armnodes = (*marm)->GetNodes();
-	  if (!armnodes.size()) continue;
+	  vector<FullNode *> marmnodes = (*marm)->GetNodes();
+	  if (!marmnodes.size()) continue;
 	  int32_t metaArmID = (*marm)->GetMetaArmID(); 
 	  int8_t metaArmType = (*marm)->GetMetaArmType(), 
 		burgers = (*marm)->GetBurgersType(); 
-	  uint32_t numnodes = armnodes.size();
-	  fprintf(povfile, "makeMetaArm(%d, %d, %d, array[%d] {", metaArmID, metaArmType, burgers, numnodes);
-	  int nodenum = 0; 
+	  fprintf(povdeclfile, "\n/* ======================================== */ \n"); 
+	  fprintf(povdeclfile, "#declare ParaDIS_MetaArmIDs[%d] = %d;\n", marmnum, metaArmID); 
+	  fprintf(povdeclfile, "#declare ParaDIS_MetaArmBurgers[%d] = %d;\n", marmnum, burgers); 
+	  fprintf(povdeclfile, "#declare ParaDIS_MetaArmTypes[%d] = %d;\n", marmnum, metaArmType); 
+	  uint32_t numnodes = marmnodes.size();
+	  // fprintf(povdeclfile, "makeMetaArm(%d, %d, %d, array[%d] {", metaArmID, metaArmType, burgers, numnodes);
+	  int nodenum = 0, numwraps = 0; 
 	  string povLocString; 
-	  for (vector<FullNode*>::iterator node = armnodes.begin(); 
-		   node != armnodes.end(); node++, nodenum++) {
+	  fprintf(povdeclfile, "#declare ParaDIS_MetaArmPoints[%d] = array[%d] { ", marmnum,numnodes); 
+	  for (vector<FullNode*>::iterator node = marmnodes.begin(); 
+		   node != marmnodes.end(); node++, nodenum++) {
 		if (*node) {			  
 		  povLocString = (*node)->GetPovrayLocationString(); 
 		}			
-		if (nodenum) fprintf(povfile, ", "); 
+		if (nodenum) fprintf(povdeclfile, ", "); 
 		if (!*node) {
-		  fprintf(povfile, "/* WRAP */ ");
+		  fprintf(povdeclfile, "/* WRAP */");
+		  numwraps++; 
 		}
-		fprintf(povfile, "%s", povLocString.c_str()); 
+		fprintf(povdeclfile, "%s", povLocString.c_str()); 
 	  }
-	  fprintf(povfile, "})\n"); 
-	} 
-	COMPLETEPROGRESS(numMarms, "Writing MetaArms to povray file");
-	fprintf(povfile, "\t}\n}\n");
-	fclose(povfile); 
+	  fprintf(povdeclfile, "} \n"); 
+	 
+	  // Now write the segments for the arm
+	  vector<string> segmentStrings; // have to save them up because we don't know how many segments there are in the metaarm. 
+	  int MAID = (*marm)->mMetaArmID; 
+	  for (vector<Arm*>::iterator arm = (*marm)->mAllArms.begin(); arm != (*marm)->mAllArms.end(); arm++) {		
+		vector<ArmSegment*> segments = (*arm)->GetSegments(); 
+		int armid = (*arm)->mArmID; 
+		int burgers =(*arm)->GetBurgersType(); 
+		for (vector<ArmSegment*>::iterator seg = segments.begin(); 
+			 seg != segments.end(); seg++) {
+		  int segid = (*seg)->GetID();
+		  string ep0loc = (*seg)->GetEndpoint(0)->GetPovrayLocationString(); 
+		  string ep1loc = (*seg)->GetEndpoint(1)->GetPovrayLocationString(); 
+		  fprintf(povobjfile, str(boost::format("segment(%d, %d, %d, %s, %s, %d)\n")
+								  % segid % armid % MAID % ep0loc % ep1loc % burgers)
+				  .c_str()); 
+		}
+	  }
+
+
+	  fprintf(povdeclfile, "#declare ParaDIS_MetaArmSplines[%d] = spline { \n\tnatural_spline\n", marmnum); 
+	  nodenum = 0; 
+	  numnodes += numwraps * 19;  // take as long to animate a wrap as to animate along 20 nodes, thus additional 19 steps per wrap.
+	  for (vector<FullNode*>::iterator node = marmnodes.begin(); 
+		   node != marmnodes.end(); node++, nodenum++) {
+		if (*node) {			  
+		  povLocString = (*node)->GetPovrayLocationString(); 
+		  fprintf(povdeclfile, "\t%0.5f, %s\n", nodenum/(numnodes-1.0), povLocString.c_str()); 
+		}			
+		if (!*node) {
+		  ++node; 
+		  string nextLocString = (*node)->GetPovrayLocationString(); 
+		  fprintf(povdeclfile, "\t/* WRAP */\n");
+		  float GS = nodenum/(numnodes-1.0), GE = (nodenum + 19.0)/(numnodes-1.0); 
+		  for (int step = 0; step < 20; step++) {
+			float GC = nodenum/(numnodes-1.0);  
+			fprintf(povdeclfile, "\t%0.5f, InterpVCos(%f, %f, %f, %s, %s, 0)\n", GC, GC, GS, GE,  povLocString.c_str(), nextLocString.c_str()); 
+		  }
+		  fprintf(povdeclfile, "\t/* END WRAP */\n");
+		}
+	  }	  
+	  fprintf(povdeclfile, "} /* end spline */ \n"); 
+
+	  // ======================================================================
+	  // Now write sphere sweeps to union into the sweep file for metaarm.  
+	  // There will be multiple sweeps due to wrapping (periodic bounds)
+	  // This is actually a poor way to render -- very slow -- use segments instead. 
+	  vector<vector<string> > sweepnodelists;
+	  vector<string>sweepnodes; 
+	  for (vector<FullNode*>::iterator node = marmnodes.begin(); 
+		   node != marmnodes.end(); node++, nodenum++) {
+		if (*node) {
+		  sweepnodes.push_back((*node)->GetPovrayLocationString()); 
+		}			
+		else { 
+		  // we just ended one sweep
+		  sweepnodelists.push_back(sweepnodes); 
+		  sweepnodes.clear(); 
+		}
+	  }
+	  // collect the last sweep:
+	  sweepnodelists.push_back(sweepnodes); 
+	  if (sweepnodelists.size() > 1) {
+		fprintf(povsweepfile, "#declare ParaDIS_MetaArmSweeps[%d] = union { \n", marmnum);
+	  } else {
+		fprintf(povsweepfile, "#declare ParaDIS_MetaArmSweeps[%d] = ", marmnum); 
+	  }
+	  for (uint snum = 0; snum < sweepnodelists.size(); snum++) {		
+		if (sweepnodelists[snum].size()) {
+		  // Just ended a sweep, create the actual object
+		  fprintf(povsweepfile, "\tsphere_sweep { linear_spline\n"); 
+		  fprintf(povsweepfile, "\t\t%d,\n", (int)sweepnodelists[snum].size()); 
+		  for (uint i = 0; i < sweepnodelists[snum].size(); i++) {
+			fprintf(povsweepfile, "\t\t%s, SweepRadius\n", sweepnodelists[snum][i].c_str()); 
+		  }
+		  fprintf(povsweepfile, "\t} /* end sphere_sweep */\n"); 
+		} 
+	  }
+	  if (sweepnodelists.size() > 1) {
+		fprintf(povsweepfile, "} /* end union */ \n");
+	  } 
+
+	  // ======================================================================
+	  // Finally write segments to union into the sweep file for metaarm.  
+	  
+	}
+	COMPLETEPROGRESS(numMarms, "Writing MetaArms to povray  files");
+	//fprintf(povdeclfile, "\t}\n}\n");
+	//fclose(povsweepfile); 
+	fclose(povdeclfile); 
+	fclose(povobjfile); 
+
   }
 	  
   // =========================================================================
@@ -4202,9 +4332,9 @@ namespace paraDIS {
       map<int32_t, FullNode *> nodemap; 
 	  uint32_t metaArmNum = 0, numMetaArms = mMetaArms.size(); 	
 	  for (vector<boost::shared_ptr<MetaArm> >::iterator marm = mMetaArms.begin(); marm != mMetaArms.end(); marm++, metaArmNum++) {
-		UPDATEPROGRESS(metaArmNum+1.0, numMetaArms, "Writing metaarms to povray");
+		UPDATEPROGRESS(metaArmNum+1.0, numMetaArms, "Writing metaarms to json");
 		//fprintf(stderr, "Writing metaarm %d of %d ( %4.1f%%, %f remaining )\r", metaArmNum+1, numMetaArms, 100.0 * (metaArmNum+1.0)/numMetaArms); 
-
+		int32_t marmBurgers = 0; 
 		vector<Arm*> &arms = (*marm)->mAllArms; 
 		uint32_t armnum = 0; 		
 		for (vector<Arm*>::iterator arm = arms.begin(); arm != arms.end(); arm++, armnum++){
@@ -4234,9 +4364,15 @@ namespace paraDIS {
 			nodenum++;
 		  }
 		  vector<ArmSegment*> armsegs = (*arm)->GetSegments(); 
-		  int segnum = 0; 
-		  pt.put(str(boost::format("Arms.Arm %1%.burgers") % armid), 
-				 armsegs[0]->GetBurgersType()); 
+		  int segnum = 0, burgers = armsegs[0]->GetBurgersType(); 
+		  pt.put(str(boost::format("Arms.Arm %1%.burgers") % armid), burgers); 
+
+		  if (!marmBurgers) {
+			marmBurgers = burgers; 
+			pt.put(str(boost::format("MetaArms.MetaArm %1%.burgers") % metaArmNum), 
+				   burgers); 
+		  }
+
 		  for (vector<ArmSegment*>::iterator seg = armsegs.begin(); seg != armsegs.end(); seg++, segnum++) {          
 			pt.put(str(boost::format("Arms.Arm %1%.Segments.Segment %2%.ID")
 					   % armid % segnum),
