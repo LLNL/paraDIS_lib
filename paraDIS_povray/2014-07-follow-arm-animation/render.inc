@@ -95,9 +95,18 @@ cylinder { ep0,ep1, CylinderRadius
   textureFromBurgers(burger)
 }
 #end /* macro Segment */
-  
+ 
+
+#if (LightTheFuse)
+  #ifndef (MaxSegmentDistance)	
+	#declare MaxSegmentDistance = ParaDIS_MaxLightTheFuseDistance;
+  #end
+#else
+  #declare MaxSegmentDistance = 0;
+#end
+
 #macro segment(segid, armid, maid, ep0,ep1,burger, dist)
-  #if (dist > 0 & dist < 1000)
+  #if (MaxSegmentDistance = 0 | ( dist > 0 & dist < MaxSegmentDistance) )
 	cylinder { ep0,ep1, CylinderRadius
 	  textureFromBurgers(burger)
 	}
