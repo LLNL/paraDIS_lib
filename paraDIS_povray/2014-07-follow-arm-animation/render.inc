@@ -105,6 +105,7 @@ cylinder { ep0,ep1, CylinderRadius
   #declare MaxSegmentDistance = 0;
 #end
 
+#declare segmentsRendered = 0; 
 #macro segment(segid, armid, maid, ep0,ep1,burger, dist)
   #if (MaxSegmentDistance = 0 | ( dist > 0 & dist < MaxSegmentDistance) )
 	cylinder { ep0,ep1, CylinderRadius
@@ -116,6 +117,8 @@ cylinder { ep0,ep1, CylinderRadius
 	sphere { ep1, CylinderRadius
 	  textureFromBurgers(burger) 
 	}
+	#declare segmentsRendered = segmentsRendered + 1; 
+	/* #warning concat("Rendering segment ",str(segmentsRendered,0,0)," with ID ",str(segid,0,0)," and distance ",str(dist,0,0)) */
   #end
 #end /* macro Segment */
   
@@ -376,7 +379,7 @@ camera {
 #declare cameraLightPos = cameraPos + 0.1 * (cameraPos - cameraLookAt);
 light_source {
     cameraPos
-      color 1
+      color 0.5
   /* rotate -rot03 */
   /* rotate -rot02 */
   /* rotate -rot01 */
@@ -389,7 +392,7 @@ light_source {
 #declare remoteLightPos = (<-L,-L,0>);
 light_source {
   remoteLightPos
-  color 5*White
+  color 2*White
     area_light
   L*<1, 0, 0> L*<0, 0, 1> 40 40
   circular

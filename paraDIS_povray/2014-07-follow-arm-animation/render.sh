@@ -1,9 +1,7 @@
 #!/usr/bin/env bash 
-# $Id: quicklook.sh,v 1.3 2006/01/20 19:09:03 rcook Exp $
-# This script is for quick and dirty looks at the current image, using multires and other speedups
+# This script is for fullscale rendering, as well as quick and dirty looks at the current image, using multires and other speedups
 #  
 
-echo '$Id: quicklook.sh,v 1.3 2006/01/20 19:09:03 rcook Exp $'
 errexit() {
 	echo $1
 	exit ${2:-1}
@@ -13,14 +11,16 @@ errexit() {
 
 set -vx
 wdir=`dirname $0`
+cd $wdir
+echo; echo; echo beginning $0; echo; echo
 
-default_height=960
-default_width=1280
-default_basename=rs0240
-default_verbose=5
-default_debug='Declare=debug=yes'
-default_armweight='-armweight 0.2'
-
+if [ "$1" == "-quick" ] || [ "$1" == "-q" ]; then 
+	quick=true
+	shift
+else
+	quick=false
+fi
+basename=${1:-rs0240}
 
 # usage: startrow height procnum numprocs
 # procnum is 0-based, just SLURM_PROCID
@@ -35,20 +35,6 @@ function startrow () {
 # usage: endrow height procnum numprocs
 function endrow () {
     /usr/local/bin/python -c "print (int) (${1}.0 * (${2}.0+1)/${3}.0)"     
-}
-
-
-#usage:  doconvert (args are taken from environment for now) 
-function doconvert () {
-    cmd='../restartConvert -pov -template rs%04d.data -first $step -name ${basename} -v $verbose -spheres $armweight'
-    eval echo $cmd
-    eval $cmd >${basename}.log 2>&1
-}
-
-# usage:  povname procnum basename 
-# echoes the povray filename (used for consistent naming between scripts)
-function povname () {
-    echo ${2}_${1}.tga
 }
 
 
@@ -69,52 +55,86 @@ function stitch () {
     eval $cmd
 }
 
-export procnum=`getprocnum` 2>/dev/null
-export numprocs=`getnumprocs` 2>/dev/null
+default_armweight='-armweight 0.2'
 
-height=${height:-$default_height}
-width=${width:-$default_width}
 
-cd $wdir
-echo; echo; echo beginning $0; echo; echo
 #sleep 5
 echo SLURM_PROCID is $SLURM_PROCID
 # cat the files together instead of using #include to speed parsing
-basename=${1:-rs0240}
+frame=${frame:-0}
+
+
+debug="${debug:-Declare=debug=1}"
 declfile="${basename}-decl.pov"
 objfile="${basename}-obj.pov"
+outdir=${outdir:-.}
+logfile=$outdir/logistics/${basename}_${frame}.log
+inifile=$outdir/logistics/${basename}_${frame}.ini 
+outfile=$outdir/images/${basename}_${frame}.png  
+height=${height:-960}
+width=${width:-1280}
 
 display=${display:-On}
 segdistance=${segdistance:-0}
 dofuse=${dofuse:-0}
-if [ "$segdistance}" -gt 0 ]; then 
+
+if $quick; then 
+	antialias=Off
+	quality=7
+else
+	antialias=${antialias:-On}
+	quality=${quality:-9} # http://www.povray.org/documentation/view/3.7.0/223/
+fi
+
+mkdir -p $outdir/{logistics,images}
+numprocs=$(getnumprocs)
+if [ $numprocs -gt 1 ]; then 
+	echo "output is going to $logfile"
+	exec >& $logfile
+fi
+
+date
+for thing in basename frame declfile objfile outdir logfile inifile outfile; do
+	eval echo $thing is '\"$'$thing'\"'
+done
+
+if [ "${segdistance}" -gt 0 ]; then 
 	dofuse=1
 fi
 
-cat <<EOF >tmpy.ini
-Output_File_Type=n
-Verbose=On
-Pause_when_done=On
-Start_Row=0.0
-End_Row=1.0
-Video_Mode=1
-Display=$display
-Antialias=On
-Antialias_Threshold=0.99
-Sampling_Method=2
+	
+povfile=$outdir/logistics/${basename}-${frame}-combined.pov
+cat ${declfile} render.inc ${objfile} > $povfile
+
+cat <<EOF >$inifile
+Antialias=$antialias
+;; Antialias_Threshold=0.2
+Declare=debug=$debug
 Declare=Shadows=1
 Declare=SphereRadius=50
 Declare=CylinderRadius=50
 Declare=BoundsRadius=50
 Declare=LightTheFuse=${dofuse}
 Declare=MaxSegmentDistance=${segdistance}
+Display=$display
+End_Row=1.0
+Input_File_Name=$povfile
+Output_File_Type=n
+Pause_when_done=On
+Quality=$quality
+Sampling_Method=2
+Start_Row=0.0
+Video_Mode=1
+Verbose=On
 ;; Declare=camPath=1
 EOF
 
-cat ${declfile} render.inc ${objfile} > tmpy.pov
+echo 'inifile contents:'
+cat $inifile
 
-cmd="povray +H${height} +W${width} $debug  +o${basename}_quickie.png   +SP256 tmpy.ini +Itmpy.pov"
+cmd="povray +H${height} +W${width} $debug  +o${outfile}  +SP256 $inifile"
 #cmd='povray3.7 -Itmpy.ini  +o${povfile}_quickie.png +D +H${height} +W${width} $debug  +SP256 +P tmpy.pov'
 echo $cmd
 $cmd
 
+echo render complete
