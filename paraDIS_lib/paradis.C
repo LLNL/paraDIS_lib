@@ -264,6 +264,7 @@ namespace paraDIS {
   double ArmSegment::mScrewToleranceAngle = 0.05 ;
   double ArmSegment::mScrewToleranceCosine = cos(0.05); 
   double ArmSegment::SQRT3 = sqrt(3.0);
+  ArmSegment *ArmSegment::mInitialLightTheFuseArmSegment = NULL;
   
   vector<Arm *> Arm::mArms;
   vector<int32_t> Arm::mTraceArms;
@@ -1551,10 +1552,10 @@ namespace paraDIS {
         const ArmSegment *wDouble =  currentSegment->SwitchToWrappedDouble(currentNode, &currentNode, &wrappedPrevious);
         if (!wDouble) {
           //if (mDecomposing) {
-            dbprintf(6, "Arm::GetNodes(arm %d): currentNode has only one neighbor and no matching ghost node from current Segment.  This is the end of the arm, we assume.\n", mArmID);
-            break;
-			// }
-          dbprintf(0, "Arm::GetNodes(arm %d): ERROR:  We have a node with only one neighbor which is not a ghost node.  Things are going to get bad from here.\n", mArmID);
+		  dbprintf(6, "Arm::GetNodes(arm %d): currentNode has only one neighbor and no matching ghost node from current Segment.  This is the end of the arm, we assume.\n", mArmID);
+		  break;
+		  // }
+		  //dbprintf(0, "Arm::GetNodes(arm %d): ERROR:  We have a node with only one neighbor which is not a ghost node.  Things are going to get bad from here.\n", mArmID);
         }
         nodes.push_back(NULL);
         nodes.push_back(wrappedPrevious);
@@ -4226,10 +4227,11 @@ namespace paraDIS {
 		for (vector<ArmSegment*>::iterator seg = segments.begin(); 
 			 seg != segments.end(); seg++) {
 		  int segid = (*seg)->GetID();
+		  uint32_t distance = (*seg)->mLightTheFuseDistance; 
 		  string ep0loc = (*seg)->GetEndpoint(0)->GetPovrayLocationString(); 
 		  string ep1loc = (*seg)->GetEndpoint(1)->GetPovrayLocationString(); 
-		  fprintf(povobjfile, str(boost::format("segment(%d, %d, %d, %s, %s, %d)\n")
-								  % segid % armid % MAID % ep0loc % ep1loc % burgers)
+		  fprintf(povobjfile, str(boost::format("segment(%d, %d, %d, %s, %s, %d, %d)\n")
+								  % segid % armid % MAID % ep0loc % ep1loc % burgers % distance)
 				  .c_str()); 
 		}
 	  }
@@ -5211,6 +5213,60 @@ namespace paraDIS {
   }
 
   //===========================================================================
+  /*! 
+	Compute the BFS distance of all segments from mInitialLightTheFuseArmSegment.
+  */ 
+  void DataSet::ComputeLightTheFuseSegmentDistances(void) {
+	STARTPROGRESS(); 
+	dbecho(0, "ComputeLightTheFuseSegmentDistances() called...\n"); 
+	ArmSegment *firstSegment = ArmSegment::mInitialLightTheFuseArmSegment; 
+	if (!firstSegment) {
+	  dbecho(0, "ComputeLightTheFuseSegmentDistances() skipping computation...\n"); 
+	  return;
+	}
+	vector<ArmSegment*> SegmentLayers[2]; // dual-buffered traveling wavefront of distances during BFS
+	int currentLayer = 0; 
+	SegmentLayers[0].push_back(firstSegment); 
+	uint32_t currentDistance = 1; 
+	uint32_t segnum = 0, numsegs = ArmSegment::mArmSegments.size(); 
+
+	while (SegmentLayers[currentLayer].size()) {
+	  UPDATEPROGRESS(segnum, numsegs, str(boost::format("Computing light the fuse distances on layer %d.")%currentDistance)); 
+SegmentLayers[1-currentLayer].clear(); 
+	  for (vector<ArmSegment*>::iterator segpos = SegmentLayers[currentLayer].begin(); 
+		   segpos != SegmentLayers[currentLayer].end(); segpos++) {
+		ArmSegment *seg = *segpos;
+		seg->mLightTheFuseDistance = currentDistance; 
+
+		for (int i = 0; i<2; i++) {
+		  FullNode *ep = seg->GetEndpoint(i), *dummy; 
+		  if (ep) {
+			int numNeighborSegs = ep->GetNumNeighborSegments(); 
+			if (numNeighborSegs == 1) {
+			  ArmSegment *neighbor = seg->SwitchToWrappedDouble(ep, &dummy, NULL); 
+			  if (neighbor && !neighbor->mLightTheFuseDistance) {
+				SegmentLayers[1-currentLayer].push_back(neighbor); 
+			  }
+			} 
+			else {
+			  for (int n = 0 ; n < numNeighborSegs; n++) {
+				ArmSegment *neighbor = ep->GetNeighborSegment(n); 
+				if (neighbor && !neighbor->mLightTheFuseDistance) {
+				  SegmentLayers[1-currentLayer].push_back(neighbor); 
+				}
+			  }
+			} // 
+		  } // if (ep) 
+		}// end current endpoint
+	  }// end current layer
+	  currentLayer = 1-currentLayer; //toggle
+	  currentDistance++; 
+	} // end while current layer has segments; 
+	  COMPLETEPROGRESS(numsegs, "Computing light the fuse distances."); 
+	return; 
+  }
+
+  //===========================================================================
   bool DataSet::Test(void) {
     dbprintf(0, "DataSet::Test(): called\n");
     
@@ -5408,6 +5464,9 @@ namespace paraDIS {
       FindMetaArms();
 
       TagNodes(); // for Meijie
+
+	  SetInitialLightTheFuseSegment(); 
+	  ComputeLightTheFuseSegmentDistances(); 
 
       if (mDoDebugOutput) {
         DebugPrintMetaArms();
