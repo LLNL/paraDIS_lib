@@ -1041,7 +1041,7 @@ namespace paraDIS {
     /*!
       Accessor function
     */
-    void SetSeen(bool tf) {mSeen = tf; }
+    void SetSeen(bool tf = true) {mSeen = tf; }
 
     /*!
       convert ArmSegment to string
@@ -1233,6 +1233,7 @@ namespace paraDIS {
       mNumDecomposed, mNumWrapped, mNumArmSegmentsMeasured; 
     static uint32_t mNextSegmentID; 
 	static ArmSegment *mInitialLightTheFuseArmSegment;
+	static uint32_t mMaxLightTheFuseDistance; 
 	uint32_t mLightTheFuseDistance; 
 
   protected:
