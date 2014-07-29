@@ -904,6 +904,7 @@ namespace paraDIS {
       mArmSegments[mSegmentID] = this; //.push_back(this); 
       mNextSegmentID++; // mNumArmSegments++; 
 
+	  mLightTheFuseDistance = 0; 
       mBurgersType = 0; 
       mSeen = false; 
       int i=2; while (i--) {
@@ -1231,6 +1232,8 @@ namespace paraDIS {
     static uint32_t mNumClassified, mNumBeforeDecomposition, 
       mNumDecomposed, mNumWrapped, mNumArmSegmentsMeasured; 
     static uint32_t mNextSegmentID; 
+	static ArmSegment *mInitialLightTheFuseArmSegment;
+	uint32_t mLightTheFuseDistance; 
 
   protected:
 
@@ -2148,6 +2151,18 @@ s      Tell the data set which file to read
       Optionally create the list of meta-arms to trace out the M-N network on a higher level. 
     */ 
     void FindMetaArms(void);    
+
+	/*!
+	  Used to set the first segment for the light the fuse animation
+	*/
+	void SetInitialLightTheFuseSegment(uint32_t num = 0) {
+	  ArmSegment::mInitialLightTheFuseArmSegment = ArmSegment::mArmSegments[num]; 
+	}
+
+    /*! 
+      Compute the distance of all segments from mInitialLightTheFuseArmSegment.
+    */ 
+	void ComputeLightTheFuseSegmentDistances(void); 
 
      /*!
       Accessor function
