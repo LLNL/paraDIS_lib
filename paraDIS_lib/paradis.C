@@ -265,6 +265,7 @@ namespace paraDIS {
   double ArmSegment::mScrewToleranceCosine = cos(0.05); 
   double ArmSegment::SQRT3 = sqrt(3.0);
   ArmSegment *ArmSegment::mInitialLightTheFuseArmSegment = NULL;
+  uint32_t ArmSegment::mMaxLightTheFuseDistance = 0;
   
   vector<Arm *> Arm::mArms;
   vector<int32_t> Arm::mTraceArms;
@@ -906,15 +907,12 @@ namespace paraDIS {
 
   //===========================================================================
   std::string ArmSegment::Stringify(int indent) const {
-    string s = str(boost::format("ArmSegment at %1%")%this);
-    s +=  " number " + intToString(mSegmentID);
-    int btype = mBurgersType;
-    s += str(boost::format(", %1%, parentArm ") %BurgersTypeNames(btype));
-    if (mParentArm) {
-      s += str(boost::format("%1%\n") % mParentArm->mArmID);
-    } else {
-      s += "(NONE)\n";
-    }
+	string parentID = "(NONE)"; 
+	if (mParentArm) {
+	  parentID = str(boost::format("%1%") % mParentArm->mArmID);
+	}
+    string s = str(boost::format("ArmSegment at %1%, number %2%, %3%, parentArm %4%, fuse distance %5%\n")% this % mSegmentID % ((int)mBurgersType) % parentID % mLightTheFuseDistance); 
+
     uint32_t epnum = 0;
     while (epnum < 2) {
       s+= INDENT(indent+1) + "ep "+intToString(epnum)+": ";
@@ -4122,13 +4120,16 @@ namespace paraDIS {
   // Write a PovRay file with lots of segments
   void DataSet::WritePov(void) {
 
+	/*	for (std::map<uint32_t, ArmSegment *>::iterator seg = ArmSegment::mArmSegments.begin(); seg != ArmSegment::mArmSegments.end(); seg++) {
+	  seg->second->SetSeen(false); 
+	  }*/
 	/* Write two povray files simultaneously.  "povdeclfile" is a set of declarations of things that can be used to create objects in the povray scene, but contains no actual objects.  
 	   "povobjfile" creates scene objects that requires functions to operate correctly, such as setting the color of a sweep based on burgers value. 
 	   Because the order of includes is different between the two, it's convenient to break them into two separate files.  The order is povdeclfile --> render.inc --> povobjfile
 	*/ 
 
 	STARTPROGRESS()   ;
-
+	uint32_t segsWritten = 0; 
     string povobjfilename = str(boost::format("%s/%s-obj.pov")%mOutputDir%mOutputBasename);
     dbecho (0, str(boost::format("Writing POV object file %s...\n")%povobjfilename)); 
 	FILE * povobjfile = fopen(povobjfilename.c_str(), "w");
@@ -4150,6 +4151,7 @@ namespace paraDIS {
 	fprintf(povdeclfile, "#declare ParaDIS_MetaArmTypes = array[%d]\n", numMarms); 
 	fprintf(povdeclfile, "#macro InterpVCos(GC, GS, GE, TS, TE, Method)\n\t <Interpolate(GC, GS, GE, TS.x, TE.x, Method), Interpolate(GC, GS, GE, TS.y, TE.y, Method), Interpolate(GC, GS, GE, TS.z, TE.z, Method)>\n#end\n"); 
 	
+	fprintf(povdeclfile, "#declare ParaDIS_MaxLightTheFuseDistance = %d;\n", ArmSegment::mMaxLightTheFuseDistance);  
 	fprintf(povdeclfile, 
 			str(boost::format("#declare ParaDIS_Bounds = array[2] { <%1%, %2%, %3%>, <%4%, %5%, %6%> }\n")
 				% FullNode::mBoundsMin[0] 
@@ -4218,11 +4220,12 @@ namespace paraDIS {
 	  fprintf(povdeclfile, "} \n"); 
 	 
 	  // Now write the segments for the arm
-	  vector<string> segmentStrings; // have to save them up because we don't know how many segments there are in the metaarm. 
+	  /*	  vector<string> segmentStrings; // have to save them up because we don't know how many segments there are in the metaarm. 
 	  int MAID = (*marm)->mMetaArmID; 
-	  for (vector<Arm*>::iterator arm = (*marm)->mAllArms.begin(); arm != (*marm)->mAllArms.end(); arm++) {		
+	  for (vector<Arm*>::iterator arm = (*marm)->mAllArms.begin(); arm != (*marm)->mAllArms.end(); arm++) {
 		vector<ArmSegment*> segments = (*arm)->GetSegments(); 
 		int armid = (*arm)->mArmID; 
+		dbprintf(5, "Got %d segments for arm ID %d in metaarm ID %d\n", segments.size(), armid, MAID); 
 		int burgers =(*arm)->GetBurgersType(); 
 		for (vector<ArmSegment*>::iterator seg = segments.begin(); 
 			 seg != segments.end(); seg++) {
@@ -4230,12 +4233,16 @@ namespace paraDIS {
 		  uint32_t distance = (*seg)->mLightTheFuseDistance; 
 		  string ep0loc = (*seg)->GetEndpoint(0)->GetPovrayLocationString(); 
 		  string ep1loc = (*seg)->GetEndpoint(1)->GetPovrayLocationString(); 
-		  fprintf(povobjfile, str(boost::format("segment(%d, %d, %d, %s, %s, %d, %d)\n")
-								  % segid % armid % MAID % ep0loc % ep1loc % burgers % distance)
-				  .c_str()); 
+		  string segstring = 
+			str(boost::format("segment(%d, %d, %d, %s, %s, %d, %d)\n")
+				% segid % armid % MAID % ep0loc % ep1loc % burgers % distance);
+		  dbprintf(5, segstring.c_str()); 
+		  fprintf(povobjfile, segstring.c_str()); 
+		  segsWritten++; 
+		  (*seg)->SetSeen(); 
 		}
 	  }
-
+	  */
 
 	  fprintf(povdeclfile, "#declare ParaDIS_MetaArmSplines[%d] = spline { \n\tnatural_spline\n", marmnum); 
 	  nodenum = 0; 
@@ -4304,6 +4311,33 @@ namespace paraDIS {
 	  
 	}
 	COMPLETEPROGRESS(numMarms, "Writing MetaArms to povray  files");
+	dbprintf(2, "Wrote %d segments out of %d into povray object file\n", segsWritten, ArmSegment::mArmSegments.size()); 
+	for (std::map<uint32_t, ArmSegment *>::iterator pos = ArmSegment::mArmSegments.begin(); pos != ArmSegment::mArmSegments.end(); pos++) {
+	  ArmSegment * seg = pos->second; 
+	  int segid = seg->GetID();
+	  int armid = seg->mParentArm->mArmID; 
+	  int maid = seg->mParentArm->GetParentMetaArm()->GetMetaArmID(); 
+	  int burgers = seg->GetBurgersType();
+	  uint32_t distance = seg->mLightTheFuseDistance; 
+	  string ep0loc = seg->GetEndpoint(0)->GetPovrayLocationString(); 
+	  string ep1loc = seg->GetEndpoint(1)->GetPovrayLocationString(); 
+	  string segstring = 
+		str(boost::format("segment(%d, %d, %d, %s, %s, %d, %d)\n")
+			% segid 
+			% armid 
+			% maid 
+			% ep0loc 
+			% ep1loc 
+			% burgers
+			% distance);
+	  // dbprintf(5, segstring.c_str()); 
+	  fprintf(povobjfile, segstring.c_str()); 
+	  /*	  if (!seg->second->Seen()) {
+		dbprintf(5, "Not written: %s\n", seg->second->Stringify().c_str()); 
+		seg->second->SetSeen(false); 
+		}
+	  */
+	}
 	//fprintf(povdeclfile, "\t}\n}\n");
 	//fclose(povsweepfile); 
 	fclose(povdeclfile); 
@@ -5237,7 +5271,7 @@ SegmentLayers[1-currentLayer].clear();
 		   segpos != SegmentLayers[currentLayer].end(); segpos++) {
 		ArmSegment *seg = *segpos;
 		seg->mLightTheFuseDistance = currentDistance; 
-
+		dbprintf(5, str(boost::format("ComputeLightTheFuseSegmentDistances() set segment %1% fuse distance to %2%\n") % (seg->GetID()) % currentDistance).c_str()); 
 		for (int i = 0; i<2; i++) {
 		  FullNode *ep = seg->GetEndpoint(i), *dummy; 
 		  if (ep) {
@@ -5262,7 +5296,8 @@ SegmentLayers[1-currentLayer].clear();
 	  currentLayer = 1-currentLayer; //toggle
 	  currentDistance++; 
 	} // end while current layer has segments; 
-	  COMPLETEPROGRESS(numsegs, "Computing light the fuse distances."); 
+	ArmSegment::mMaxLightTheFuseDistance = currentDistance; 
+	COMPLETEPROGRESS(numsegs, "Computing light the fuse distances."); 
 	return; 
   }
 
