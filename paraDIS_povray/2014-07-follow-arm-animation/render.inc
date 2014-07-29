@@ -96,16 +96,18 @@ cylinder { ep0,ep1, CylinderRadius
 }
 #end /* macro Segment */
   
-#macro segment(segid, armid, maid, ep0,ep1,burger)
-cylinder { ep0,ep1, CylinderRadius
-  textureFromBurgers(burger)
-}
-  sphere { ep0, CylinderRadius
-	textureFromBurgers(burger) 
-  }
-  sphere { ep1, CylinderRadius
-	textureFromBurgers(burger) 
-  }
+#macro segment(segid, armid, maid, ep0,ep1,burger, dist)
+  #if (dist > 0 & dist < 1000)
+	cylinder { ep0,ep1, CylinderRadius
+	  textureFromBurgers(burger)
+	}
+	sphere { ep0, CylinderRadius
+	  textureFromBurgers(burger) 
+	}
+	sphere { ep1, CylinderRadius
+	  textureFromBurgers(burger) 
+	}
+  #end
 #end /* macro Segment */
   
   

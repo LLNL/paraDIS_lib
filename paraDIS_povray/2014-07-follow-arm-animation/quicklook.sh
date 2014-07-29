@@ -20,6 +20,8 @@ basename=${1:-rs0240}
 declfile="${basename}-decl.pov"
 objfile="${basename}-obj.pov"
 
+display=${display:-On}
+
 cat <<EOF >tmpy.ini
 Output_File_Type=n
 Verbose=On
@@ -27,7 +29,7 @@ Pause_when_done=Off
 Start_Row=0.0
 End_Row=1.0
 Video_Mode=1
-;;Display=On
+Display=$display
 Antialias=On
 Antialias_Threshold=0.99
 Sampling_Method=2
