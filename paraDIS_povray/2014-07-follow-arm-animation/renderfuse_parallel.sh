@@ -1,6 +1,9 @@
 #!/usr/bin/env bash
 
-# example:  srun -W 3000000 -n 288 renderfuse_parallel.sh rs1907 |& tee renderfuse_parallel-1907.log
+# example:  
+# data=rs1907 
+# data=rs0240 
+# srun -W 3000000 -n 96 renderfuse_parallel.sh $data |& tee renderfuse_parallel-$data.log
 errexit() {
 	echo $1
 	exit 1
@@ -10,7 +13,8 @@ set -xv
 # get user input
 export basename=${1:-${basename:-rs0240}}
 distPerTimestep=${2:-"-1"};
-outdir=${basename}-outdir
+outdir=${basename}-outdir-$(date +%F-%H-%M-%S)
+mkdir -p $outdir
 # compute some values
 export procnum=`getprocnum` 2>/dev/null
 export numprocs=`getnumprocs` 2>/dev/null
@@ -31,7 +35,11 @@ fi
 for thing in procnum numprocs basename distPerTimestep outdir; do 
 	eval echo $thing is '\"$'$thing'\"'
 done
-
+cp $0 $outdir/
+cp render.sh $outdir/
+# tmpdir=$(mktemp -d --tmpdir=$outdir)
+# cp ${basename}-{decl,obj}.pov $tmpdir/
+# basename=$tmpdir/$(basename $basename)
 # start looping\
 frame=$procnum
 mydist=$(expr \( $frame + 1 \)  \* $distPerTimestep);

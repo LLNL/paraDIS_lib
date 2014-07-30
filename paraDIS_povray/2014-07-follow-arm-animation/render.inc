@@ -14,9 +14,6 @@
 #if (AnimateGrow & AnimateFuse)
   #warning "AnimateGrow and AnimateFuse are contradictory.  I will set AnimateGrow to false and use AnimateFuse\n"
 #end
-#if (!AnimateGrow & !AnimateFuse)
-  #declare AnimateFuse = true; 
-#end
 #ifndef (GlowRadius) 
   #declare GlowRadius = 1;
 #end
@@ -71,37 +68,52 @@ rgb <1.0,1.0,1.0>
 #declare afterglow = false; 
 
 #macro textureFromBurgers(burger)
-  texture {
-	pigment  { 
-	  color ColorFromBurgers(burger)
-	}
-	#if (glowing)
-	  finish { ambient color Red * 2 }
-	#else
-	  #if (afterglow) 
-		finish { ambient color Red * 0.6 }
-	  #end
+  #if (!AnimateFuse & !AnimateGrow) 
+	  texture {	
+		pigment  { 
+		  color ColorFromBurgers(burger)
+		}
+		finish { ambient color ColorFromBurgers(burger) * .2 }
+	  }	
+  #else
+	#if (!glowing & !afterglow) 
+	  texture {	
+		pigment  { 
+		  color ColorFromBurgers(burger) * 0.3
+		}
+	  }
 	#end
-  }
-  #if (0 & glowing)
-	/* overdriven green sparkle texture: */
-	texture {
-	  pigment {
-		/* granite       
-  color_map {
+	#if (glowing)
+	  /* #warning "GLOWING!" */
+	  texture {	
+		pigment  { 
+		  color ColorFromBurgers(burger) 
+		}
+		finish { ambient color ColorFromBurgers(burger) * 3 }
+	  }
+	  /* overdriven green sparkle texture: */
+	  /* texture { pigment { granite  color_map {
   [0.0 color rgbf 1 ]	    
   [0.5 color rgbf 1 ]	    
   [0.5 color rgbf <0,1,0,0>]
   [1.0 color rgbf <0,1,0,0>]
-  }
-  scale 1   
-  */
-		color White * 0.5
+  } scale 1   color White * 0.5 }
+  finish { ambient color White }
+  /* normal { bumps 2 scale 0.5 } */
 	  }
-	  finish { ambient color White }
-	  /* normal { bumps 2 scale 0.5 } */
-	}
-  #end /*  glowing */
+	  */
+	#end
+	#if (afterglow) 
+	  /* #warning "AFTERGLOW!" */
+	  texture {	
+		pigment  { 
+		  color ColorFromBurgers(burger) 
+		}
+		finish { ambient color ColorFromBurgers(burger)  * 0.4 }
+		/* finish { ambient color Red * 0.3 } */
+	  }
+	#end /* afterglow */ 
+  #end /* animating segments */ 
 #end /* textureFromBurgers(burger) */ 
 
 /* =========================================================== */
@@ -112,38 +124,39 @@ rgb <1.0,1.0,1.0>
 /*  ep0 and ep1 are locations (3 element vectors) */
 */
 
-#ifndef (CylinderRadius) 
-  #declare CylinderRadius = 60; 
+#ifndef (SegmentRadius) 
+  #declare SegmentRadius = 60; 
 #end
 
 #macro segment4(ep0,ep1,burger, glowing)
-  cylinder { ep0,ep1, CylinderRadius
+  cylinder { ep0,ep1, SegmentRadius
 	textureFromBurgers(burger)
   }
 #end /* macro Segment */
 
-#ifndef (MaxSegmentDistance) 
-  #declare MaxSegmentDistance = 0;
+#ifndef (SegmentDistance) 
+  #declare SegmentDistance = 0;
 #end
 #if (AnimateFuse | AnimateGrow)
-  #if (!MaxSegmentDistance) 
-	#declare MaxSegmentDistance = ParaDIS_MaxLightTheFuseDistance;
+  #if (!SegmentDistance) 
+	#declare SegmentDistance = ParaDIS_MaxLightTheFuseDistance;
   #end
 #else
-  #declare MaxSegmentDistance = 0;
+  #declare SegmentDistance = 0;
 #end
-#warning concat("MaxSegmentDistance=",str(MaxSegmentDistance,0,0),"\n")
+#warning concat("SegmentDistance=",str(SegmentDistance,0,0),"\n")
+#warning concat("GlowRadius=",str(GlowRadius,0,0),"\n")
 #declare segmentsRendered = 0; 
 #macro segmentGrowingAnimation(segid, armid, maid, ep0,ep1,burger, dist)  
-  #if (MaxSegmentDistance = 0 | ( dist > 0 & dist < MaxSegmentDistance) )
-	cylinder { ep0,ep1, CylinderRadius
-	  textureFromBurgers(burger)
-	}
-	sphere { ep0, CylinderRadius
+  #if (SegmentDistance = 0 | ( dist > 0 & dist < SegmentDistance) )
+	cylinder { ep0,ep1, SegmentRadius
 	  textureFromBurgers(burger) 
 	}
-	sphere { ep1, CylinderRadius
-	  textureFromBurgers(burger) 
+	sphere { ep0, SegmentRadius
+	  textureFromBurgers(burger)  
+	}
+	sphere { ep1, SegmentRadius
+	  textureFromBurgers(burger)  
 	}
 	#declare segmentsRendered = segmentsRendered + 1; 
 	/* #warning concat("Rendering segment ",str(segmentsRendered,0,0)," with ID ",str(segid,0,0)," and distance ",str(dist,0,0)) */
@@ -151,16 +164,18 @@ rgb <1.0,1.0,1.0>
 #end /* macro Segment */
 
 #macro segmentFuseAnimation(segid, armid, maid, ep0,ep1,burger, dist)  
-  #declare glowing = false;
-  #declare afterglow = false; /* the "afterglow" */
-  #if (dist > 0 & dist > MaxSegmentDistance - GlowRadius & dist < MaxSegmentDistance + GlowRadius ) 
-	#declare glowing=true;
-	#local MyRadius = CylinderRadius*1.3; 
-	#warning concat("fuse color segment ",str(segmentsRendered,0,0)," with ID ",str(segid,0,0)," and distance ",str(dist,0,0)) 
+  #declare glowing = 0;
+  #declare afterglow = 0; /* the "afterglow" */
+  /* #warning concat("dist is ",str(dist,0,0)," and SegmentDistance is ",str(SegmentDistance,0,0)) */
+  #if (dist > 0 & dist > (SegmentDistance - GlowRadius) & dist < (SegmentDistance + GlowRadius) )
+	#declare glowing=1;
+	#local MyRadius = SegmentRadius; 
+	/* #warning concat("GLOWING: fuse color segment ",str(segmentsRendered,0,0)," with ID ",str(segid,0,0)," and distance ",str(dist,0,0)) */
   #else
-	#local MyRadius = CylinderRadius; 
-	#if ( dist > 0 & dist <= MaxSegmentDistance - GlowRadius )
-	  #declare afterglow = true;
+	#local MyRadius = SegmentRadius; 
+	#if ( dist > 0 & dist <= SegmentDistance - GlowRadius )
+	/* #warning concat("AFTERGLOW: fuse color segment ",str(segmentsRendered,0,0)," with ID ",str(segid,0,0)," and distance ",str(dist,0,0))  */
+	  #declare afterglow = 1;
 	#end
   #end
   cylinder { ep0,ep1, MyRadius
@@ -183,6 +198,8 @@ rgb <1.0,1.0,1.0>
   #else
 	#if (AnimateFuse)
 	  segmentFuseAnimation(segid, armid, maid, ep0,ep1,burger, dist)  
+	#else
+	  segmentFuseAnimation(segid, armid, maid, ep0,ep1,burger, 0)
 	#end
   #end
 #end

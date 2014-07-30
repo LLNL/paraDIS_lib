@@ -37,6 +37,8 @@ function endrow () {
     /usr/local/bin/python -c "print (int) (${1}.0 * (${2}.0+1)/${3}.0)"     
 }
 
+numprocs=$(getnumprocs)
+procnum=$(getprocnum)
 
 # usage: stitch width height numprocs firstproc
 function stitch () {
@@ -65,19 +67,32 @@ frame=${frame:-0}
 
 
 debug="${debug:-Declare=debug=1}"
-declfile="${basename}-decl.pov"
-objfile="${basename}-obj.pov"
+# basename=$(basename $basename)
 outdir=${outdir:-.}
+
 logfile=$outdir/logistics/${basename}_${frame}.log
+mkdir -p $outdir/{logistics,images}
+if [ $numprocs -gt 1 ]; then 
+	echo "output is going to $logfile"
+	exec >& $logfile
+fi
+
 inifile=$outdir/logistics/${basename}_${frame}.ini 
 outfile=$outdir/images/${basename}_${frame}.png  
-height=${height:-960}
-width=${width:-1280}
+declfile="${basename}-decl.pov"
+objfile="${basename}-obj.pov"
+# copy the pov files into a uniquely named input file for posterity
+# unique to each processor to avoid corruption
+for name in objfile declfile; do
+	eval cp \$$name $outdir/logistics/\$${name}-proc$procnum
+	eval ${name}=$outdir/logistics/\$${name}-proc$procnum
+done
+
 
 display=${display:-On}
 segdistance=${segdistance:-0}
 animatefuse=${animatefuse:-0}
-glowradius=${glowradius:-0}
+glowradius=${glowradius:-1}
 if [ "$animatefuse" != 0 ]; then 
 	animategrow=0
 else 
@@ -90,13 +105,6 @@ if $quick; then
 else
 	antialias=${antialias:-On}
 	quality=${quality:-9} # http://www.povray.org/documentation/view/3.7.0/223/
-fi
-
-mkdir -p $outdir/{logistics,images}
-numprocs=$(getnumprocs)
-if [ $numprocs -gt 1 ]; then 
-	echo "output is going to $logfile"
-	exec >& $logfile
 fi
 
 date
@@ -116,19 +124,22 @@ cat <<EOF >$inifile
 Antialias=$antialias
 ;; Antialias_Threshold=0.2
 Declare=debug=$debug
-Declare=BoundsRadius=50
-Declare=CylinderRadius=50
+Declare=BoundsRadius=${boundsradius:-50}
+Declare=SegmentRadius=${segradius:-50}
 Declare=AnimateFuse=${animatefuse}
 Declare=AnimateGrow=${animategrow}
 Declare=GlowRadius=${glowradius}
-Declare=MaxSegmentDistance=${segdistance}
+Declare=SegmentDistance=${segdistance}
 Declare=Shadows=1
-Declare=SphereRadius=50
 Display=$display
 End_Row=1.0
+Height=${height:-960}
 Input_File_Name=$povfile
+Width=${width:-1280}
+Output_File_Name=${outfile}
 Output_File_Type=n
 Pause_when_done=On
+Preview_Start_Size=64
 Quality=$quality
 Sampling_Method=2
 Start_Row=0.0
@@ -140,9 +151,6 @@ EOF
 echo 'inifile contents:'
 cat $inifile
 
-cmd="povray +H${height} +W${width} $debug  +o${outfile}  +SP256 $inifile"
-#cmd='povray3.7 -Itmpy.ini  +o${povfile}_quickie.png +D +H${height} +W${width} $debug  +SP256 +P tmpy.pov'
-echo $cmd
-$cmd
+povray $inifile
 
 echo render complete
