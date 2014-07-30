@@ -4155,10 +4155,10 @@ namespace paraDIS {
 	fprintf(povdeclfile, 
 			str(boost::format("#declare ParaDIS_Bounds = array[2] { <%1%, %2%, %3%>, <%4%, %5%, %6%> }\n")
 				% FullNode::mBoundsMin[0] 
-				% FullNode::mBoundsMax[0] 
 				% FullNode::mBoundsMin[1] 
-				% FullNode::mBoundsMax[1] 
 				% FullNode::mBoundsMin[2] 
+				% FullNode::mBoundsMax[0] 
+				% FullNode::mBoundsMax[1] 
 				% FullNode::mBoundsMax[2]).c_str());
 			
 	// ===============================================================================
