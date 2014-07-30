@@ -20,7 +20,7 @@ if [ "$1" == "-quick" ] || [ "$1" == "-q" ]; then
 else
 	quick=false
 fi
-basename=${1:-rs0240}
+basename=${1:-${basename:-rs0240}}
 
 # usage: startrow height procnum numprocs
 # procnum is 0-based, just SLURM_PROCID
@@ -76,7 +76,13 @@ width=${width:-1280}
 
 display=${display:-On}
 segdistance=${segdistance:-0}
-dofuse=${dofuse:-0}
+animatefuse=${animatefuse:-0}
+glowradius=${glowradius:-0}
+if [ "$animatefuse" != 0 ]; then 
+	animategrow=0
+else 
+	animategrow=${animategrow:-0}
+fi
 
 if $quick; then 
 	antialias=Off
@@ -98,9 +104,9 @@ for thing in basename frame declfile objfile outdir logfile inifile outfile; do
 	eval echo $thing is '\"$'$thing'\"'
 done
 
-if [ "${segdistance}" -gt 0 ]; then 
-	dofuse=1
-fi
+# if [ "${segdistance}" -gt 0 ]; then 
+# 	animatefuse=1
+# fi
 
 	
 povfile=$outdir/logistics/${basename}-${frame}-combined.pov
@@ -110,12 +116,14 @@ cat <<EOF >$inifile
 Antialias=$antialias
 ;; Antialias_Threshold=0.2
 Declare=debug=$debug
+Declare=BoundsRadius=50
+Declare=CylinderRadius=50
+Declare=AnimateFuse=${animatefuse}
+Declare=AnimateGrow=${animategrow}
+Declare=GlowRadius=${glowradius}
+Declare=MaxSegmentDistance=${segdistance}
 Declare=Shadows=1
 Declare=SphereRadius=50
-Declare=CylinderRadius=50
-Declare=BoundsRadius=50
-Declare=LightTheFuse=${dofuse}
-Declare=MaxSegmentDistance=${segdistance}
 Display=$display
 End_Row=1.0
 Input_File_Name=$povfile

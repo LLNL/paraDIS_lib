@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 
-# example:  srun -W 3000000 -n 48 renderfuse_parallel.sh |& tee renderfuse_parallel.log
+# example:  srun -W 3000000 -n 288 renderfuse_parallel.sh rs1907 |& tee renderfuse_parallel-1907.log
 errexit() {
 	echo $1
 	exit 1
@@ -8,7 +8,7 @@ errexit() {
 . $HOME/RC_bash_lib/shellfuncs.sh || errexit "Could not source shellfuncs.sh"
 set -xv
 # get user input
-basename=${1:-rs0240}
+export basename=${1:-${basename:-rs0240}}
 distPerTimestep=${2:-"-1"};
 outdir=${basename}-outdir
 # compute some values
@@ -36,7 +36,7 @@ done
 frame=$procnum
 mydist=$(expr \( $frame + 1 \)  \* $distPerTimestep);
 while [ "$mydist" -le "$maxdist" ]; do 
-	frame=$frame outdir=$outdir antialias=Off quality=7 display=Off dofuse=1 segdistance=$mydist render.sh 
+	frame=$frame outdir=$outdir antialias=Off quality=7 display=Off animatefuse=1 segdistance=$mydist render.sh 
 	let "frame += $numprocs"
 	mydist=$(expr \( $frame + 1 \) \* $distPerTimestep);
 done

@@ -4,6 +4,22 @@
 #include "math.inc"
 /*  #include "stereocam.inc" */
 
+#ifndef (AnimateFuse)
+  #declare AnimateFuse = false; 
+#end
+#ifndef (AnimateGrow)
+  #declare AnimateGrow = false; 
+#end
+
+#if (AnimateGrow & AnimateFuse)
+  #warning "AnimateGrow and AnimateFuse are contradictory.  I will set AnimateGrow to false and use AnimateFuse\n"
+#end
+#if (!AnimateGrow & !AnimateFuse)
+  #declare AnimateFuse = true; 
+#end
+#ifndef (GlowRadius) 
+  #declare GlowRadius = 1;
+#end
 /*  ============================================================== */
 #macro ColorFromBurgers(burgers)
 /* good 11-color map from http:/* colorbrewer2.org   */
@@ -51,31 +67,41 @@ rgb <1.0,1.0,1.0>
 #end
 
 /* =========================================================== */
-#declare shiny = 1; 
+#declare glowing = false;
+#declare afterglow = false; 
+
 #macro textureFromBurgers(burger)
   texture {
 	pigment  { 
 	  color ColorFromBurgers(burger)
 	}
+	#if (glowing)
+	  finish { ambient color Red * 2 }
+	#else
+	  #if (afterglow) 
+		finish { ambient color Red * 0.6 }
+	  #end
+	#end
   }
-  #if (shiny)
-	/* overdriven green sparkle texture: 
-  texture {
-  pigment {
-  granite       /*  pre-defined in textures.inc */
-	/*  turbulence 0.3 */
-	color_map {
-	  [0.0 color rgbf <1,1,1,1>]	    
-	  [0.5 color rgbf <1,1,1,1>]	    
-	  [0.5 color rgbf <0,2,0,0>]
-	  [1.0 color rgbf <0,2,0,0>]
+  #if (0 & glowing)
+	/* overdriven green sparkle texture: */
+	texture {
+	  pigment {
+		/* granite       
+  color_map {
+  [0.0 color rgbf 1 ]	    
+  [0.5 color rgbf 1 ]	    
+  [0.5 color rgbf <0,1,0,0>]
+  [1.0 color rgbf <0,1,0,0>]
+  }
+  scale 1   
+  */
+		color White * 0.5
+	  }
+	  finish { ambient color White }
+	  /* normal { bumps 2 scale 0.5 } */
 	}
-	scale 1        /*  scale by the same amount in all */
-	/*  directions */
-  }
-	/* normal { bumps 2 scale 0.5 } */
-  } */
-  #end /*  shiny */
+  #end /*  glowing */
 #end /* textureFromBurgers(burger) */ 
 
 /* =========================================================== */
@@ -90,23 +116,25 @@ rgb <1.0,1.0,1.0>
   #declare CylinderRadius = 60; 
 #end
 
-#macro segment4(ep0,ep1,burger, shiny)
-cylinder { ep0,ep1, CylinderRadius
-  textureFromBurgers(burger)
-}
+#macro segment4(ep0,ep1,burger, glowing)
+  cylinder { ep0,ep1, CylinderRadius
+	textureFromBurgers(burger)
+  }
 #end /* macro Segment */
- 
 
-#if (LightTheFuse)
-  #ifndef (MaxSegmentDistance)	
+#ifndef (MaxSegmentDistance) 
+  #declare MaxSegmentDistance = 0;
+#end
+#if (AnimateFuse | AnimateGrow)
+  #if (!MaxSegmentDistance) 
 	#declare MaxSegmentDistance = ParaDIS_MaxLightTheFuseDistance;
   #end
 #else
   #declare MaxSegmentDistance = 0;
 #end
-
+#warning concat("MaxSegmentDistance=",str(MaxSegmentDistance,0,0),"\n")
 #declare segmentsRendered = 0; 
-#macro segment(segid, armid, maid, ep0,ep1,burger, dist)
+#macro segmentGrowingAnimation(segid, armid, maid, ep0,ep1,burger, dist)  
   #if (MaxSegmentDistance = 0 | ( dist > 0 & dist < MaxSegmentDistance) )
 	cylinder { ep0,ep1, CylinderRadius
 	  textureFromBurgers(burger)
@@ -121,8 +149,43 @@ cylinder { ep0,ep1, CylinderRadius
 	/* #warning concat("Rendering segment ",str(segmentsRendered,0,0)," with ID ",str(segid,0,0)," and distance ",str(dist,0,0)) */
   #end
 #end /* macro Segment */
+
+#macro segmentFuseAnimation(segid, armid, maid, ep0,ep1,burger, dist)  
+  #declare glowing = false;
+  #declare afterglow = false; /* the "afterglow" */
+  #if (dist > 0 & dist > MaxSegmentDistance - GlowRadius & dist < MaxSegmentDistance + GlowRadius ) 
+	#declare glowing=true;
+	#local MyRadius = CylinderRadius*1.3; 
+	#warning concat("fuse color segment ",str(segmentsRendered,0,0)," with ID ",str(segid,0,0)," and distance ",str(dist,0,0)) 
+  #else
+	#local MyRadius = CylinderRadius; 
+	#if ( dist > 0 & dist <= MaxSegmentDistance - GlowRadius )
+	  #declare afterglow = true;
+	#end
+  #end
+  cylinder { ep0,ep1, MyRadius
+	textureFromBurgers(burger)
+  }
+  sphere { ep0, MyRadius
+	textureFromBurgers(burger) 
+  }
+  sphere { ep1, MyRadius
+	textureFromBurgers(burger) 
+  }
+  #declare segmentsRendered = segmentsRendered + 1; 
+  /* #warning concat("Rendering segment ",str(segmentsRendered,0,0)," with ID ",str(segid,0,0)," and distance ",str(dist,0,0)) */
+#end /* macro Segment */
   
-  
+
+#macro segment(segid, armid, maid, ep0,ep1,burger, dist)  
+  #if (AnimateGrow)
+	segmentGrowingAnimation(segid, armid, maid, ep0,ep1,burger, dist)  	
+  #else
+	#if (AnimateFuse)
+	  segmentFuseAnimation(segid, armid, maid, ep0,ep1,burger, dist)  
+	#end
+  #end
+#end
 /* cylinder { <7.316932e+03,8.636240e+03,4.983278e+03>, <7.307937e+03,8.640321e+03,4.951756e+03>, radius00 pigment { color cylindercolor00 transmit transmit00 } finish { finish00 } } */
 /* cylinder { <loc00,loc01,loc02>, <loc10,loc11,loc12>, myradius 
     pigment  { color makeintcolor(burger) transmit 0 } 
@@ -133,7 +196,7 @@ cylinder { ep0,ep1, CylinderRadius
 /* ================================================================ */
 /* Example:  makeMetaArm(5.0, 5, 12, array[2] { <1,1,2>, <3,4,5> }) */
 #macro makeMetaArm(marmID, mArmType, burgers, points)
-#declare shiny=0;
+#declare glowing=0;
   #declare last = dimension_size(points,1); 
   #declare index = 0; 
   #while (index < last - 1)
