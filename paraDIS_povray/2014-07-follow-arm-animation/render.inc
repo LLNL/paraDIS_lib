@@ -2,7 +2,20 @@
 #include "textures.inc"
 #include "strings.inc"
 #include "math.inc"
+#include "finish.inc"
 /*  #include "stereocam.inc" */
+
+global_settings {
+  ambient_light White
+    /* max_trace_level 15 */
+  #ifdef (Radiosity)
+	radiosity {}
+  #end
+}
+
+/*  background { color rgb 0.3*<0.8,0.8,1> } */
+background { 0.2*(0.333*Yellow + Brown) }
+
 
 #ifndef (AnimateFuse)
   #declare AnimateFuse = false; 
@@ -311,14 +324,6 @@ rgb <1.0,1.0,1.0>
 #declare finish08 = dullfinish
 
 
-global_settings {
-  ambient_light White
-    /* max_trace_level 15 */
-}
-
-/*  background { color rgb 0.3*<0.8,0.8,1> } */
-background { 0.2*(0.333*Yellow + Brown) }
-
 
 /* ========================================================= */
 /* CAMERA CAMERA CAMERA */
@@ -329,120 +334,108 @@ background { 0.2*(0.333*Yellow + Brown) }
 #declare ParaDIS_Size = ParaDIS_Bounds[1] - ParaDIS_Bounds[0]; 
 #declare ParaDIS_Center = ParaDIS_Bounds[0] + 0.5 * ParaDIS_Size;
 
-#declare L=8750;
-#declare LL = 2*L;
-#declare LLL = 3.5*L;
 #declare zero = 0.01;
-#declare near = L/2;
+#declare near = ParaDIS_Bounds[1].x/2;
 #declare cameraLocSpline =
 spline {
   natural_spline
     /*  Zoom in */
-    0.000,  <LLL, zero, 0.1>
-    0.167,  <LL, zero, 0.1>
-    0.333,  <LLL, zero, 0.1> 
+    0.000,  <3*ParaDIS_Bounds[1].x, ParaDIS_Center.y, 0.1>
+    0.167,  <2*ParaDIS_Bounds[1].x, ParaDIS_Center.y, 0.1>
+    0.333,  <3*ParaDIS_Bounds[1].x, ParaDIS_Center.y, 0.1> 
     
     /*  Waggle */
-    0.417,  <zero, zero, LLL>
-    0.500,   <LLL, zero, 0.1> 
-    0.583,  <zero, zero, LLL> 
-    0.667,  <LLL, zero, near> 
+    0.417,  <ParaDIS_Center.x,  ParaDIS_Center.y, 3*ParaDIS_Bounds[1].x>
+    0.500,   <3*ParaDIS_Bounds[1].x, ParaDIS_Center.y, 0.1> 
+    0.583,  <ParaDIS_Center.x,  ParaDIS_Center.y, 3*ParaDIS_Bounds[1].x> 
+    0.667,  <3*ParaDIS_Bounds[1].x, ParaDIS_Center.y, near> 
     
     /*  Flythrough */
-    0.833, <zero, 0.1, zero>
-    1, <0.1, LLL, 0.1>
+    0.833, <ParaDIS_Center.x,  0.1, ParaDIS_Center.z>
+    1, <0.1, 3*ParaDIS_Bounds[1].x, 0.1>
 }
 
 #declare cameraLookatSpline =
 spline {
     natural_spline
     /*  Zoom in */
-    0.000,  <zero, zero, 0>
+    0.000,  <ParaDIS_Center.x,  ParaDIS_Center.y, 0>
     /*  Waggle */
-    0.583,  <zero, zero, 0>
-    0.667,  <zero, zero, 0>
+    0.583,  <ParaDIS_Center.x,  ParaDIS_Center.y, 0>
+    0.667,  <ParaDIS_Center.x,  ParaDIS_Center.y, 0>
     /*  Flythrough */
-    0.833,  -L
-    1.000,  <zero, zero, 0>
+    0.833,  -ParaDIS_Bounds[1].x
+    1.000,  <ParaDIS_Center.x,  ParaDIS_Center.y, 0>
 }
 
+/* ========================================================== */
 #ifndef (cameraSpline)
   #declare cameraSpline = 0.0; 
 #end
 /*  DEBUGGING BY SHOWING THE CAMERA PATH FOR THE MOVIE */
 #ifdef (camPath)
-/*  Draw the camera path, camera vectors, and look at points. */
-#declare cameraPos = <zero, zero, 2*ff>; /*  view from Z */
-#declare cameraPos = <zero, 2*ff, zero>; /*  view from Y */
-#declasre cameraPos = <zero, 2*ff, zero>; /*   view from X */
-#declare cameraPos = 2*ff; /*   view from ZYX corner */
-#declare cameraLookAt = zero;
-#declare c=0;
-#while (c<=1)
-sphere { cameraLocSpline(c) 500 pigment { rgb<c,1,1> }}
-    #declare c=c+0.005;
-#end
-/*
-#declare c=0;
-#while (c<=1)
-    // sphere { cameraLocSpline(c) 1100 pigment { Red }} 
-    #declare p = cameraLocSpline(c);
-    #declare l = cameraLookatSpline(c);
-    #declare d=l-p;
-    #declare d=vnormalize(d);
-    cylinder { p p+d*20000 1100 pigment { Red*c } }
-    #declare c=c+0.10;
-    sphere { l 1100 pigment { Green*c }}
-#end
-*/
+  /*  Draw the camera path, camera vectors, and look at points. */
+  #declare cameraPos = <ParaDIS_Center.x,  ParaDIS_Center.y, 2*ff>; /*  view from Z */
+  #declare cameraPos = <ParaDIS_Center.x,  2*ff, ParaDIS_Center.z>; /*  view from Y */
+  #declasre cameraPos = <ParaDIS_Center.x,  2*ff, ParaDIS_Center.z>; /*   view from X */
+  #declare cameraPos = 2*ff; /*   view from ZYX corner */
+  #declare cameraLookAt = ParaDIS_Center;
+  #declare c=0;
+  #while (c<=1)
+	sphere { cameraLocSpline(c) 500 pigment { rgb<c,1,1> }}
+	#declare c=c+0.005;
+  #end
+  /*
+  #declare c=0;
+  #while (c<=1)
+  // sphere { cameraLocSpline(c) 1100 pigment { Red }} 
+  #declare p = cameraLocSpline(c);
+  #declare l = cameraLookatSpline(c);
+  #declare d=l-p;
+  #declare d=vnormalize(d);
+  cylinder { p p+d*20000 1100 pigment { Red*c } }
+  #declare c=c+0.10;
+  sphere { l 1100 pigment { Green*c }}
+  #end
+  */
 #else /*  not (camPath) */
-   #declare cameraPos = cameraLocSpline(cameraSpline);
-   #declare cameraLookAt = cameraLookatSpline(cameraSpline);
-
+  #declare cameraPos = cameraLocSpline(cameraSpline);
+  #declare cameraLookAt = cameraLookatSpline(cameraSpline);
+  
   #declare cameraPos = ParaDIS_Center + <0,0,1.6*ParaDIS_Size.z> ;
   #declare cameraLookAt = ParaDIS_Center; 
 #end
 
-#macro wormAxes (axisLocation, axisSize, axisDiameter) 
-/*  red/cyan is X */
-cylinder {axisLocation, axisLocation+x*axisSize, axisDiameter pigment {color Red  } finish { brightfinish }}
-cylinder {axisLocation-x*axisSize, axisLocation, axisDiameter pigment {color White-Red } finish { brightfinish }}
-/*  white/black is Y */
-cylinder {axisLocation, axisLocation+y*axisSize, axisDiameter pigment {color White} finish { brightfinish }}
-cylinder {axisLocation-y*axisSize, axisLocation, axisDiameter pigment {color Black} finish { brightfinish }}
-/*  blue/yellow is Z */
-cylinder {axisLocation, axisLocation+z*axisSize, axisDiameter pigment {color Blue } finish { brightfinish }}
-cylinder {axisLocation-z*axisSize, axisLocation, axisDiameter pigment {color White-Blue } finish { brightfinish }}
-#end
-#ifdef (axes)
-/*  place a large sphere at the primary axis center */
-/*sphere {cameraLookAt, 500   
-    pigment {color Orange } finish { brightfinish }
-    }*/
-sphere {zero, 500   
-    pigment {color Red } finish { brightfinish }
-}
-wormAxes (zero, L, 100)
-/*  make secondary axes */
-#declare zz=0;
-#while (zz <= L/2)
-#declare yy=0;
-#while (yy <= L/2)
-#declare xx=0; 
-#while (xx <= L/2) 
-     wormAxes(<xx,yy,zz>,L/2, 100)
-#declare xx=xx+L/2;
-#end
-#declare yy=yy+L/2;
-#end
-#declare zz=zz+L/2;
+/* ========================================================== */
+#macro MakeAxes (axisLocation, axisLength, axisDiameter) 
+  /*  red/cyan is X */
+  cylinder {axisLocation, axisLocation+x*axisLength, axisDiameter pigment {color Red  } finish { brightfinish }}
+  cylinder {axisLocation-x*axisLength, axisLocation, axisDiameter pigment {color White-Red } finish { brightfinish }}
+  /*  green/opposite is Y */
+  cylinder {axisLocation, axisLocation+y*axisLength, axisDiameter pigment {color Green} finish { brightfinish }}
+  cylinder {axisLocation-y*axisLength, axisLocation, axisDiameter pigment {color White-Green} finish { brightfinish }}
+  /*  blue/yellow is Z */
+  cylinder {axisLocation, axisLocation+z*axisLength, axisDiameter pigment {color Blue } finish { brightfinish }}
+  cylinder {axisLocation-z*axisLength, axisLocation, axisDiameter pigment {color White-Blue } finish { brightfinish }}
 #end
 
-#end /* ifdef(axes) */
+/* ========================================================== */
+#ifdef (DoAxes)
+  #if (DoAxes)
+	/*  place a large sphere at the primary axis center */
+	/*sphere {cameraLookAt, 500   
+  pigment {color Orange } finish { brightfinish }
+  }*/
+	sphere {ParaDIS_Center, 300   
+	  pigment {color Red } finish { brightfinish }
+	}
+	MakeAxes (ParaDIS_Center, ParaDIS_Size.x/2.0, 100)
+  #end
+#end /* ifdef(DoAxes) */
 
 
 /* get our bearings by putting an axis marker at the look-at point */
-/* wormAxes (<zero,zero,zero>, L, 500) */
+/* wormAxes (<ParaDIS_Center.x, ParaDIS_Center.y, ParaDIS_Center.z>, L, 500) */
 
 camera {     
   /*   orthographic */
@@ -469,12 +462,12 @@ light_source {
 
 /*  "remote light"  */
 /* #declare lightPos = cameraLookAt+<2000,-5000,50000>; */
-#declare remoteLightPos = (<-L,-L,0>);
+#declare remoteLightPos = (<ParaDIS_Bounds[0].x, ParaDIS_Bounds[0].y, 0>);
 light_source {
   remoteLightPos
   color 2*White
     area_light
-  L*<1, 0, 0> L*<0, 0, 1> 40 40
+  <ParaDIS_Bounds[1].x, 0, 0>, <0, 0, ParaDIS_Bounds[1].z> 40 40
   circular
   adaptive 3
   jitter
@@ -515,7 +508,7 @@ light_source {
     }
 */
 /* which way is up to the camera? */
-/* cylinder {cameraPos, cameraPos+y*axisSize, axisSize/15 pigment { color Blue  } finish { brightfinish }} */
+/* cylinder {cameraPos, cameraPos+y*axisLength, axisLength/15 pigment { color Blue  } finish { brightfinish }} */
 
 /* light: */
 /*sphere {
@@ -551,81 +544,64 @@ light_source {
   cylinder { <x1,y0,z0>, <x1,y0,z1>, BoundsRadius texture { boundsTexture } }
   cylinder { <x1,y1,z0>, <x1,y1,z1>, BoundsRadius texture { boundsTexture } }
 #end
-setbounds(ParaDIS_Bounds[0].x, ParaDIS_Bounds[1].x, ParaDIS_Bounds[0].y, ParaDIS_Bounds[1].y, ParaDIS_Bounds[0].z, ParaDIS_Bounds[1].z)
+#ifndef (DoBounds)   
+  #declare DoBounds = 0; 
+#end
+#if (DoBounds)
+  setbounds(ParaDIS_Bounds[0].x, ParaDIS_Bounds[1].x, ParaDIS_Bounds[0].y, ParaDIS_Bounds[1].y, ParaDIS_Bounds[0].z, ParaDIS_Bounds[1].z)
+#end
 
-#ifdef (box)
-box {
-  -10*L, 10*L
-      pigment { color rgbf .2 }
-#ifdef (media)
-  hollow
-    interior {
-    media {
-    /* green */
-      scattering {1, color rgb 0.00001*<0.5, 1.0, 0.5> extinction 0}
-
-      /*   gray */
-      /* scattering {1, color rgb<0.000025,0.000025,0.000025> extinction 0} */
-      method 3
-	intervals 1
-	jitter 1.0
-        }
+/* #declare domedia = 1;  */
+#ifdef (domedia)
+  box {
+	10*ParaDIS_Bounds[0], 10*ParaDIS_Bounds[1]
+	pigment { color rgbf .2 }
+	hollow
+	interior {
+	  media {
+		/* green */
+		scattering {1, color rgb 0.00001*<0.5, 1.0, 0.5> extinction 0}
+		
+		/*   gray */
+		/* scattering {1, color rgb<0.000025,0.000025,0.000025> extinction 0} */
+		method 3
+		intervals 1
+		jitter 1.0
+	  }
+	}
   }
 #end
-}
-#end
 
-/* taken right out of TSB:  */
-/*
- #declare cameraPos = < 3455.9, -8267.48, -13395.4 > ;
- camera {     
- location cameraPos
- look_at LookAt
- angle 0.087/3.1415*360
- // added to switch handedness:
- right -x*1.33
- sky <0,-1,0>
- }
-*/
+
 /* ========================================================= */
 
 
-
-/*  draw three "walls" behind the data for aesthetics */
-#declare dL=L/1000; 
-#declare BackDrop = union {
-    box { <-L-dL,-L,-L>,<-L,L,L> }
-    box { <-L,-L-dL,-L>,<L,-L,L> }
-    box { <-L,-L,-L-dL>,<L,L,-L> }
-    
-    /* pigment {color rgb<1,1,0.5>}  */
-    /* pigment {checker rgb<1,1,0.5> rgb<0.9,0.9,0.8> transmit 0 scale 2000}  */
-    /*
-    pigment {
-        hexagon rgb<.8,1,.8> rgb<.8,.8,1> Gray50 scale 2000
-        rotate <45,45,0>
-    } */
-/*  pigment { boxcolor } */
-pigment /*{ color 0.5* (0.2*Blue + 0.8* Yellow + Tan) }*/
-  { rgb 0.7 }
-    normal { bumps 0.1 scale 500 }
-    finish { phong 0 metallic } 
-};
-#ifdef (backdrop)
-BackDrop
+/*  draw five "walls" behind the data for aesthetics */
+#ifdef (Backdrop)
+  #if (Backdrop) 
+	object {
+	  merge {
+		box { ParaDIS_Bounds[0] - 0.0001 * ParaDIS_Size.x * x, 	  
+		  ParaDIS_Bounds[0] + <0, ParaDIS_Size.y, ParaDIS_Size.z> }
+		box { ParaDIS_Bounds[0] - 0.0001 * ParaDIS_Size.y * y, 
+		  ParaDIS_Bounds[0] + <ParaDIS_Size.x, 0, ParaDIS_Size.z> }
+		box { ParaDIS_Bounds[0] - 0.0001 * ParaDIS_Size.z * z, 
+		  ParaDIS_Bounds[0] + <ParaDIS_Size.x, ParaDIS_Size.y, 0> }
+		
+		box { ParaDIS_Bounds[1] + 0.0001 * ParaDIS_Size.x * x, 
+		  ParaDIS_Bounds[1] - <0, ParaDIS_Size.y, ParaDIS_Size.z> }
+		box { ParaDIS_Bounds[1] + 0.0001 * ParaDIS_Size.y * y, 
+		  ParaDIS_Bounds[1] - <ParaDIS_Size.y, 0, ParaDIS_Size.z> }
+		pigment 
+		{ rgb 0.7 }
+		normal { bumps 0.1 scale 500 }
+		finish { phong 0 metallic }
+		
+	  }
+	  scale 2
+	}
+  #end
 #end
-
-/*
-#declare SlicePlane = union {
-    box { <dL,-L,-L>,<0,L,L> }
-    box { <dL,-L,-L>,<0,L,L> rotate y*90}
-    box { <dL,-L,-L>,<0,L,L> rotate z*90}
-    pigment {color rgb<0.7,1,1> transmit 0.5} 
-    finish { phong 1 metallic } 
-};
-*/
- 
-#declare num=1; 
    
 /*  this is provided to give you something to set AdditionItems01 to if needed */
 #declare invisibleSphere = sphere {
@@ -635,7 +611,7 @@ BackDrop
 
 #declare AdditionItems01 = invisibleSphere; 
 
-#ifdef (fog)
+#ifdef (dofog)
 fog {
     /* distance 55000 */
     distance 30000  /*  For stereo */

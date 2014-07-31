@@ -14,7 +14,7 @@ wdir=`dirname $0`
 cd $wdir
 echo; echo; echo beginning $0; echo; echo
 
-if [ "$1" == "-quick" ] || [ "$1" == "-q" ]; then 
+if [ "$1" == "--quick" ] || [ "$1" == "-q" ]; then 
 	quick=true
 	shift
 else
@@ -73,30 +73,32 @@ outdir=${outdir:-.}
 logfile=$outdir/logistics/${basename}_${frame}.log
 mkdir -p $outdir/{logistics,images}
 if [ $numprocs -gt 1 ]; then 
-	echo "output is going to $logfile"
+	echo "output for processor $procnum on host $(uname -n) is going to $logfile"
 	exec >& $logfile
 fi
 
 inifile=$outdir/logistics/${basename}_${frame}.ini 
 outfile=$outdir/images/${basename}_${frame}.png  
-declfile="${basename}-decl.pov"
-objfile="${basename}-obj.pov"
+declfile="${declfile:-${basename}-decl.pov}"
+objfile="${objfile:-${basename}-obj.pov}"
 # copy the pov files into a uniquely named input file for posterity
 # unique to each processor to avoid corruption
 for name in objfile declfile; do
-	eval cp \$$name $outdir/logistics/\$${name}-proc$procnum
-	eval ${name}=$outdir/logistics/\$${name}-proc$procnum
+	if [ ! -f $outdir/logistics/\$${name}-proc$procnum ]; then 
+		eval cp \$$name $outdir/logistics/\$${name}-proc$procnum
+		eval ${name}=$outdir/logistics/\$${name}-proc$procnum
+	fi
 done
 
 
 display=${display:-On}
 segdistance=${segdistance:-0}
-animatefuse=${animatefuse:-0}
+dofuse=${dofuse:-0}
 glowradius=${glowradius:-1}
-if [ "$animatefuse" != 0 ]; then 
-	animategrow=0
+if [ "$dofuse" != 0 ]; then 
+	doglow=0
 else 
-	animategrow=${animategrow:-0}
+	doglow=${doglow:-0}
 fi
 
 if $quick; then 
@@ -112,22 +114,22 @@ for thing in basename frame declfile objfile outdir logfile inifile outfile; do
 	eval echo $thing is '\"$'$thing'\"'
 done
 
-# if [ "${segdistance}" -gt 0 ]; then 
-# 	animatefuse=1
-# fi
-
 	
 povfile=$outdir/logistics/${basename}-${frame}-combined.pov
 cat ${declfile} render.inc ${objfile} > $povfile
 
+# tmpfile=$(mktemp -u)
 cat <<EOF >$inifile
 Antialias=$antialias
-;; Antialias_Threshold=0.2
+Antialias_Threshold=0.2
 Declare=debug=$debug
 Declare=BoundsRadius=${boundsradius:-50}
 Declare=SegmentRadius=${segradius:-50}
-Declare=AnimateFuse=${animatefuse}
-Declare=AnimateGrow=${animategrow}
+Declare=AnimateFuse=${dofuse}
+Declare=AnimateGrow=${doglow}
+Declare=Backdrop=${backdrop:-0}
+Declare=DoAxes=${doaxes:-0}
+Declare=DoBounds=${dobounds:-1}
 Declare=GlowRadius=${glowradius}
 Declare=SegmentDistance=${segdistance}
 Declare=Shadows=1
@@ -140,7 +142,7 @@ Output_File_Name=${outfile}
 Output_File_Type=n
 Pause_when_done=On
 Preview_Start_Size=64
-Quality=$quality
+Quality=${quality:-9}
 Sampling_Method=2
 Start_Row=0.0
 Video_Mode=1
@@ -153,4 +155,5 @@ cat $inifile
 
 povray $inifile
 
+mv $tmpfile $outfile
 echo render complete
