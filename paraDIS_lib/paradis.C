@@ -239,8 +239,8 @@ double AngularDifference(vector<float>v1, vector<float>v2, double v1Length=-1, d
   and a set of VTK files.
   File created: basename.txt, basename.vtk
 */ 
-namespace paraDIS {
 
+namespace paraDIS {
   //===========================================================================
   vector<MinimalNode> MinimalNode::mMinimalNodes;
 
@@ -340,11 +340,15 @@ namespace paraDIS {
 
     // next, the points
     vector<FullNode *>nodes;
-    vector<uint32_t>numArmNodes;
+	vector<ArmSegment *>segments; 
+    vector<uint32_t>numArmNodes, numArmSegments;
     for (uint32_t arm = 0; arm < arms.size(); arm++) {
       vector<FullNode *> armnodes = arms[arm]->GetNodes();
       numArmNodes.push_back(armnodes.size());
-      nodes.insert(nodes.end(), armnodes.begin(), armnodes.end());
+      nodes.insert(nodes.end(), armnodes.begin(), armnodes.end());	
+	  vector<ArmSegment *> armsegs = arms[arm]->GetSegments(); 
+	  numArmSegments.push_back(armsegs.size()); 
+	  segments.insert(segments.end(), armsegs.begin(), armsegs.end()); 
     }
     uint32_t armnum = 0, armnode = 0;
     vector<float> previous;
@@ -432,6 +436,16 @@ namespace paraDIS {
       }
       for (uint32_t nodenum = 0; nodenum < numArmNodes[arm]-1; nodenum++) {
         vtkfile << armdepths[arm] << " " ;
+      }
+    }
+    vtkfile << endl << endl;
+
+    // next the segment IDs for each line
+    vtkfile << "SCALARS segment_ID int" << endl;
+    vtkfile << "LOOKUP_TABLE default" << endl;
+    for (uint32_t arm = 0; arm < arms.size(); arm++) {
+      for (uint32_t nodenum = 0; nodenum < numArmSegments[arm]-1; nodenum++) {
+        vtkfile << segments[arm]->GetID() << " " ;
       }
     }
     vtkfile << endl << endl;
