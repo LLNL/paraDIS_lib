@@ -32,11 +32,16 @@ PARADISLIB = $(CWD)/$(SYS_TYPE)/lib/libparadis.a
 RCCLIB=$(INSTALL_DIR)/lib/librcc.a 
 RCCPPLIB=$(INSTALL_DIR)/lib/librccpp.a 
 TARGETS = $(CWD)/$(SYS_TYPE)/bin/paradisTest $(CWD)/$(SYS_TYPE)/bin/paradisStreamingTest $(CWD)/$(SYS_TYPE)/bin/analyzeParaDIS
+SOURCES = analyzeParaDIS.C  paradis.h paradisStreaming.h paradisTest.C paradis_c_interface.h paradis.C paradisStreaming.C  paradisStreamingTest.C  paradis_c_interface.C  paradis_types.h  
 
-all: $(TARGETS)
+all: timestamp $(TARGETS)
 
 debug:
 	DEBUG=-g $(MAKE) all
+
+timestamp: $(SOURCES)
+	setversion.sh --timestamp
+	date > timestamp
 
 install: all
 	mkdir -p $(INSTALL_DIR)/bin && cp $(TARGETS) $(INSTALL_DIR)/bin
