@@ -42,6 +42,8 @@ int main(int argc, char *argv[]) {
 
   TCLAP::SwitchArg povrayfileFlag("P", "povray-file", "export results to PovRay file for visualization and other analysis", cmd); 
 
+  TCLAP::ValueArg<int> povrayfuseFlag("", "povray-fuse", "include \"light the fuse\" (BFS distance from a node) calculateion from given node", false, -1, "nodenum", cmd); 
+
   TCLAP::ValueArg<int> numbins("n", "numbins", "during report, divide total arms into num bins by length and report on the total length in each bin", false, 0, "integer", cmd); 
 
   TCLAP::ValueArg<double> screwToleranceAngle("t", "screw-tolerance", "The allowed angular deviation in screw determination.  Default: 0.05", false, (0.05), "float", cmd); 
@@ -82,12 +84,11 @@ int main(int argc, char *argv[]) {
     if (versionNumber.getValue()) {
       cout << GetLibraryVersionNumberString() << endl; 
       exit(0);
-    } else {
-      cout << GetLibraryVersionString(argv[0]) << endl; 
     }
 
     if (doc.getValue()) {
-      cerr << paraDIS::doctext << endl; 
+	  cerr << GetLibraryVersionString(argv[0]) << endl;
+	  cerr << paraDIS::doctext << endl; 
       exit(0);
     }
 
@@ -99,6 +100,7 @@ int main(int argc, char *argv[]) {
     bool povrayfile = povrayfileFlag.getValue(); 
     bool vtkfile = vtkfileFlag.getValue(); 
     bool summary = summaryFlag.getValue(); 
+	bool povrayfuse = (povrayfuseFlag.getValue() != -1); 
 
     if (fullout.getValue()) {
       debugfiles = true; 
@@ -106,6 +108,7 @@ int main(int argc, char *argv[]) {
       tagfile = true;
       vtkfile = true; 
       // jsonfile = true; // very slow on large files
+      // povrayfuse = true; // very slow on large files
       povrayfile = true; 
       summary = true; 
       if (verbosity == -1) {
@@ -165,12 +168,17 @@ int main(int argc, char *argv[]) {
       gDataSet->EnableTagFileOutput(tagfile); 
       gDataSet->EnableVTKFileOutput(vtkfile); 
       gDataSet->EnablePovRayFileOutput(povrayfile); 
+	  gDataSet->EnablePovRayFuseCalc(povrayfuse); 
+	  if (povrayfuseFlag.getValue() != -1 ) {
+		gDataSet->SetInitialLightTheFuseSegment(povrayfuseFlag.getValue()); 
+	  }
       gDataSet->EnableJSONFileOutput(jsonfile); 
       
       if (verbosity) {
         gDataSet->SetVerbosity(verbosity, fileout); 
-        fprintf(stderr, "Writing verbose output at level %d to file %s/%s\n", verbosity, outdir.c_str(), fileout.c_str()); 
+        dbecho(0, str(boost::format("Writing verbose output at level %d to file %s/%s\n")% verbosity % outdir % fileout).c_str()); 
       }
+	  dbecho(0, (GetLibraryVersionString(argv[0])+"\n").c_str()); 
       gDataSet->SetThreshold(threshold.getValue());
       
       gDataSet->SetScrewToleranceAngle(screwToleranceAngle.getValue()); 

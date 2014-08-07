@@ -28,7 +28,7 @@ int main(int argc, char *argv[]) {
     rclib::Point<float> datamin, datamax; 
     paraDIS::DataSet dsData; 
 
-    char *datafile = "../paraDIS_data/rs0443.data";
+    char *datafile = (char*)"../paraDIS_data/rs0443.data";
     if (*inputfile) datafile = inputfile; 
 
     dsData.SetProcNum(procnum,numprocs); 
