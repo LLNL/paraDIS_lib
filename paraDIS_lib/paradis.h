@@ -60,6 +60,8 @@ void dbstream_printf(int level, const char *fmt, ...);
 std::string GetLibraryVersionString(const char *progname);
 std::string GetLibraryVersionNumberString(void);
 
+#define dbecho(level, msg) cerr << msg; dbprintf(level, string(msg).c_str())
+
 
 string BurgersTypeNames(int btype);
 string ArmTypeNames(int atype);
@@ -1876,7 +1878,15 @@ namespace paraDIS {
     void EnablePovRayFileOutput(bool tf=true) {
       mDoPovRayFiles = tf; 
     }
-     /*!
+
+    /*!
+      if this is true, then create tag file.  
+    */ 
+    void EnablePovRayFuseCalc(bool tf=true) {
+      mDoPovRayFuse = tf; 
+    }
+
+	/*!
       if this is true, then create tag file.  
     */ 
     void EnableJSONFileOutput(bool tf=true) {
@@ -2231,6 +2241,7 @@ s      Tell the data set which file to read
       mDoVTKFile = false; 
       mDoJSONFiles = false; 
       mDoPovRayFiles = false; 
+      mDoPovRayFuse = false; 
       mDoStats = false; 
       mDoSummaryFile = false; 
       mOutputDir = "./paradis-debug";
@@ -2429,9 +2440,14 @@ s      Tell the data set which file to read
     bool mDoVTKFile; 
 
     /*!
-      if this is true, then create JSON files at end of analysis.  
+      if this is true, then create Povray files at end of analysis.  
     */ 
     bool mDoPovRayFiles; 
+    /*!
+      if this is true, then compute "light the fuse" distances for povray output 
+    */ 
+    bool mDoPovRayFuse; 
+
     /*!
       if this is true, then create JSON files at end of analysis.  
     */ 

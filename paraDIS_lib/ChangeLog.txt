@@ -1,10 +1,11 @@
  
-2014-07-06: version 2.4.0
+2014-08-07: version 2.4.0 (tag "2.4.0")
 	   Added povray export
 	   Added JSON export
 	   Print segment IDs in tracefiles.  
 	   Added support for "Light the Fuse" animations ("fuse distance")
 	   Fix a bug stopping non-periodic data from working and added "ARM_BOUNDARY" type in support of this.  
+	   Fixed a bug for a tiny edge case when a decomposition step involves a detachment that then forms a loop in the arm to be decomposed, which was leading to a "source arm should never be a loop" abort() error.
 
 2014-06-05: version 2.3.6b
        Fixed a bug involving the decomposition of arms and tracing of wrapped segments that caused early termination on some data sets.  

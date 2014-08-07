@@ -60,7 +60,6 @@ void dbstream_printf(int level, const char *fmt, ...) {
   return;
 }
 #endif
-#define dbecho(level, msg) cerr << msg; dbprintf(level, string(msg).c_str())
 
 std::string GetLibraryVersionString(const char *progname) {
   return str(boost::format("%s: using paraDIS_lib version %s compiled on %s")% progname% RC_PARADIS_VERSION% RC_PARADIS_VERSION_DATE);
@@ -1474,7 +1473,9 @@ namespace paraDIS {
       return nodes;
 #endif
     }
-    
+	if (mArmID == 68928) {
+	  int donothing = 1; 
+	}
     dbprintf(6, "Arm::GetNodes(arm %d): startNode: %s\n", mArmID, startNode->Stringify().c_str()); 
     ArmSegment *startSegment = NULL;
     int segnum = mTerminalSegments.size();
@@ -1485,23 +1486,27 @@ namespace paraDIS {
     segnum = mTerminalSegments.size();
     while (!startSegment && segnum--) {
       int ep = 2;
+	  dbprintf(6, "Get rid of aliasing to avoid returning nodes that are not part of this arm but are wrapped.\n"); 
       while (ep--) {
-        /* Get rid of aliasing to avoid returning nodes that are not part of this arm but are wrapped.*/ 
         if (*(mTerminalSegments[segnum]->GetEndpoint(ep)) == *startNode) {
-          /* Also, catch the rare case that a terminal segment has an endpoint which matches the node ID of an endpoint of this arm, but is not the endpoint because of a Detach operation earlier.  (whew!)  This is done by making sure it is not an interior node with type 2. */
-          if ( mTerminalNodes.size() == 1 || mTerminalSegments[segnum]->GetEndpoint(ep)->GetNumNeighborSegments() != 2)  {
-            startSegment = mTerminalSegments[segnum];
-            
-            if (startNode != mTerminalSegments[segnum]->GetEndpoint(ep)) {
-              startNode = mTerminalSegments[segnum]->GetEndpoint(ep);
-              
-              dbprintf(6, "Arm::GetNodes(arm %d): changed startNode to %s\n", mArmID, startNode->Stringify().c_str()); 
-            }
-          }
-          else {
-            dbprintf(6, "Arm::GetNodes(arm %d): found terminal segment %d candidate node %d that matches startNode but does not appear to be a terminal node:  %s\n", mArmID, segnum, ep, mTerminalSegments[segnum]->GetEndpoint(ep)->Stringify().c_str());
-          }
-        }
+		  dbprintf(6, "Found terminal segment with matching endpoint to start node.\n"); 
+          /* NOTE: I am checking here to catch the rare case that a terminal segment has an endpoint which matches the node ID of an endpoint of this arm, but is not the endpoint because of a Detach operation earlier.  (whew!)  This is confusing.  */
+          if ( mTerminalSegments.size() == 1 || mTerminalNodes.size() == 1 || mTerminalSegments[segnum]->GetEndpoint(ep)->GetNumNeighborSegments() != 2 )   {
+			if (mTerminalSegments[segnum]->GetEndpoint(ep)->GetNumNeighborSegments() == 2) {
+			  dbprintf(0, "WARNING: Using startSegment that would have been skipped due to rule change in code.  This should be very rare.\n"); 
+			}
+			startSegment = mTerminalSegments[segnum];
+			
+			if (startNode != mTerminalSegments[segnum]->GetEndpoint(ep)) {
+			  startNode = mTerminalSegments[segnum]->GetEndpoint(ep);
+			  
+			  dbprintf(6, "Arm::GetNodes(arm %d): changed startNode to %s\n", mArmID, startNode->Stringify().c_str()); 
+			}
+		  }
+		  else {
+            dbprintf(6, "Arm::GetNodes(arm %d): WARNING:  found terminal segment %d candidate node %d that matches startNode but does not appear to be a terminal node:  %s\n", mArmID, segnum, ep, mTerminalSegments[segnum]->GetEndpoint(ep)->Stringify().c_str());
+		  } 
+		}
       }    
     }
     
@@ -1510,7 +1515,7 @@ namespace paraDIS {
     dbprintf(6, "Arm::GetNodes(arm %d):   lastNode: %s\n", mArmID, lastNode->Stringify().c_str()); 
     
     if (!startSegment) {
-      dbprintf(0, "Arm::GetNodes(arm %d): Cannot find matching terminal segment in arm for known good start node!  %s\n", mArmID, this->Stringify(0, false, false).c_str());
+      dbprintf(0, "Arm::GetNodes(arm %d): Cannot find matching terminal segment in arm for known good start node %s!  %s\n", mArmID, startNode->Stringify().c_str(), this->Stringify(0, false, false).c_str());
       errexit1;
     }
 
@@ -1730,6 +1735,7 @@ namespace paraDIS {
   }
   
   //===========================================================================
+  /* Detach ourselves from "node" and use "replacement" as a new interior node */ 
   void Arm::DetachAndReplaceNode(FullNode* node, FullNode *replacement) {
     node->RemoveNeighbor(this, true);
     replacement->AddNeighbor(this);
@@ -1751,23 +1757,25 @@ namespace paraDIS {
     dbprintf(4, str(boost::format("Arm::DetachLoopFromNode(arm %1%, node %2%)\n")%mArmID% node->GetNodeIDString()).c_str());
 
     if (node->GetNumNeighborArms() == 1) {
-      dbprintf(4, "Arm::DetachLoopFromNode(arm %d): the node to detach from only has us as a neighbor -- not detaching \n", mArmID);
+      dbprintf(4, "Arm::DetachLoopFromNode(arm %d): the node to detach from only has us as a neighbor -- nothing to detach from.\n", mArmID);
       return;
     }
     
-    dbprintf(5, str(boost::format("Arm::DetachAndFuse(arm %1%): Before detaching, the looped arm looks like this: %2%\n") % mArmID % Stringify(0, false)).c_str());
+    dbprintf(5, str(boost::format("Arm::DetachLoopFromNode(arm %1%): Before detaching, the looped arm looks like this: %2%\n") % mArmID % Stringify(0, false)).c_str());
     FullNode *replacement = new FullNode(*node, true); // skip neighbors
     dbprintf(4, "Arm::DetachLoopFromNode(arm %d): Created a duplicate node to serve as a new interior node for the fused arm. \n", mArmID);
     
 
     DetachAndReplaceNode(node, replacement);
     mTerminalNodes[0] = replacement;
-    dbprintf(5, str(boost::format("Arm::DetachAndFuse(arm %1%): After detaching, the looped arm looks like this: %2%\n") % mArmID % Stringify(0, false)).c_str());
+    dbprintf(5, str(boost::format("Arm::DetachLoopFromNode(arm %1%): After detaching, the looped arm looks like this: %2%\n") % mArmID % Stringify(0, false)).c_str());
 
     return;
   }
 
   //===========================================================================
+  /* Detach both arms from the node and create a new arm by fusing the two.  
+	 Extend this arm by the segments of the other and then delete the other. */
   void Arm::DetachAndFuse(FullNode *node, Arm *other) {
     dbprintf(4, str(boost::format("Arm::DetachAndFuse(arm %1%, node %2%, other %3%)\n")% mArmID% node->GetNodeIDString()% other->mArmID).c_str());
 
@@ -1851,11 +1859,6 @@ namespace paraDIS {
     mTerminalNodes[nodenum]->RemoveNeighbor(other);
     mTerminalNodes[nodenum]->AddNeighbor(this);
     
-    if (mTerminalNodes.size() == 2 && mTerminalNodes[0] == mTerminalNodes[1]) {
-      dbprintf(4, "Arm::DetachAndFuse(arm %d): After fusing, this arm has two identical terminal nodes, and therefore is a loop.  Need to remove one terminal node. \n", mArmID);
-      mTerminalNodes.pop_back();
-    }
-
     other->mTerminalNodes.clear();
     
     MakeAncestor(other);
@@ -1873,6 +1876,23 @@ namespace paraDIS {
     
     dbprintf(5, str(boost::format("Arm::DetachAndFuse(arm %1%): After fusing, this arm looks like this: %2%\n") % mArmID % Stringify(0, false)).c_str());
     dbprintf(5, str(boost::format("Arm::DetachAndFuse(arm %1%): After fusing, the other destroyed arm looks like this: %2%\n") % mArmID % other->Stringify(0, false)).c_str());
+
+    if (mTerminalNodes.size() == 2 && mTerminalNodes[0] == mTerminalNodes[1]) {
+	  FullNode *node =  mTerminalNodes[0]; 
+      dbprintf(4, "Arm::DetachAndFuse(arm %d): Before exiting and after fusing, I notice that this arm has two identical terminal nodes, and therefore is a loop.  The easiest thing here is to remove one terminal node and then just detach it from its neighbors. \n", mArmID);
+      mTerminalNodes.pop_back();
+	  DetachLoopFromNode(mTerminalNodes[0]); 
+	  if (node->GetNumNeighborSegments() == 2) {		
+		Arm *arm = node->GetNeighborSegment(0)->mParentArm, 
+		  *other = node->GetNeighborSegment(1)->mParentArm; 
+		if (arm != other) {
+		  dbprintf(4, "After detaching our loopy self from the node, here are two remaining arms as node neighbors of the node we detached from.  These need to be fused immediately.  Recursively calling DetachAndFuse before cleanup... \n"); 
+		  arm->DetachAndFuse(node, other); 
+		}
+	  }
+    }
+
+
     return;
   }
 
@@ -2009,27 +2029,25 @@ namespace paraDIS {
       mTerminalNodes.push_back(sharedNode);
     }
 
-    /*if (mNumSegments == 1 && mTerminalSegments.size() == 1) {
-      dbprintf(5, "ExtendByArm(%d): Single segment arm:  duplicate our terminal segment.\n", mArmID);
-      mTerminalSegments.push_back(mTerminalSegments[0]);
-      }*/
-
-    if (/* mTerminalSegments.size() != 2 || */ mTerminalNodes.size() != 2) {
+    if ( mTerminalNodes.size() != 2) {
       dbprintf(0, "ExtendByArm(%d): Error: arm with a single terminal node should not be possible at this point.\n", mArmID);
       errexit;
     }
 
     bool sourceIsLoop = (sourceArm->mTerminalNodes.size() == 1);
     if (sourceIsLoop) {
-      dbprintf(0, "ExtendByArm(%d): ERROR: Source should never be a loop\n", mArmID);
-      errexit;
+	  dbprintf(0, "ExtendByArm(%d): ERROR:  Source arm %d is a loop but the source arm should never be a loop.\n", mArmID, sourceArm->mArmID);
+	  errexit; 
+	  /*	  dbprintf(0, "ExtendByArm(%d):  Source arm %d is a loop.  Duplicating its terminal node and copying its segments twice.\n", mArmID, sourceArm->mArmID); 
+		sourceArm->mTerminalNodes.push_back(sourceArm->mTerminalNodes[0]); 
+	  */ 
     }
-    if (!isLoop /* && !sourceIsLoop */ ) {
+    if (!isLoop) {
       dbprintf(5, "ExtendByArm(%d): CASE 1: no loops: extend by source once.\n", mArmID);
       ExtendBySegments(sourceArm, sourceSegments, sharedNode, numDuplicates);
     }
     else /* if (isLoop && !sourceIsLoop) */  {
-      dbprintf(5, "ExtendByArm(%d): CASE 2: Extending a loop by a non-loop: extend by source twice.\n", mArmID);
+      dbprintf(5, "ExtendByArm(%d): CASE 2: This arm is a loop, extend by source twice.\n", mArmID);
       ExtendBySegments(sourceArm, sourceSegments, sharedNode, numDuplicates);
       ExtendBySegments(sourceArm, sourceSegments, sharedNode, numDuplicates);
     }
@@ -2095,11 +2113,10 @@ namespace paraDIS {
 
     vector<int> allNeighborArmIDs;
     dbprintf(5, "\n================================================================\n Arm::Decompose(energy %d, arm %d): Found arm : %s\n", energy, mArmID, Stringify(0, false).c_str());
-
+	
     // First, mark cross arms for debug output
-    mTerminalNodes[0]->IdentifyCrossArms();
-    if (mTerminalNodes.size() == 2) {
-      mTerminalNodes[1]->IdentifyCrossArms();
+	for (uint32_t n = 0; n<mTerminalNodes.size(); n++) {
+      mTerminalNodes[n]->IdentifyCrossArms();
     }
 
     WriteTraceFiles("1-before-detachment");
@@ -5280,7 +5297,7 @@ namespace paraDIS {
 
 	while (SegmentLayers[currentLayer].size()) {
 	  UPDATEPROGRESS(segnum, numsegs, str(boost::format("Computing light the fuse distances on layer %d.")%currentDistance)); 
-SegmentLayers[1-currentLayer].clear(); 
+	  SegmentLayers[1-currentLayer].clear(); 
 	  for (vector<ArmSegment*>::iterator segpos = SegmentLayers[currentLayer].begin(); 
 		   segpos != SegmentLayers[currentLayer].end(); segpos++) {
 		ArmSegment *seg = *segpos;
@@ -5294,6 +5311,7 @@ SegmentLayers[1-currentLayer].clear();
 			  ArmSegment *neighbor = seg->SwitchToWrappedDouble(ep, &dummy, NULL); 
 			  if (neighbor && !neighbor->mLightTheFuseDistance) {
 				SegmentLayers[1-currentLayer].push_back(neighbor); 
+				segnum++; 
 			  }
 			} 
 			else {
@@ -5301,6 +5319,7 @@ SegmentLayers[1-currentLayer].clear();
 				ArmSegment *neighbor = ep->GetNeighborSegment(n); 
 				if (neighbor && !neighbor->mLightTheFuseDistance) {
 				  SegmentLayers[1-currentLayer].push_back(neighbor); 
+				  segnum++; 
 				}
 			  }
 			} // 
@@ -5514,8 +5533,9 @@ SegmentLayers[1-currentLayer].clear();
 
       TagNodes(); // for Meijie
 
-	  SetInitialLightTheFuseSegment(); 
-	  ComputeLightTheFuseSegmentDistances(); 
+	  if (mDoPovRayFuse) {
+		ComputeLightTheFuseSegmentDistances(); 
+	  }
 
       if (mDoDebugOutput) {
         DebugPrintMetaArms();
