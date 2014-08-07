@@ -1,5 +1,5 @@
  
-2014-08-07: version 2.4.0 (tag "Version 2.4.0")
+2014-08-07: version 2.4.0 (tag "v2.4.0")
 	   Added povray export
 	   Added JSON export
 	   Print segment IDs in tracefiles.  
