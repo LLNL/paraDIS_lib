@@ -31,8 +31,8 @@ USER_CXXFLAGS+=$(INCLUDES) -DNO_SETBUF
 PARADISLIB = $(CWD)/$(SYS_TYPE)/lib/libparadis.a
 RCCLIB=$(INSTALL_DIR)/lib/librcc.a 
 RCCPPLIB=$(INSTALL_DIR)/lib/librccpp.a 
-TARGETS = $(CWD)/$(SYS_TYPE)/bin/paradisTest $(CWD)/$(SYS_TYPE)/bin/paradisStreamingTest $(CWD)/$(SYS_TYPE)/bin/analyzeParaDIS
-SOURCES = analyzeParaDIS.C  paradis.h paradisStreaming.h paradisTest.C paradis_c_interface.h paradis.C paradisStreaming.C  paradisStreamingTest.C  paradis_c_interface.C  paradis_types.h  
+TARGETS = $(CWD)/$(SYS_TYPE)/bin/analyzeParaDIS $(CWD)/$(SYS_TYPE)/bin/paradisTest $(CWD)/$(SYS_TYPE)/bin/paradisStreamingTest 
+SOURCES = analyzeParaDIS.C  paradis.h paradisStreaming.h paradis.C paradisTest.C paradis_c_interface.h paradisStreaming.C  paradisStreamingTest.C  paradis_c_interface.C  paradis_types.h  
 
 all: timestamp $(TARGETS)
 
@@ -56,16 +56,22 @@ install-debug:
 libparadis: $(PARADISLIB) 
 
 $(SYS_TYPE)/paradis.o: paradis.C
+	@echo; echo '***************************************'; echo 
 	$(CXX)  $(CXXFLAGS) -c -o $@ -DUSE_ABORT=1 $<
 	@echo DONE WITH $@
+	@echo; echo '***************************************'; echo 
 
 $(SYS_TYPE)/paradisStreaming.o: paradisStreaming.C
+	@echo; echo '***************************************'; echo 
 	$(CXX)  $(CXXFLAGS) -c -o $@  $<
 	@echo DONE WITH $@
+	@echo; echo '***************************************'; echo 
 
 $(SYS_TYPE)/paradis_c_interface.o: paradis_c_interface.C
+	@echo; echo '***************************************'; echo 
 	$(CXX)  $(CXXFLAGS) -c -o $@  $<
 	@echo DONE WITH $@
+	@echo; echo '***************************************'; echo 
 
 
 $(PARADISLIB): $(RCCLIB) $(RCCPPLIB) $(SYS_TYPE)/paradis_c_interface.o  $(SYS_TYPE)/paradis.o $(SYS_TYPE)/paradisStreaming.o 
@@ -81,12 +87,16 @@ $(CWD)/$(SYS_TYPE)/bin/paradisTest: $(SYS_TYPE)/paradisTest.o $(PARADISLIB)
 
 $(CWD)/$(SYS_TYPE)/bin/analyzeParaDIS: $(SYS_TYPE)/analyzeParaDIS.o $(PARADISLIB)  $(RCCLIB)
 	[ -d $(SYS_TYPE)/bin ] || mkdir -p $(SYS_TYPE)/bin
+	@echo; echo '***************************************'; echo 
 	$(LD) -o $@ $(LDFLAGS)  $^ $(ELECTRIC_FENCE)
+	@echo; echo '***************************************'; echo 
 
 
 $(CWD)/$(SYS_TYPE)/bin/paradisStreamingTest: $(SYS_TYPE)/paradisStreamingTest.o $(PARADISLIB)  $(RCCLIB)
 	[ -d $(SYS_TYPE)/bin ] || mkdir -p $(SYS_TYPE)/bin
+	@echo; echo '***************************************'; echo 
 	$(LD) -o $@ $(LDFLAGS)  $^ $(ELECTRIC_FENCE)
+	@echo; echo '***************************************'; echo 
 
 .DUMMY: 
 
