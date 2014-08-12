@@ -328,18 +328,19 @@ namespace paraDIS {
       dbprintf(1, "%s\n", errmsg.c_str());
       return;
     }
-
+	
     // First, the header
     vtkfile << "# vtk DataFile Version 3.0" << endl;
     vtkfile << filename + ", written by paraDIS_lib. If action = 2, that's the arm being decomposed.  If action = 1, then it's the arm being extended. Else action = 0.  mBounds are " << Node::mBoundsSize.Stringify() << endl;
     vtkfile << "ASCII" << endl;
     vtkfile << "DATASET POLYDATA" << endl;
-
+	
     // next, the points
+    int numlines = 0; 
     vector<Node *>nodes;
 	vector<ArmSegment *>segments; 
     vector<uint32_t>numArmNodes, numArmSegments;
-   for (uint32_t arm = 0; arm < numArms; arm++) {
+	for (uint32_t arm = 0; arm < numArms; arm++) {
       vector<Node *> armnodes;
 	  vector<ArmSegment *> armsegs; 
 	  arms[arm]->GetNodesAndSegments(NULL, &armnodes, &armsegs);
@@ -356,6 +357,7 @@ namespace paraDIS {
 		numsegs = armsegs.size() - arms[arm]->mNumWrappedSegments; 
 	  }
 	  numArmSegments.push_back(numsegs); 
+	  numlines += numsegs; 
 	  segments.insert(segments.end(), armsegs.begin(), armsegs.end()); 
     }
     uint32_t armnum = 0, armnode = 0;
@@ -391,7 +393,6 @@ namespace paraDIS {
     vtkfile << endl;
 
     // next the lines
-    int numlines = nodes.size() - numArms;
     vtkfile << str(boost::format("LINES %d %d") % numlines % (3*numlines)) << endl;
     uint32_t currentIndex = 0;
     for (uint32_t arm = 0; arm < numArms; arm++) {
@@ -899,7 +900,7 @@ namespace paraDIS {
 	if (mParentArm) {
 	  parentID = str(boost::format("%1%") % mParentArm->mArmID);
 	}
-    string s = str(boost::format("ArmSegment at %1%, number %2%, %3%, parentArm %4%, fuse distance %5%\n")% this % mSegmentID % ((int)mBurgersType) % parentID % mLightTheFuseDistance); 
+    string s = str(boost::format("ArmSegment at %1%, number %2%, %3%, wrapped = %4%, parentArm %5%, fuse distance %6%\n")% this % mSegmentID % ((int)mBurgersType) % ((int)mWrapped) % parentID % mLightTheFuseDistance); 
 
     uint32_t epnum = 0;
     while (epnum < 2) {
@@ -1245,7 +1246,7 @@ namespace paraDIS {
   
   //===========================================================================
   double Arm::ComputeLength(void) {
-    if (!mNumSegments) {
+    if (!mNumNormalSegments) {
       mArmLength = 0;
     }
 
@@ -1324,39 +1325,47 @@ namespace paraDIS {
 		dbprintf(6, "Arm::GetNodesAndSegments(arm %d): pushed back WRAPPED (null) node\n", mArmID );
 	  }
 	}
+
+	/* Push back in a loop until the end node is found: 
+	   A. next segment, 
+	   B. possible wrapped node, 
+	   C. next node
+	*/
 	while (true) {
 	  if (outsegs) {
 		outsegs->push_back(currentSegment); // even if wrapped!  
 		dbprintf(6, "Arm::GetNodesAndSegments(%d): pushed back segment: %s\n", mArmID, currentSegment->Stringify(0).c_str() );
+	  }
+	  if (outnodes && currentSegment->mWrapped) {
+		outnodes->push_back(NULL); 
+		dbprintf(6, "Arm::GetNodesAndSegments(arm %d): pushed back WRAPPED (null) node\n", mArmID );
 	  }
 	  currentNode = currentSegment->GetOtherEndpoint(currentNode); 
 	  dbprintf(6, "Arm::GetNodesAndSegments(arm %d): next node: %s\n", mArmID, currentNode->Stringify(0,true).c_str());
 	  if (outnodes) {
 		dbprintf(6, "Arm::GetNodesAndSegments(arm %d): pushing back node: %s\n", mArmID, currentNode->Stringify(0,true).c_str());
 		outnodes->push_back(currentNode); 
-		if (currentSegment->mWrapped) {
-		  outnodes->push_back(NULL); 
-		  dbprintf(6, "Arm::GetNodesAndSegments(arm %d): pushed back WRAPPED (null) node\n", mArmID );
-		}
 	  }
-	  currentSegment = currentNode->GetOtherNeighbor(currentSegment); 
 	  string segstring = "(NULL)"; 
-	  if (currentSegment) {
+	  if (currentNode->mNeighborSegments.size() == 2 && currentNode != endNode) {
+		currentSegment = currentNode->GetOtherNeighbor(currentSegment); 
 		segstring = currentSegment->Stringify(0); 
-	  }
-	  dbprintf(6, "Arm::GetNodesAndSegments(arm %d): next segment: %s\n", mArmID, segstring.c_str());
-	  if (currentNode == endNode || !currentSegment) {
-		dbprintf(6, "Arm::GetNodesAndSegments(arm %d): found final node.\n", mArmID);
-		break; 
+		if (!currentSegment) {
+		  dbprintf(0, "Arm::GetNodesAndSegments(arm %d): unable to find next segment with currentNode.mNeighborSegments.size() == 2.\n", mArmID);
+		  errexit;
+		}
+	  } 
+	  else {
+		dbprintf(6, "Arm::GetNodesAndSegments(arm %d): I think I found end node.\n", mArmID, currentNode->mNeighborSegments.size());
+		break; 	  
 	  }
 	}
 	if (currentNode != endNode) {
 	  dbprintf(0, "Arm::GetNodesAndSegments(%d): ERROR: Last node found is not the endNode.\n", mArmID);
 	  errexit;
 	}
-	
-	int numnodes = outnodes ?  outnodes->size() : 0, numsegs = outsegs ? outsegs->size() : 0; 
-	dbprintf(5, " Arm::GetNodesAndSegments(arm %d): finished.  Returning %d nodes and %d segments.  mNumSegments is %d and mNumWrappedSegments is %d\n", mArmID, numnodes, numsegs, mNumSegments, mNumWrappedSegments);   
+	int numnodes = outnodes ?  outnodes->size() : -1, numsegs = outsegs ? outsegs->size() : -1; 
+	dbprintf(5, " Arm::GetNodesAndSegments(arm %d): finished.  Returning %d nodes and %d segments.  mNumNormalSegments is %d and mNumWrappedSegments is %d\n", mArmID, numnodes, numsegs, mNumNormalSegments, mNumWrappedSegments);   
     return;
   }
 
@@ -1370,7 +1379,7 @@ namespace paraDIS {
 #if LINKED_LOOPS
     CheckForLinkedLoops();
 #endif
-    if (!mNumSegments) {
+    if (!mNumNormalSegments) {
       dbprintf(5, "Arm::Classify(%d): no segments in arm.\n", mArmID);
       return;
     }
@@ -1560,7 +1569,7 @@ namespace paraDIS {
 	// Absorb other arm's stats. 
 	mArmLength += other->mArmLength;
     other->mArmLength = 0;
-    mNumSegments += other->mNumSegments;
+    mNumNormalSegments += other->mNumNormalSegments;
     mNumWrappedSegments += other->mNumWrappedSegments;
     MakeAncestor(other);
 
@@ -1568,7 +1577,7 @@ namespace paraDIS {
 	// Gut the other arm
     other->mTerminalSegments.clear();
     other->mTerminalNodes.clear();    
-    other->mNumSegments = 0;
+    other->mNumNormalSegments = 0;
     other->mArmType = ARM_EMPTY;
 
     mNumDestroyedInDetachment++;
@@ -1661,7 +1670,7 @@ namespace paraDIS {
 	  for  (uint32_t seg = 0; seg < sourceSegments.size(); seg++) {
 		sourceSegments[seg]->mParentArm = this; 
 		sourceSegments[seg]->mBurgersType = myBurgers; 
-		++mNumSegments;
+		++mNumNormalSegments;
 		if (sourceSegments[seg]->mWrapped) mNumWrappedSegments++; 
 		mArmLength += sourceSegments[seg]->GetLength(true);
 	  }	 
@@ -1711,7 +1720,7 @@ namespace paraDIS {
 		interiorSegment->mEndpoints[1] = newNode;
 		previousNewNode->mNeighborSegments.push_back(interiorSegment);
 		newNode->mNeighborSegments.push_back(interiorSegment);
-		++mNumSegments;
+		++mNumNormalSegments;
 		if (interiorSegment->mWrapped) mNumWrappedSegments++; 
 		mArmLength += interiorSegment->GetLength(true);
 		dbprintf(6, "ExtendBySegments(%d): Arm segment #%d: created segment %d by copying source segment %d, resulting in: %s\n", mArmID, seg, interiorSegment->mSegmentID, sourceSegments[seg]->mSegmentID, interiorSegment->Stringify(0).c_str());
@@ -1944,7 +1953,7 @@ namespace paraDIS {
 		mTerminalNodes.clear();
 		mTerminalSegments.clear();
 		mArmLength = 0;
-		mNumSegments = 0;
+		mNumNormalSegments = 0;
 		mArmType = ARM_EMPTY;
 	  }
 	  WriteTraceFiles(str(boost::format("%d-after-decompose-%d_ID-%d")%(2+decomposed)%decomposed%neighborArm->mArmID));
@@ -1973,7 +1982,7 @@ namespace paraDIS {
     if (mParentMetaArm) parentMetaArmIDString = str(boost::format("%1%")%(mParentMetaArm->GetMetaArmID()));
     std::string s  = INDENT(indent) +
       str(boost::format("(arm): number %1%, mSeen = %2%, mSeenInMeta = %3%, numSegments = %4%, numWrappedSegments = %5%, length = %6%, Burgers = %7% (%8%), numTermNodes = %9%, Type = %10% (%11%), ExternalArms = %12%, AncestorArms = %13%, mParentMetaArm ID = %14%")
-          % mArmID % seen % seenMeta % mNumSegments  % (int)mNumWrappedSegments % GetLength() % btype % btypestring % mTerminalNodes.size()  % atype % armtypestring  % StringifyExternalArms(0) % arrayToString(mAncestorArms) % parentMetaArmIDString);
+          % mArmID % seen % seenMeta % mNumNormalSegments  % (int)mNumWrappedSegments % GetLength() % btype % btypestring % mTerminalNodes.size()  % atype % armtypestring  % StringifyExternalArms(0) % arrayToString(mAncestorArms) % parentMetaArmIDString);
 
 #if LINKED_LOOPS
     if (mPartOfLinkedLoop) {
@@ -3230,8 +3239,11 @@ namespace paraDIS {
     /* loop, don't recurse */
     while(true) {
       if (!currentSegment->mSeen) {		
-        theArm->mNumSegments++;
-		if (currentSegment->mWrapped) theArm->mNumWrappedSegments++;
+		if (currentSegment->mWrapped) {
+		  theArm->mNumWrappedSegments++;
+		} else {
+		  theArm->mNumNormalSegments++;
+		}
         dbprintf(5, "Arm %d: adding segment %s\n", theArm->mArmID, currentSegment->Stringify(0).c_str());
         theArm->mArmLength += currentSegment->GetLength(true);
       }
@@ -3347,7 +3359,7 @@ namespace paraDIS {
         (*pos)->WriteTraceFiles("After-BuildArms");
       }
     }
-    
+    dbprintf(1, "BuildArms complete\n"); 
     return;
   }
 
@@ -3899,6 +3911,7 @@ namespace paraDIS {
         for (vector<Node*>::iterator node = nodes.begin(); node != nodes.end(); node++) {
           if (*node) {
             fprintf(segfile, "%f %f %f\n", (*node)->mLocation[0], (*node)->mLocation[1], (*node)->mLocation[2]);
+            // fprintf(segfile, "%f %f %f # node %d index %d duplicate = %d\n", (*node)->mLocation[0], (*node)->mLocation[1], (*node)->mLocation[2], nodecounts[armnum], (*node)->mNodeIndex, (int)((*node)->mIsDuplicate));
             nodecounts[armnum]++;
             if (previous) {
               numsegs ++;
@@ -3907,6 +3920,10 @@ namespace paraDIS {
           }
           previous = *node;
         }
+		if (nodecounts[armnum] != Arm::mArms[armnum+firstarm]->GetNumNodes()) {
+		  dbecho(0, str(boost::format("WriteVTKFiles:  Arm %d index %d: nodecounts[armnum] (%d) != Arm::mArms[armnum+firstarm]->GetNumNodes() (%d)\n") % armnum % (armnum+firstarm) % (nodecounts[armnum]) % (Arm::mArms[armnum+firstarm]->GetNumNodes())));
+		  errexit; 
+		}
 		UPDATEPROGRESS(armnum, numarms, "Writing points for arms"); 
       }
 	  COMPLETEPROGRESS(numarms,  "Writing points for arms"); 
@@ -3914,14 +3931,14 @@ namespace paraDIS {
       // ----------------------------------------------------------
       // 3. Segment file: Segments (connectivity)
       fprintf(segfile, "\nLINES %d %d\n", numsegs, 3*numsegs);
-
+	  uint32_t segswritten = 0; 
       uint32_t nodenum = 0, previousnodenum = 0;
       for (uint32_t armnum = 0; armnum < numarms; armnum++) {
         Arm *theArm = Arm::mArms[armnum+firstarm];
-        if (!theArm->mNumSegments)
+        if (!theArm->mNumNormalSegments)
           continue;
 
-		fprintf(segfile, "# BEGIN ARM %d\n", theArm->mArmID);
+		//fprintf(segfile, "# BEGIN ARM %d\n", theArm->mArmID);
 		uint32_t armsegs = 0;
         if (theArm->mNumWrappedSegments) {
           vector<Node *> nodes; 
@@ -3934,12 +3951,13 @@ namespace paraDIS {
               if (previous) {
                 fprintf(segfile, "2 %d %d\n", nodenum-1, nodenum);
                 armsegs ++;
+				segswritten++; 
               }
               ++nodenum;
             }
 			else {
 			  if (previous) {
-                fprintf(segfile, "# (WRAP)\n");
+                //fprintf(segfile, "# (WRAP)\n");
 				numwrappedNodes++; 
 			  } else {
 				dbecho(0, "Found a NULL node following a NULL node.  This should not happen.\n"); 
@@ -3948,32 +3966,29 @@ namespace paraDIS {
 			}
             previous = *node;
           }
-          if (armsegs != theArm->mNumSegments - theArm->mNumWrappedSegments) {
-            dbecho(0, str(boost::format("DataSet::WriteVTKFiles(): ERROR! armsegs (%d) != theArm->mNumSegments (%d) - theArm->mNumWrappedSegments (%d) ( = %d) for arm %d with %d wrapped nodes seen.\n")
+          if (armsegs != theArm->mNumNormalSegments) {
+            dbecho(0, str(boost::format("DataSet::WriteVTKFiles(): ERROR! armsegs (%d) != theArm->mNumNormalSegments (%d)  for arm %d with %d wrapped nodes seen.\n")
 						  %  armsegs 
-						  % (theArm->mNumSegments) 
-						  % ((int)theArm->mNumWrappedSegments) 
-						  % (theArm->mNumSegments - theArm->mNumWrappedSegments) 
+						  % (theArm->mNumNormalSegments) 
 						  % (theArm->mArmID)
 						  % numwrappedNodes));
             dbprintf(0, str(boost::format("Arm information:  %s") % theArm->Stringify(0, false, true)).c_str()); 
             errexit;
           } else {
-			dbprintf(5, str(boost::format("DataSet::WriteVTKFiles(): Success. armsegs (%d) == theArm->mNumSegments (%d) - theArm->mNumWrappedSegments (%d) ( = %d) for arm %d with %d wrapped nodes seen.\n")
+			dbprintf(5, str(boost::format("DataSet::WriteVTKFiles(): Success. armsegs (%d) == theArm->mNumNormalSegments (%d) for arm %d with %d wrapped nodes seen.\n")
 							%  armsegs 
-							% (theArm->mNumSegments) 
-							% ((int)theArm->mNumWrappedSegments) 
-							% (theArm->mNumSegments - theArm->mNumWrappedSegments) 
+							% (theArm->mNumNormalSegments) 
 							% (theArm->mArmID)
 							% numwrappedNodes).c_str());
 		  }
         }
         else {
           dbprintf(5, "DataSet::WriteVTKFiles(): no wrapped segments for arm %d\n", (theArm->mArmID)); 
-		  for (uint32_t segnum = 0; segnum < theArm->mNumSegments; segnum++) {			
+		  for (uint32_t segnum = 0; segnum < theArm->mNumNormalSegments; segnum++) {			
 			fprintf(segfile, "2 %d %d\n", nodenum, nodenum+1);
 			++nodenum;
 			armsegs ++;
+			segswritten++; 
 		  }
 		  ++nodenum;
 		}
@@ -3987,6 +4002,10 @@ namespace paraDIS {
 
       }
 	  COMPLETEPROGRESS(numarms,  "Writing segment locations for arms"); 
+	  if (segswritten != numsegs) {
+		dbecho(0, str(boost::format("DataSet::WriteVTKFiles(): ERROR! segswritten (%d) != numsegs (%d)\n") % segswritten % numsegs)); 
+		errexit;
+	  }
 
       // ----------------------------------------------------------
       // 4. Segment file: Segment Arm numbers -- this should be much more straightforward as we do not need to reference any nodes now.
@@ -3996,9 +4015,9 @@ namespace paraDIS {
       uint32_t testsegs = 0;
       for (uint32_t armnum = 0; armnum < numarms; armnum++) {
         Arm *theArm = Arm::mArms[armnum+firstarm];
-        if (!theArm->mNumSegments)
+        if (!theArm->mNumNormalSegments)
           continue;
-        for (uint32_t segnum = 0; segnum < theArm->mNumSegments; segnum++) {
+        for (uint32_t segnum = 0; segnum < theArm->mNumNormalSegments; segnum++) {
           fprintf(segfile, "%d ", armnum);
           ++testsegs;
         }
@@ -4015,10 +4034,10 @@ namespace paraDIS {
       fprintf(segfile, "LOOKUP_TABLE default\n");
       for (uint32_t armnum = 0; armnum < numarms; armnum++) {
         Arm *theArm = Arm::mArms[armnum+firstarm];
-        if (!theArm->mNumSegments)
+        if (!theArm->mNumNormalSegments)
           continue;
         uint32_t burgertype = theArm->GetBurgersType();
-        for (uint32_t segnum = 0; segnum < theArm->mNumSegments; segnum++) {
+        for (uint32_t segnum = 0; segnum < theArm->mNumNormalSegments; segnum++) {
           fprintf(segfile, "%d ", burgertype);
         }
 		UPDATEPROGRESS(armnum, numarms, "Writing segment burgers types for arms"); 
@@ -4033,10 +4052,10 @@ namespace paraDIS {
       fprintf(segfile, "LOOKUP_TABLE default\n");
       for (uint32_t armnum = 0; armnum < numarms; armnum++) {
         Arm *theArm = Arm::mArms[armnum+firstarm];
-        if (!theArm->mNumSegments)
+        if (!theArm->mNumNormalSegments)
           continue;
         uint32_t matype = theArm->GetMetaArmType();
-        for (uint32_t segnum = 0; segnum < theArm->mNumSegments; segnum++) {
+        for (uint32_t segnum = 0; segnum < theArm->mNumNormalSegments; segnum++) {
           fprintf(segfile, "%d ", matype);
         }
  		UPDATEPROGRESS(armnum, numarms, "Writing segment metaarm types for arms"); 
@@ -4051,9 +4070,9 @@ namespace paraDIS {
       fprintf(segfile, "LOOKUP_TABLE default\n");
       for (uint32_t armnum = 0; armnum < numarms; armnum++) {
         Arm *theArm = Arm::mArms[armnum+firstarm];
-        if (!theArm->mNumSegments)
+        if (!theArm->mNumNormalSegments)
           continue;
-        for (uint32_t segnum = 0; segnum < theArm->mNumSegments; segnum++) {
+        for (uint32_t segnum = 0; segnum < theArm->mNumNormalSegments; segnum++) {
           fprintf(segfile, "%d ", fileno);
         }
  		UPDATEPROGRESS(armnum, numarms, "Writing segment block (file) numbers for arms"); 
@@ -4069,7 +4088,7 @@ namespace paraDIS {
       uint32_t segnum = 0; 
       for (uint32_t armnum = 0; armnum < numarms; armnum++) {
         Arm *theArm = Arm::mArms[armnum+firstarm];
-        if (!theArm->mNumSegments)
+        if (!theArm->mNumNormalSegments)
           continue;
         vector<ArmSegment*> segs = theArm->GetSegments(); 
         for (vector<ArmSegment*>::iterator seg = segs.begin(); seg != segs.end(); seg++) {

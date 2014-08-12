@@ -162,7 +162,9 @@ namespace paraDIS {
     */ 
     Node(const Node &other) {
       init(); 
+	  uint32_t indexSave = mNodeIndex; 
       *this = other; 
+	  mNodeIndex = indexSave; 
 	  mNeighborSegments.clear(); 
 	  mNeighborArms.clear(); 
       return;
@@ -810,7 +812,7 @@ namespace paraDIS {
       mSeen=false;
       mSeenInMeta=false; 
       mParentMetaArm=NULL;
-      mNumSegments = 0; 
+      mNumNormalSegments = 0; 
       mNumWrappedSegments = 0; 
       mTerminalSegments.clear();  
       mTerminalNodes.clear(); 
@@ -946,10 +948,9 @@ namespace paraDIS {
 	}
 
 	// =========================================================
-    uint32_t GetNumNodes(void) { 
-      // The math here is a bit odd, due to wrapping: 
-      if (!mNumSegments) return 0; 
-      return mNumSegments + 1 + mNumWrappedSegments; 
+	// Returns number of nodes, not counting "NULL" nodes for wrapping
+    uint32_t GetNumNodes(void) { 	  
+      return mNumNormalSegments ? mNumNormalSegments + mNumWrappedSegments + 1: 0; 
     }
 
     
@@ -1119,9 +1120,9 @@ namespace paraDIS {
     static double mLongestLength; // for binning
     bool mSeen, mSeenInMeta; // for tracing MetaArms -- each arm need only be viewed once
    /*!
-      number of segments in arm
+      number of non-wrapped segments and nodes in arm
     */ 
-    uint32_t mNumSegments; 
+    uint32_t mNumNormalSegments, mNumNodes; 
    /*!
       number of segments that got wrapped (affects node and segments counts)
     */ 
