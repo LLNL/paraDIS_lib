@@ -46,7 +46,7 @@ timestamp: $(SOURCES)
 install: all
 	mkdir -p $(INSTALL_DIR)/bin && cp $(TARGETS) $(INSTALL_DIR)/bin
 
-global: all
+global: uninstall all
 	INSTALL_DIR=/usr/global/tools/IMG_private/paraDIS/$$SYS_TYPE $(MAKE) install
 
 install-debug: 
@@ -106,6 +106,8 @@ $(RCCLIB): .DUMMY
 $(RCCPPLIB): .DUMMY
 	cd $(CPPLIBDIR);  $(MAKE) install
 
+uninstall: 
+	rm -f $(INSTALL_DIR)/bin/{analyzeParaDIS,paradisTest,paradisStreamingTest}
 
 clean: undepend
 	rm -rf $(PROGNAME) makeworms *.o $(SYS_TYPE)/* *~ $(SYS_TYPE)/lib/*o $(SYS_TYPE)/lib/*a 
