@@ -3413,10 +3413,6 @@ namespace paraDIS {
       COMPLETEPROGRESS(numarms, str(boost::format("DecomposeArms: level %1% (%2%), arm %3%, %4% decomp.") % energyLevel % BurgersTypeNames(energyLevel*10) % armnum % numDecomposed[energyLevel]));
     }
     Arm::mTotalArmLengthAfterDecomposition = ComputeArmLengths();
-	if (ArmSegment::mArmSegments.size() == ArmSegment::mNumBeforeDecomposition) {
-	  dbecho(0, "DataSet::DecomposeArms:ArmSegment::mArmSegments.size() did not change! \n"); 
-	  errexit; 
-	}
     
     if (Arm::mTraceArms.size()) {
       for (vector<Arm*>::iterator pos = Arm::mArms.begin(); pos!= Arm::mArms.end(); ++pos) {
