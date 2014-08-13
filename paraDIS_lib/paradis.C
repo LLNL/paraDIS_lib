@@ -1694,8 +1694,8 @@ namespace paraDIS {
 		}
 		else {
 		  mNumNormalSegments++;
+		  mArmLength += sourceSegments[seg]->GetLength(true);
 		}
-		mArmLength += sourceSegments[seg]->GetLength(true);
 	  }	 
 	  
 	  mTerminalSegments[sharedSegmentNum] = sourceSegments[sourceSegments.size()-1];
@@ -1748,8 +1748,8 @@ namespace paraDIS {
 		} 
 		else {
 		  mNumNormalSegments++;
+		  mArmLength += interiorSegment->GetLength(true);
 		}
-		mArmLength += interiorSegment->GetLength(true);
 		dbprintf(6, "ExtendBySegments(%d): Arm segment #%d: created segment %d by copying source segment %d, resulting in: %s\n", mArmID, seg, interiorSegment->mSegmentID, sourceSegments[seg]->mSegmentID, interiorSegment->Stringify(0).c_str());
 		dbprintf(6, "ExtendBySegments(%d): Arm segment #%d: Added newNode: %s\n", mArmID, seg, newNode->Stringify(0).c_str());
 		
@@ -3268,9 +3268,9 @@ namespace paraDIS {
 		  theArm->mNumWrappedSegments++;
 		} else {
 		  theArm->mNumNormalSegments++;
+		  theArm->mArmLength += currentSegment->GetLength(true);
 		}
         dbprintf(5, "Arm %d: adding segment %s\n", theArm->mArmID, currentSegment->Stringify(0).c_str());
-        theArm->mArmLength += currentSegment->GetLength(true);
       }
       currentSegment->mSeen = true;
       currentSegment->mParentArm = theArm;
@@ -3391,7 +3391,8 @@ namespace paraDIS {
 
   //===========================================================================
   void DataSet::DecomposeArms(void) {
-    uint32_t armnum = 0;
+	ArmSegment::mNumBeforeDecomposition = ArmSegment::mArmSegments.size(); 
+   uint32_t armnum = 0;
     vector<Arm*> newArms;
     int energyLevel = 7, numarms=Arm::mArms.size();
     vector<int32_t> numDecomposed(7, 0);
@@ -3403,7 +3404,6 @@ namespace paraDIS {
 
       STARTPROGRESS();
       armnum = 0;
-      ArmSegment::mNumBeforeDecomposition = ArmSegment::mArmSegments.size(); 
       for (vector<Arm*>::iterator pos = Arm::mArms.begin(); pos!= Arm::mArms.end(); ++pos, ++armnum) {
         if ((*pos)->Decompose(energyLevel)) {
           numDecomposed[energyLevel]++;
@@ -3413,6 +3413,10 @@ namespace paraDIS {
       COMPLETEPROGRESS(numarms, str(boost::format("DecomposeArms: level %1% (%2%), arm %3%, %4% decomp.") % energyLevel % BurgersTypeNames(energyLevel*10) % armnum % numDecomposed[energyLevel]));
     }
     Arm::mTotalArmLengthAfterDecomposition = ComputeArmLengths();
+	if (ArmSegment::mArmSegments.size() == ArmSegment::mNumBeforeDecomposition) {
+	  dbecho(0, "DataSet::DecomposeArms:ArmSegment::mArmSegments.size() did not change! \n"); 
+	  errexit; 
+	}
     
     if (Arm::mTraceArms.size()) {
       for (vector<Arm*>::iterator pos = Arm::mArms.begin(); pos!= Arm::mArms.end(); ++pos) {
