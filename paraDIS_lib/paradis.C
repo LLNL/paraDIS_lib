@@ -699,7 +699,7 @@ namespace paraDIS {
   }
   //===========================================================================
   std::string Node::Stringify(int indent, bool shortform) const {
-    int ntype = mNodeType ;
+	int ntype = mNodeType ;
     vector<int> idarray = GetNeighborArmIDs();
     string armids = arrayToString(idarray);	
 	string locstring = "UNSET"; 
