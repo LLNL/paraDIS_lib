@@ -1,3 +1,5 @@
+2014-08-12: version 2.5.0
+       Changed internal data structures to simplify code and get some speedup.
  
 2014-08-07: version 2.4.0 (tag "v2.4.0")
 	   Added povray export
