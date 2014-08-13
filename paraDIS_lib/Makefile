@@ -39,6 +39,9 @@ all: timestamp $(TARGETS)
 debug:
 	DEBUG=-g $(MAKE) all
 
+profile:  
+	DEBUG="-g -pg" $(MAKE) all
+
 timestamp: $(SOURCES)
 	setversion.sh --timestamp
 	date > timestamp
@@ -88,7 +91,7 @@ $(CWD)/$(SYS_TYPE)/bin/paradisTest: $(SYS_TYPE)/paradisTest.o $(PARADISLIB)
 $(CWD)/$(SYS_TYPE)/bin/analyzeParaDIS: $(SYS_TYPE)/analyzeParaDIS.o $(PARADISLIB)  $(RCCLIB)
 	[ -d $(SYS_TYPE)/bin ] || mkdir -p $(SYS_TYPE)/bin
 	@echo; echo '***************************************'; echo 
-	$(LD) -o $@ $(LDFLAGS)  $^ $(ELECTRIC_FENCE)
+	$(LD) -o $@ $(LDFLAGS)  $^ $(ELECTRIC_FENCE) $(DEBUG)
 	@echo; echo '***************************************'; echo 
 
 
@@ -118,7 +121,6 @@ realclean: clean
 
 undepend: 
 	makedepend -Y $(SFILES)
-	for dir in `pwd`/$(CLIBDIR) `pwd`/$(CPPLIBDIR) ; do cd $$dir; $(MAKE) undepend; done
 
 depend: 	
 	makedepend -Y -p $(SYS_TYPE)/ $(SFILES)
@@ -127,8 +129,8 @@ depend:
 
 # DO NOT DELETE
 
-chaos_5_x86_64_ib/paradis.o: paradis.h paradis_version.h
-chaos_5_x86_64_ib/paradis_c_interface.o: paradis.h paradis_c_interface.h
-chaos_5_x86_64_ib/paradisStreaming.o: paradisStreaming.h paradis.h
-chaos_5_x86_64_ib/paradisTest.o: paradis.h
-chaos_5_x86_64_ib/analyzeParaDIS.o: paradis_c_interface.h paradis.h
+paradis.o: paradis.h paradis_version.h
+paradis_c_interface.o: paradis.h paradis_c_interface.h
+paradisStreaming.o: paradisStreaming.h paradis.h
+paradisTest.o: paradis.h
+analyzeParaDIS.o: paradis_c_interface.h paradis.h
