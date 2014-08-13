@@ -103,7 +103,7 @@ int main(int argc, char *argv[]) {
 	bool povrayfuse = (povrayfuseFlag.getValue() != -1); 
 
     if (fullout.getValue()) {
-      debugfiles = true; 
+      // debugfiles = true;  // very slow on large files
       stats = true; 
       tagfile = true;
       vtkfile = true; 

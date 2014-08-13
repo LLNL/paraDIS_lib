@@ -336,40 +336,40 @@ namespace paraDIS {
     vtkfile << "DATASET POLYDATA" << endl;
 	
     // next, the points
-    int numlines = 0; 
+    uint32_t numlines = 0; 
     vector<Node *>nodes;
 	vector<ArmSegment *>segments; 
     vector<uint32_t>numArmNodes, numArmSegments;
+	uint32_t nonNullNodes = 0; 
 	for (uint32_t arm = 0; arm < numArms; arm++) {
       vector<Node *> armnodes;
 	  vector<ArmSegment *> armsegs; 
 	  arms[arm]->GetNodesAndSegments(NULL, &armnodes, &armsegs);
 	  if (armnodes.size() >  arms[arm]->mNumWrappedSegments) {
 		numArmNodes.push_back(armnodes.size() - arms[arm]->mNumWrappedSegments);
+		nonNullNodes += armnodes.size() - arms[arm]->mNumWrappedSegments;
 	  } 
 	  else {
 		dbprintf(6, "WriteTraceFiles: Warning: arm %d has %d nodes and %d wrapped Segments, so pushing back zero nodes.\n", arm, armnodes.size(), arms[arm]->mNumWrappedSegments);
 		numArmNodes.push_back(0);
 	  } 		
-      nodes.insert(nodes.end(), armnodes.begin(), armnodes.end());	
-	  uint32_t numsegs = 0; 
-	  if (armsegs.size() > arms[arm]->mNumWrappedSegments) {
-		numsegs = armsegs.size() - arms[arm]->mNumWrappedSegments; 
-	  }
-	  numArmSegments.push_back(numsegs); 
-	  numlines += numsegs; 
+      nodes.insert(nodes.end(), armnodes.begin(), armnodes.end());
+	  nodes.push_back(NULL); 
+	  numArmSegments.push_back(arms[arm]->mNumNormalSegments); 
+	  numlines += arms[arm]->mNumNormalSegments; 
 	  segments.insert(segments.end(), armsegs.begin(), armsegs.end()); 
     }
     uint32_t armnum = 0, armnode = 0;
     vector<float> previous;
-    vtkfile << str(boost::format("POINTS %d float") % nodes.size()) << endl;
+    vtkfile << str(boost::format("POINTS %d float") % nonNullNodes) << endl;
+	uint32_t nodesWritten = 0; 
     for (uint32_t point = 0; point < nodes.size(); point++) {
       if (armnode == numArmNodes[armnum]) {
         armnode = 0;
         armnum++;
       }
 
-	  if (!nodes[point]) continue; // wrappage
+	  if (!nodes[point]) continue; // wrappage or new line
 
       vector<float> xyz = nodes[point]->mLocation;
       if (point > 0) {
@@ -389,49 +389,67 @@ namespace paraDIS {
         note = str(boost::format("# End arm %1%")%armnum);
         } */
       vtkfile << str(boost::format("%1% %2% %3% %4%") % xyz[0] % xyz[1] % xyz[2] % note) << endl;
+	  nodesWritten++; 
     }
     vtkfile << endl;
-
+	if (nodesWritten != nonNullNodes) {
+	  dbecho(0, str(boost::format("WriteVTKFiles: ERROR:  nodesWritten (%d) != nonNullNodes (%d) \n") % nodesWritten % nonNullNodes)); 
+	  errexit;
+	}
     // next the lines
     vtkfile << str(boost::format("LINES %d %d") % numlines % (3*numlines)) << endl;
-    uint32_t currentIndex = 0;
-    for (uint32_t arm = 0; arm < numArms; arm++) {
-      if (numArmNodes[arm]) {
-        for (uint32_t nodenum = 0; nodenum < numArmNodes[arm]-1; nodenum++) {
-          vtkfile << str(boost::format("2 %d %d")% currentIndex % (currentIndex+1)) << endl;
-          currentIndex++;
-        }
-        currentIndex ++;
-      }
-    }
+    uint32_t currentIndex = 0, linesWritten = 0;
+	Node *previousNode = NULL; 
+    for (uint32_t point = 0; point < nodes.size(); point++) {	  
+	  if (nodes[point]) {
+		if (previousNode) {
+		  vtkfile << str(boost::format("2 %d %d")% (currentIndex-1) % currentIndex) << endl;
+		  linesWritten++; 
+		}
+		currentIndex++;
+	  }
+	  previousNode = nodes[point]; 
+	}
+     
+	if (linesWritten != numlines) {
+	  dbecho(0, str(boost::format("WriteVTKFiles: ERROR: linesWritten  (%d) != numlines (%d) \n") % linesWritten % numlines )); 
+	  errexit;
+	}
+ 	  
     vtkfile << endl << endl;
 
-    // next the arm numbers for each line
+    // next the arm numbers for each line	
     vtkfile << str(boost::format("CELL_DATA %d") % numlines) << endl;
     vtkfile << "SCALARS armnum int" << endl;
     vtkfile << "LOOKUP_TABLE default" << endl;
     vtkfile.flush();
+	linesWritten = 0; 
     for (uint32_t arm = 0; arm < numArms; arm++) {
-      if (!numArmNodes[arm]) {
+      if (!numArmSegments[arm]) {
         continue;
       }
       uint32_t armnum = arms[arm]->mArmID;
-      for (uint32_t nodenum = 0; nodenum < numArmNodes[arm]-1; nodenum++) {
+      for (uint32_t linenum = 0; linenum < numArmSegments[arm]; linenum++) {
         vtkfile << armnum << " " ;
         vtkfile.flush();
+		linesWritten++; 
       }
     }
     vtkfile << endl << endl;
-
+	if (linesWritten != numlines) {
+	  dbecho(0, str(boost::format("WriteVTKFiles: ERROR: linesWritten  (%d) != numlines (%d) \n") % linesWritten % numlines )); 
+	  errexit;
+	}
+ 
     // next the burgers type for each line
     vtkfile << "SCALARS burgers_type int" << endl;
     vtkfile << "LOOKUP_TABLE default" << endl;
     for (uint32_t arm = 0; arm < numArms; arm++) {
-      if (!numArmNodes[arm]) {
+      if (!numArmSegments[arm]) {
         continue;
       }
       uint32_t armtype = arms[arm]->GetBurgersType();
-      for (uint32_t nodenum = 0; nodenum < numArmNodes[arm]-1; nodenum++) {
+      for (uint32_t linenum = 0; linenum < numArmSegments[arm]; linenum++) {
         vtkfile << armtype << " " ;
         vtkfile.flush();
       }
@@ -443,10 +461,10 @@ namespace paraDIS {
     vtkfile << "SCALARS BFS_depth int" << endl;
     vtkfile << "LOOKUP_TABLE default" << endl;
     for (uint32_t arm = 0; arm < numArms; arm++) {
-      if (!numArmNodes[arm]) {
+      if (!numArmSegments[arm]) {
         continue;
       }
-      for (uint32_t nodenum = 0; nodenum < numArmNodes[arm]-1; nodenum++) {
+      for (uint32_t linenum = 0; linenum < numArmSegments[arm]; linenum++) {
         vtkfile << armdepths[arm] << " " ;
       }
     }
@@ -455,21 +473,21 @@ namespace paraDIS {
     // next the segment IDs for each line
     vtkfile << "SCALARS segment_ID int" << endl;
     vtkfile << "LOOKUP_TABLE default" << endl;
-    for (uint32_t arm = 0; arm < numArms; arm++) {
-      for (uint32_t nodenum = 0; nodenum < numArmSegments[arm]; nodenum++) {
-        vtkfile << segments[arm]->GetID() << " " ;
-      }
-    }
+    for (uint32_t segnum = 0; segnum < segments.size(); segnum++) {
+	  if (!segments[segnum]->mWrapped)
+ 		vtkfile << segments[segnum]->GetID() << " " ;
+	}
+    
     vtkfile << endl << endl;
 
     // next the "action" for each line
     vtkfile << "SCALARS action int" << endl;
     vtkfile << "LOOKUP_TABLE default" << endl;
     for (uint32_t arm = 0; arm < numArms; arm++) {
-      if (!numArmNodes[arm]) {
+      if (!numArmSegments[arm]) {
         continue;
       }
-      for (uint32_t nodenum = 0; nodenum < numArmNodes[arm]-1; nodenum++) {
+      for (uint32_t linenum = 0; linenum < numArmSegments[arm]; linenum++) {
         vtkfile << action[arm] << " " ;
       }
     }
@@ -501,7 +519,7 @@ namespace paraDIS {
 
     // next, the points
     armnum = 0; armnode = 0;
-    vtkfile << str(boost::format("POINTS %d float") % nodes.size()) << endl;
+    vtkfile << str(boost::format("POINTS %d float") % nonNullNodes) << endl;
     for (uint32_t point = 0; point < nodes.size(); point++) {
       if (armnode == numArmNodes[armnum]) {
         armnode = 0;
@@ -532,15 +550,15 @@ namespace paraDIS {
     vtkfile << endl;
 
     // now node vertices to allow node plotting
-    vtkfile << str(boost::format("VERTICES %d %d") % nodes.size() % (2*nodes.size())) << endl;
-    for (uint32_t point = 0; point < nodes.size(); point++) {
+    vtkfile << str(boost::format("VERTICES %d %d") % nonNullNodes % (2*nonNullNodes)) << endl;
+    for (uint32_t point = 0; point < nonNullNodes; point++) {
       vtkfile << "1 " << point << endl;
       vtkfile.flush();
     }
     vtkfile << endl;
 
     // now node indices from analyzeParaDIS
-    vtkfile << str(boost::format("CELL_DATA %d") % nodes.size()) << endl;
+    vtkfile << str(boost::format("CELL_DATA %d") % nonNullNodes) << endl;
     vtkfile << "SCALARS node_index int" << endl;
     vtkfile << "LOOKUP_TABLE default" << endl;
     for (uint32_t point = 0; point < nodes.size(); point++) {
@@ -1320,10 +1338,6 @@ namespace paraDIS {
 	if (outnodes) {
 	  dbprintf(6, "Arm::GetNodesAndSegments(arm %d): pushing back start node: %s\n", mArmID, currentNode->Stringify(0,true).c_str());
 	  outnodes->push_back(currentNode); 
-	  if (currentSegment->mWrapped) {
-		outnodes->push_back(NULL); 
-		dbprintf(6, "Arm::GetNodesAndSegments(arm %d): pushed back WRAPPED (null) node\n", mArmID );
-	  }
 	}
 
 	/* Push back in a loop until the end node is found: 
@@ -1365,7 +1379,11 @@ namespace paraDIS {
 	  errexit;
 	}
 	int numnodes = outnodes ?  outnodes->size() : -1, numsegs = outsegs ? outsegs->size() : -1; 
-	dbprintf(5, " Arm::GetNodesAndSegments(arm %d): finished.  Returning %d nodes and %d segments.  mNumNormalSegments is %d and mNumWrappedSegments is %d\n", mArmID, numnodes, numsegs, mNumNormalSegments, mNumWrappedSegments);   
+	dbprintf(5, "Arm::GetNodesAndSegments(arm %d): finished.  Returning %d nodes and %d segments.  mNumNormalSegments is %d and mNumWrappedSegments is %d\n", mArmID, numnodes, numsegs, mNumNormalSegments, mNumWrappedSegments);   
+	if (numsegs > 0 && (uint)numsegs != mNumNormalSegments + mNumWrappedSegments) {
+	  dbecho(0, str(boost::format("Arm::GetNodesAndSegments(arm %d): ERROR;  numsegs (%d) != mNumNormalSegments (%d) + mNumWrappedSegments (%d)\n") % mArmID % numsegs % ((int)mNumNormalSegments) % ((int)mNumWrappedSegments))); 
+	  errexit; 
+	}
     return;
   }
 
@@ -1578,6 +1596,7 @@ namespace paraDIS {
     other->mTerminalSegments.clear();
     other->mTerminalNodes.clear();    
     other->mNumNormalSegments = 0;
+    other->mNumWrappedSegments = 0;
     other->mArmType = ARM_EMPTY;
 
     mNumDestroyedInDetachment++;
@@ -1670,8 +1689,12 @@ namespace paraDIS {
 	  for  (uint32_t seg = 0; seg < sourceSegments.size(); seg++) {
 		sourceSegments[seg]->mParentArm = this; 
 		sourceSegments[seg]->mBurgersType = myBurgers; 
-		++mNumNormalSegments;
-		if (sourceSegments[seg]->mWrapped) mNumWrappedSegments++; 
+		if (sourceSegments[seg]->mWrapped) {
+		  mNumWrappedSegments++; 
+		}
+		else {
+		  mNumNormalSegments++;
+		}
 		mArmLength += sourceSegments[seg]->GetLength(true);
 	  }	 
 	  
@@ -1719,9 +1742,13 @@ namespace paraDIS {
 		interiorSegment->mEndpoints[0] = previousNewNode;
 		interiorSegment->mEndpoints[1] = newNode;
 		previousNewNode->mNeighborSegments.push_back(interiorSegment);
-		newNode->mNeighborSegments.push_back(interiorSegment);
-		++mNumNormalSegments;
-		if (interiorSegment->mWrapped) mNumWrappedSegments++; 
+		newNode->mNeighborSegments.push_back(interiorSegment);		
+		if (interiorSegment->mWrapped) {
+		  mNumWrappedSegments++; 
+		} 
+		else {
+		  mNumNormalSegments++;
+		}
 		mArmLength += interiorSegment->GetLength(true);
 		dbprintf(6, "ExtendBySegments(%d): Arm segment #%d: created segment %d by copying source segment %d, resulting in: %s\n", mArmID, seg, interiorSegment->mSegmentID, sourceSegments[seg]->mSegmentID, interiorSegment->Stringify(0).c_str());
 		dbprintf(6, "ExtendBySegments(%d): Arm segment #%d: Added newNode: %s\n", mArmID, seg, newNode->Stringify(0).c_str());
@@ -1828,11 +1855,7 @@ namespace paraDIS {
 	int8_t burgtype = GetBurgersType();
     if (burgtype/10 != energy)
       return false; // not yet
-	
-    if (energy == 1) {
-      return false;
-    }
-	
+		
     mDecomposing = true;
     
     // Find which terminal node to use in decomposing ourself.
@@ -1852,6 +1875,8 @@ namespace paraDIS {
       return false;
     } 
 	
+	if (energy == 1) 
+	  return false; 
 
     vector<int> allNeighborArmIDs;
     dbprintf(5, "\n================================================================\n Arm::Decompose(energy %d, arm %d): Found arm : %s\n", energy, mArmID, Stringify(0, false).c_str());
@@ -1981,7 +2006,7 @@ namespace paraDIS {
     string parentMetaArmIDString = "(NONE)";
     if (mParentMetaArm) parentMetaArmIDString = str(boost::format("%1%")%(mParentMetaArm->GetMetaArmID()));
     std::string s  = INDENT(indent) +
-      str(boost::format("(arm): number %1%, mSeen = %2%, mSeenInMeta = %3%, numSegments = %4%, numWrappedSegments = %5%, length = %6%, Burgers = %7% (%8%), numTermNodes = %9%, Type = %10% (%11%), ExternalArms = %12%, AncestorArms = %13%, mParentMetaArm ID = %14%")
+      str(boost::format("(arm): number %1%, mSeen = %2%, mSeenInMeta = %3%, numNormalSegments = %4%, numWrappedSegments = %5%, length = %6%, Burgers = %7% (%8%), numTermNodes = %9%, Type = %10% (%11%), ExternalArms = %12%, AncestorArms = %13%, mParentMetaArm ID = %14%")
           % mArmID % seen % seenMeta % mNumNormalSegments  % (int)mNumWrappedSegments % GetLength() % btype % btypestring % mTerminalNodes.size()  % atype % armtypestring  % StringifyExternalArms(0) % arrayToString(mAncestorArms) % parentMetaArmIDString);
 
 #if LINKED_LOOPS
@@ -4888,7 +4913,6 @@ namespace paraDIS {
       }
 #endif
 
- 
       FindMetaArms();
 
       TagNodes(); // for Meijie
@@ -4897,13 +4921,12 @@ namespace paraDIS {
 		ComputeLightTheFuseSegmentDistances(); 
 	  }
 
-      if (mDoDebugOutput) {
-        DebugPrintMetaArms();
-        DebugPrintArms();
-        DebugPrintNodes();
-      }
-
-
+	  if (mDoDebugOutput) {
+		DebugPrintMetaArms();
+		DebugPrintArms();
+		DebugPrintNodes();
+	  }
+	  
     } catch (string err) {
       cerr << "An exception occurred" << endl;
       throw string("Error in DataSet::ReadData reading data from file ")+mDataFilename+":\n" + err;
@@ -4932,6 +4955,7 @@ namespace paraDIS {
     if (mDoPovRayFiles) {
       WritePov();
     }
+
 
     dbprintf(1, "ReadData complete\n");
     return;
