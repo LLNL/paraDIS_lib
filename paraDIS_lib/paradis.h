@@ -39,6 +39,7 @@ using boost::uint32_t;
 
 #include <stdio.h>
 #include <vector>
+#include <deque>
 #include <set>
 #include <map>
 #include <string>
@@ -60,7 +61,7 @@ void dbstream_printf(int level, const char *fmt, ...);
 std::string GetLibraryVersionString(const char *progname);
 std::string GetLibraryVersionNumberString(void);
 
-#define dbecho(level, msg) cerr << msg; dbprintf(level, string(msg).c_str())
+#define dbecho(level, msg...) fprintf(stderr, msg); dbprintf(level, msg)
 
 
 string BurgersTypeNames(int btype);
@@ -166,7 +167,9 @@ namespace paraDIS {
       *this = other; 
 	  mNodeIndex = indexSave; 
 	  mNeighborSegments.clear(); 
-	  mNeighborArms.clear(); 
+	  mNeighborArms.clear(); 	  
+	  mOriginal = const_cast<Node*>(&other); 
+	  mIsDuplicate = true; 
       return;
     }
   
@@ -237,8 +240,6 @@ namespace paraDIS {
 	static Node *DuplicateNode(Node *other) {
 	  Node *node = new Node(*other); 
 	  mNodes[Hash(other->mDomainID, other->mNodeID)].push_back(node); 
-	  node->mIsDuplicate = true; 
-	  node->mOriginal = other; 
 	  return node; 
 	}
    
@@ -256,7 +257,7 @@ namespace paraDIS {
       mNodes.clear(); 
       mTraceFileBasename = "";
       mTraceNodes.clear(); 
-      mNextNodeID = 0; 
+      mNextNodeIndex = 0; 
     }
     
     /*!
@@ -264,7 +265,7 @@ namespace paraDIS {
       initializer
     */
     void init(void) {
-	  mNodeIndex = mNextNodeID++; // "serial number"
+	  mNodeIndex = mNextNodeIndex++; // "serial number"
  	  //  mLocation.resize(3,0); // do not do this!  Empty is meaningful
       mNodeType = 0; 
       mIsLoopNode = false;
@@ -433,6 +434,9 @@ namespace paraDIS {
  
    // used to remove an arm which has been decomposed
     void RemoveNeighborArm(struct Arm *neighbor, bool doall = false) {
+	  if ( find(mNeighborArms.begin(), mNeighborArms.end(), neighbor) == mNeighborArms.end()) {
+		return; 
+	  }
       if (doall) {
         mNeighborArms.erase(remove(mNeighborArms.begin(), mNeighborArms.end(), neighbor), mNeighborArms.end());         
       } else {
@@ -502,7 +506,7 @@ namespace paraDIS {
     bool mIsDuplicate, mWrapped; 
 
 	uint32_t mNodeIndex; 
-	static uint32_t mNextNodeID ;
+	static uint32_t mNextNodeIndex ;
 
 	/*! 
       Absolute location in global space
@@ -540,9 +544,10 @@ namespace paraDIS {
   public: 
     ArmSegment(const ArmSegment &other){
       init(); 
-      uint32_t saved = mSegmentID; 
+      uint32_t saved = mSegmentIndex; 
       *this = other; 
-      mSegmentID = saved; 
+      mSegmentIndex = saved; 
+	  mIsDuplicate = true; 
     }
 
 	/* This is called by ReadNodeFromFile() and WrapBoundarySegments() */ 
@@ -559,8 +564,8 @@ namespace paraDIS {
 	  
     void init(void) {
       mScrewType = SCREW_UNDEFINED;
-      mSegmentID = mNextSegmentID; 
-      mNextSegmentID++; 
+      mSegmentIndex = mNextSegmentIndex; 
+      mNextSegmentIndex++; 
 	  mParentArm = NULL; 
 	  mLightTheFuseDistance = 0; 
       mBurgersType = BURGERS_UNKNOWN; 
@@ -575,7 +580,7 @@ namespace paraDIS {
       Destructor
     */ 
     ~ArmSegment() {
-      mArmSegments.erase(mSegmentID); // mArmSegments[mSegmentID] = NULL; 
+      mArmSegments.erase(mSegmentIndex); // mArmSegments[mSegmentIndex] = NULL; 
       //mNumArmSegments--; 
 	  int i=2; while (i--) {
         if (mEndpoints[i]) {
@@ -596,7 +601,7 @@ namespace paraDIS {
       mNumClassified = 0; 
       mNumDecomposed = 0; 
       mNumArmSegmentsMeasured = 0; 
-      mNextSegmentID = 0; 
+      mNextSegmentIndex = 0; 
     }
     
     /*!
@@ -620,14 +625,14 @@ namespace paraDIS {
       Set the segment id to the next available global ID
     */ 
     void SetIndex(uint32_t id) {
-      mSegmentID = id; 
+      mSegmentIndex = id; 
       return; 
     }
     /*!
       accessor -- noop if not debug mode
     */ 
     uint32_t GetID(void) {
-      return mSegmentID; 
+      return mSegmentIndex; 
     }
 
      /*! 
@@ -736,7 +741,7 @@ namespace paraDIS {
     /*!
       purely for debugging
     */ 
-    int32_t mSegmentID; 
+    int32_t mSegmentIndex; 
 
     
     /*! 
@@ -748,7 +753,7 @@ namespace paraDIS {
     static double mSegLen;
     static uint32_t mNumClassified, mNumBeforeDecomposition, 
       mNumDecomposed, mNumArmSegmentsMeasured; 
-    static uint32_t mNextSegmentID; 
+    static uint32_t mNextSegmentIndex; 
 	static ArmSegment *mInitialLightTheFuseArmSegment;
 	static uint32_t mMaxLightTheFuseDistance; 
 	uint32_t mLightTheFuseDistance; 
@@ -884,7 +889,15 @@ namespace paraDIS {
       A helper for Decompose() function.  
     */ 
     void ExtendByArm(Arm *sourceArm, vector<ArmSegment*> &sourceSegments, Node *sharedNode, bool reuseSegments); 
-    
+
+	/* temporary helper to check mNodes and mSegments vs. old method */ 
+	void printNodes(void) const; 
+
+	/* temporary helper to check mNodes and mSegments vs. old method */ 
+	void printSegments(void) const; 
+
+	/* temporary helper to check mNodes and mSegments vs. old method */ 
+	void CheckNodesAndSegments(void) const; 
 
     /*!
       Merge with neighbor arms. 
@@ -1099,6 +1112,10 @@ namespace paraDIS {
 
     vector < ArmSegment *> mTerminalSegments; // All arms have two of these, even loops, unless there is only a single segment in the arm.  
     vector <Node *> mTerminalNodes;  // All arms have two of these, except loops.
+
+	// speed up at cost of memory
+	std::deque<Node*> mNodes; 
+	std::deque<ArmSegment*> mSegments; 
 
     int8_t mArmType;
     int8_t mMetaArmType; // of its parent if it exists
@@ -1708,9 +1725,10 @@ s      Tell the data set which file to read
   /*!
     Starting at the given first node and heading out in the direction of the given first segment in an arm, trace along the arm until you find its other endpoint (terminal segment and node).  When wrapped nodes are found, use their real counterparts instead.  
     This will be where we actually discriminate between node types, etc.  But as mentioned for BuildArms, we don't do that yet.  
+	the "reverse" parameter if true says prepend found nodes and segments in reverse order to mNodes and mSegments, used when going from middle of arm
   */ 
     void FindEndOfArm(Node *firstNode, Node **oFoundEndNode, 
-                      ArmSegment *firstSegment,  ArmSegment *&foundEndSegment, Arm *theArm);
+                      ArmSegment *firstSegment,  ArmSegment *&foundEndSegment, Arm *theArm, bool reverse = false);
     /*! 
       Create all arms for our region. This function is a bit long because we are avoiding recursion by using loops.  Recursion for these arms would get pretty deep. 
       IN THE FUTURE, to save memory, we will implement the following: 
