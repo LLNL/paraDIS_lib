@@ -883,12 +883,12 @@ namespace paraDIS {
     /*!
       A helper for ExtendByArm() function.  
     */ 
-    void ExtendBySegments(Arm *sourceArm, vector<ArmSegment*> &sourceSegments, Node *sharedNode, bool reuseSegments);
+    void ExtendBySegments(Arm *sourceArm, Node *sharedNode, bool reuseSegments);
 
     /*!
       A helper for Decompose() function.  
     */ 
-    void ExtendByArm(Arm *sourceArm, vector<ArmSegment*> &sourceSegments, Node *sharedNode, bool reuseSegments); 
+    void ExtendByArm(Arm *sourceArm, Node *sharedNode, bool reuseSegments); 
 
 	/* temporary helper to check mNodes and mSegments vs. old method */ 
 	void printNodes(void) const; 
@@ -946,19 +946,7 @@ namespace paraDIS {
     */ 
     void GetNodesAndSegments(Node *startNode, vector<Node*>*outnodes, vector<ArmSegment*>*outsegs) const;
 
-	// =========================================================
-	vector<ArmSegment*> GetSegments(Node *startNode=NULL) {
-	  vector<ArmSegment*> segs; 
-	  GetNodesAndSegments(startNode, NULL, &segs); 
-	  return segs; 
-	}
 
-	// =========================================================
-	vector<Node*> GetNodes(Node *startNode=NULL) {
-	  vector<Node*> nodes; 
-	  GetNodesAndSegments(startNode, &nodes, NULL); 
-	  return nodes; 
-	}
 
 	// =========================================================
 	// Returns number of nodes, not counting "NULL" nodes for wrapping
