@@ -3416,9 +3416,6 @@ namespace paraDIS {
  	uint32_t nodenum = 0, segnum = 0; 
 	Node *currentNode = iStartNode, *otherEnd;
     ArmSegment *currentSegment = iStartSegment;
-	if (theArm->mArmID == 43) {
-	  int arm43 = true; 
-	}
 
 	if (!theArm->mNodes.size()) {
 	  theArm->mNodes.push_back(iStartNode); 
@@ -3522,15 +3519,18 @@ namespace paraDIS {
             theArm->mTerminalSegments.push_back(endSegment0);
 			if (node->mNeighborSegments[1]->mSeen) {
 			  dbprintf(5, "DataSet::BuildArms(): Skipping second half of arm %d as it is a loop.\n", theArm->mArmID);
-			} 
+			}
 			else {
 			  dbprintf(5, "DataSet::BuildArms(): Searching out second half of arm %d.\n", theArm->mArmID);
 			  FindEndOfArm(node, &endNode1, node->mNeighborSegments[1], endSegment1 , theArm, true);
-			  paradis_assert(endNode0 != endNode1); 
-			  theArm->mTerminalNodes.push_back(endNode1);
-              endNode1->mNeighborArms.push_back(theArm);
-			  paradis_assert(endSegment0 != endSegment1);
-			  theArm->mTerminalSegments.push_back(endSegment1);
+			  if (endNode0 == endNode1) {
+				dbprintf(5, "DataSet::BuildArms(): Arm %d is a loop as both directions terminated in the same endpoint.\n", theArm->mArmID);
+			  } 
+			  else {
+				theArm->mTerminalNodes.push_back(endNode1);
+				endNode1->mNeighborArms.push_back(theArm);
+				theArm->mTerminalSegments.push_back(endSegment1);
+			  }
 			}
 			dbprintf(5, "DataSet::BuildArms() (from middle of arm):  Pushing back arm %d: %s\n", armnum++, theArm->Stringify(0, false).c_str());
 
