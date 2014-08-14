@@ -1,3 +1,6 @@
+2014-08-12: version 2.5.1
+       More internal data structure changes for performance and readability at the expense of modest increase in memory usage.  
+
 2014-08-12: version 2.5.0
        Changed internal data structures to simplify code and get some speedup.
  

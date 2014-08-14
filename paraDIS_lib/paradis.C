@@ -1730,7 +1730,7 @@ namespace paraDIS {
 		seg = new ArmSegment(*seg); 
 		dbprintf(6, "Arm::ExtendBySegments(arm %d): Creating duplicate segment %d\n", mArmID, segnum);	  
 		dupe = "DUPLICATE: "; 
-		ArmSegment::mArmSegments[interiorSegment->mSegmentIndex] = interiorSegment; 
+		ArmSegment::mArmSegments[seg->mSegmentIndex] = seg; 
 		ArmSegment::mNumDecomposed ++; 
 	  }
 	  if (reuseSegments && !segnum) {
