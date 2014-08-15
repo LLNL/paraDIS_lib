@@ -346,6 +346,7 @@ namespace paraDIS {
 	for (uint32_t arm = 0; arm < numArms; arm++) {
 	  nonNullNodes += arms[arm]->mNodes.size() - arms[arm]->mNumWrappedSegments;
 	  numlines += arms[arm]->mNumNormalSegments; 
+	  dbprintf(6, "Arm %d: mNumNormalSegments is %d, numwrapped is %d, actual segments is %d, actual nodes is %d\n", arms[arm]->mArmID, arms[arm]->mNumNormalSegments, (int)(arms[arm]->mNumWrappedSegments), arms[arm]->mSegments.size(), arms[arm]->mNodes.size()); 
 	} 
     uint32_t armnode = 0;
     vector<float> previous;
@@ -385,8 +386,8 @@ namespace paraDIS {
     // next the lines
     vtkfile << str(boost::format("LINES %d %d") % numlines % (3*numlines)) << endl;
     uint32_t currentIndex = 0, linesWritten = 0;
-	Node *previousNode = NULL; 
 	for (uint32_t armnum = 0; armnum < numArms; armnum++) {
+	  Node *previousNode = NULL; 
 	  for (deque<Node*>::iterator nodepos = arms[armnum]->mNodes.begin(); 
 		   nodepos != arms[armnum]->mNodes.end(); nodepos++) {
 		if (*nodepos) {
@@ -1330,9 +1331,8 @@ namespace paraDIS {
 		dbprintf(6, "Arm::GetNodesAndSegments(arm %d): pushed back WRAPPED (null) node %d\n", mArmID, nodenum++);
 	  }
 	  currentNode = currentSegment->GetOtherEndpoint(currentNode); 
-	  string nodestring = "(NULL)"; 
-	  if (currentNode) nodestring = currentNode->Stringify(0,true); 
-	  dbprintf(6, "Arm::GetNodesAndSegments(arm %d): next node: %s\n", mArmID, nodestring.c_str());
+	  paradis_assert(currentNode); 
+	  dbprintf(6, "Arm::GetNodesAndSegments(arm %d): next node: %s\n", mArmID, currentNode->Stringify(0,true).c_str());
 	  if (outnodes) {
 		dbprintf(6, "Arm::GetNodesAndSegments(arm %d): pushing back node %d: %s\n", mArmID, nodenum++, currentNode->Stringify(0,true).c_str());
 		outnodes->push_back(currentNode); 
@@ -1646,6 +1646,9 @@ namespace paraDIS {
 	bool sourceForward = true, // source:  0....S  with S+1 elements
 	  destForward = true; // dest:  0....D  with D+1 elements
 	if (sharedNode != sourceArm->mNodes[0]) {
+	  if (sharedNode != sourceArm->mNodes[sourceArm->mNodes.size()-1]) {
+		sourceArm->printNodes(); 
+	  }
 	  paradis_assert(sharedNode == sourceArm->mNodes[sourceArm->mNodes.size()-1]); 
 	  sourceForward = false; // source:  S....0
 	}
@@ -1672,7 +1675,9 @@ namespace paraDIS {
 	} 
 
 	// NOW START ADDING SOURCE NODES
-	mNodes.pop_front();  // remove shared node -- it will be replaced as needed
+	// remove shared node -- it will be replaced as needed
+	mNodes.pop_front();   
+
 	deque<Node *>::iterator pos = sourceArm->mNodes.begin();
 	for (uint32_t nodenum = 0; nodenum < sourceArm->mNodes.size()-1; nodenum++, pos++) {
 	  Node *node = (*pos);
@@ -1691,7 +1696,13 @@ namespace paraDIS {
 		node->mNeighborSegments.clear(); 
 		node->mNeighborSegments.push_back(mSegments[0]); 
 		mSegments[0]->mEndpoints[0] = node; 
-		mSegments[0]->mEndpoints[1] = mNodes[0]; 
+		if (mSegments[0]->mWrapped) {
+		  paradis_assert(!mNodes[0]); // this has to be NULL
+		  mSegments[0]->mEndpoints[1] = mNodes[1]; 
+		}
+		else {
+		  mSegments[0]->mEndpoints[1] = mNodes[0]; 
+		}
 	  }
 	  dbprintf(6, "Arm::ExtendBySegments(arm %d): push_front(node %d): %s\n", mArmID, nodenum, nodestring.c_str()); 	  
 	  mNodes.push_front(node); 

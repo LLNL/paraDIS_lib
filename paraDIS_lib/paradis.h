@@ -565,6 +565,9 @@ namespace paraDIS {
     void init(void) {
       mScrewType = SCREW_UNDEFINED;
       mSegmentIndex = mNextSegmentIndex; 
+	  if (mSegmentIndex == 446019) {
+		int am446019 = true; 
+	  }
       mNextSegmentIndex++; 
 	  mParentArm = NULL; 
 	  mLightTheFuseDistance = 0; 
