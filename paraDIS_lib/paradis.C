@@ -1404,7 +1404,7 @@ namespace paraDIS {
     if (mThreshold > 0 && mArmLength < mThreshold) {
       if (mArmType == ARM_NN_111) mArmType = ARM_SHORT_NN_111;
     }
-    dbprintf(5, "Arm::Classify(%d): gave arm type %d.\n", mArmID, mArmType);
+    dbprintf(5, "Arm::Classify(%d): gave arm type %d (%s).\n", mArmID, mArmType, ArmTypeNames(mArmType).c_str());
     return;
   }
   
@@ -1413,10 +1413,10 @@ namespace paraDIS {
   void Arm::ReplaceTerminalNode(Node* node, Node *replacement) {
     node->RemoveNeighborArm(this, true);
     replacement->mNeighborArms.push_back(this);
-    int segnum = mTerminalSegments.size();
+    int segnum = node->mNeighborSegments.size();
     while(segnum--) {
-      ArmSegment *segment = mTerminalSegments[segnum];
-      if (segment->HasEndpoint(node)) {
+      ArmSegment *segment = node->mNeighborSegments[segnum];
+      if (segment->mParentArm == this && segment->HasEndpoint(node)) {
         segment->ReplaceEndpoint(node, replacement);
       }
     }
@@ -1492,23 +1492,13 @@ namespace paraDIS {
     mNumDestroyedInDetachment++;
     
  	// =========================================================
-	// Check if we just made ourself into a loop.  
-	// If so, then completely detach from the node if there are other shared arms there.
-	// This is because we cannot decompose high-energy loops meaningfully.  
-    if (mTerminalNodes[0] == mTerminalNodes[1]) {
-      dbprintf(4, "Arm::DetachAndFuse(arm %d): Before exiting and after fusing, I notice that this arm has two identical terminal nodes, and therefore is a loop.  The easiest thing here is to remove one terminal node and then just detach it from its neighbors.  We also should remove a terminal segment if we have two. \n", mArmID);
-      mTerminalNodes.pop_back();
-	  Node *node = mTerminalNodes[0];  // save
-	  DetachLoopFromNode(mTerminalNodes[0]); // potentially changes mTerminalNodes[0]
-	  if (node->mNeighborSegments.size() == 2) {		
-		Arm *arm = node->mNeighborSegments[0]->mParentArm, 
-		  *other = node->mNeighborSegments[1]->mParentArm; 
-		if (arm != other) {
-		  dbprintf(4, "After detaching our loopy self from the node, here are two remaining arms as node neighbors of the node from which we detached.  These need to be fused immediately.  Recursively calling DetachAndFuse before cleanup... \n"); 
-		  arm->DetachAndFuse(node, other); 
-		}
-	  }
-	  // Loops have two terminal segments just like everyone else, so leave them alone.
+	if (node->mNeighborSegments.size() == 2) {		
+	  Arm *arm = node->mNeighborSegments[0]->mParentArm, 
+		*other = node->mNeighborSegments[1]->mParentArm; 
+	  if (arm != other) {
+		dbprintf(4, "After DetachAndFuse, there are two remaining arms as node neighbors of the node from which we detached.  These should to be fused immediately.  Recursively calling DetachAndFuse before cleanup... \n"); 
+		arm->DetachAndFuse(node, other); 
+	  }	  
     }
 
     dbprintf(5, str(boost::format("Arm::DetachAndFuse(arm %1%): Complete. This arm looks like this: %2%\n") % mArmID % Stringify(0, false)).c_str());
@@ -1695,10 +1685,12 @@ namespace paraDIS {
 	mNodes[0]->mNeighborArms.push_back(this); 
 
 	if (mTerminalNodes.size() == 2 && mTerminalNodes[0] == mTerminalNodes[1]) {
+    dbprintf(5, "\nArm::ExtendBySegments(%d): After extension the arm is a loop (has two matching terminal nodes)", mArmID);
 	  mTerminalNodes.clear(); 
 	  mTerminalNodes.push_back(mNodes[0]); 
 	  mTerminalSegments.clear(); 
 	  mTerminalSegments.push_back(mSegments[0]); 
+	  Classify(); 
 	}
 
     dbprintf(5, "\nArm::ExtendBySegments(%d): After extension the arm looks like this: %s", mArmID, Stringify(0,false).c_str());
@@ -1722,89 +1714,6 @@ namespace paraDIS {
 	}
 	
 	return; 
-	//====================================================
-
-	//====================================================
-	// tried and true "old slow way" 
-	//====================================================
-	  
-	if (reuseSegments) { 	  
-	  int8_t myBurgers = mTerminalSegments[0]->mBurgersType; 
-	  dbprintf(5, "ExtendBySegments(%d): reuseSegments = true.  Iterate through the segments and reparent them to us.\n", mArmID); 
-	  for  (uint32_t seg = 0; seg < sourceArm->mSegments.size(); seg++) {
-		sourceArm->mSegments[seg]->mParentArm = this; 
-		sourceArm->mSegments[seg]->mBurgersType = myBurgers; 
-		if (sourceArm->mSegments[seg]->mWrapped) {
-		  mNumWrappedSegments++; 
-		}
-		else {
-		  mNumNormalSegments++;
-		  mArmLength += sourceArm->mSegments[seg]->GetLength(true);
-		}
-	  }	 
-	  
-	  mTerminalSegments[sharedSegmentNum] = sourceArm->mSegments[sourceArm->mSegments.size()-1];
-	  mTerminalNodes[sharedTermNodeNum] = sourceNonSharedNode; 
-	  mTerminalNodes[sharedTermNodeNum]->mNeighborArms.push_back(this); 
-	} 
-	else {
-	  //======================================================================
-	  dbprintf(5, "ExtendBySegments(%d): reuseSegments = false, so we must copy the shared node and start from the copy.\n", mArmID); 
-
-	  Node *newNode = Node::DuplicateNode(sharedNode);	  
-	  mTerminalSegments[sharedSegmentNum]->ReplaceEndpoint(sharedNode, newNode);
-	  dbprintf(6, "ExtendBySegments(%d): Replaced the sharedNode %d as endpoint of terminal segment %d with newNode %d\n",
-			   mArmID, sharedNode->mNodeIndex, mTerminalSegments[sharedSegmentNum]->mSegmentIndex, newNode->mNodeIndex);
-	  
-	  
-	  ArmSegment *interiorSegment = NULL;
-	  int btype = GetBurgersType();
-	  Node *sourceNode = sharedNode; // for iterating through source arm
-	  dbprintf(6, "ExtendBySegments(%d): iterating through %d source segments\n", mArmID, sourceArm->mSegments.size());
-	  
-	  for  (uint32_t seg = 0; seg < sourceArm->mSegments.size(); seg++) {
-		sourceNode = sourceArm->mSegments[seg]->GetOtherEndpoint(sourceNode);
-		
-		Node *previousNewNode = newNode;
-		if (seg == sourceArm->mSegments.size()-1) {
-		  newNode = sourceNonSharedNode;
-		  if (!newNode) newNode = sharedNode; // source is a loop
-		  
-		  dbprintf(6, "ExtendBySegments(%d): Arm segment #%d (last segment): Using source arm's nonshared terminal node %d as newNode.\n", mArmID, seg, newNode->mNodeIndex);
-		} else {
-		  newNode = Node::DuplicateNode(sourceNode);
-		  dbprintf(6, "ExtendBySegments(%d): Arm segment #%d: Created newNode %d by copying source node %d.\n", mArmID, seg, newNode->mNodeIndex, sourceNode->mNodeIndex);
-		}
-		interiorSegment = new ArmSegment(*sourceArm->mSegments[seg]);
-		ArmSegment::mArmSegments[interiorSegment->mSegmentIndex] = interiorSegment; 
-		ArmSegment::mNumDecomposed ++; 
-		dbprintf(6, "ExtendBySegments(%d): Setting source segment %d as BURGERS_DECOMPOSED.\n", mArmID, sourceArm->mSegments[seg]->mSegmentIndex);
-		interiorSegment->mParentArm = this;
-		interiorSegment->SetBurgersType(btype);
-		interiorSegment->mEndpoints[0] = previousNewNode;
-		interiorSegment->mEndpoints[1] = newNode;
-		previousNewNode->mNeighborSegments.push_back(interiorSegment);
-		newNode->mNeighborSegments.push_back(interiorSegment);		
-		if (interiorSegment->mWrapped) {
-		  mNumWrappedSegments++; 
-		} 
-		else {
-		  mNumNormalSegments++;
-		  mArmLength += interiorSegment->GetLength(true);
-		}
-		dbprintf(6, "ExtendBySegments(%d): Arm segment #%d: created segment %d by copying source segment %d, resulting in: %s\n", mArmID, seg, interiorSegment->mSegmentIndex, sourceArm->mSegments[seg]->mSegmentIndex, interiorSegment->Stringify(0).c_str());
-		dbprintf(6, "ExtendBySegments(%d): Arm segment #%d: Added newNode: %s\n", mArmID, seg, newNode->Stringify(0).c_str());
-		
-		
-	  } /* end iterating through segments */ 
-	  mTerminalSegments[sharedSegmentNum] = interiorSegment;
-	  newNode->mNeighborArms.push_back(this);
-	  
-	  mTerminalNodes[sharedTermNodeNum] = newNode;
-	}
-
-	
-    dbprintf(5, "\nExtendBySegments(%d): After extension the arm looks like this: %s", mArmID, Stringify(0,false).c_str());
     return;
   }
 
@@ -2161,13 +2070,18 @@ namespace paraDIS {
     while (i<mTerminalNodes.size()) {
       string s2 = mTerminalNodes[i]->Stringify(indent+1);
       s += INDENT(indent+1);
-      s+=  str(boost::format("Terminal Node %1%: %2%\n") % i % s2);
+      s+=  str(boost::format("MetaArm %1% Terminal Node %2%: %3%\n") % mMetaArmID % i % s2);
       ++i;
     }
     s += "\n";
     i = 0;
     while (i<mTerminalArms.size()) {
-      s += INDENT(indent+1) + str(boost::format("Terminal Arm %1%: %2%") % i % mTerminalArms[i]->Stringify(indent + 1));
+      s += INDENT(indent+1) + str(boost::format("MetaArm %1% Terminal Arm %2%: %3%")  % mMetaArmID % i % mTerminalArms[i]->Stringify(indent + 1));
+      ++i;
+    }
+    i = 0;
+    while (i<mAllArms.size()) {
+      s += INDENT(indent+1) + str(boost::format("MetaArm %1% Arm %2%: %3%")  % mMetaArmID % i % mAllArms[i]->Stringify(indent + 1));
       ++i;
     }
     return s;
@@ -3307,7 +3221,7 @@ namespace paraDIS {
   //===========================================================================
   void DataSet::DebugPrintNodes(void) {
     std::string filename = mOutputDir + "/" + mOutputBasename + "-Nodes-debug.txt";
-    dbecho(1, str(boost::format("Writing full nodes to debug file %s... ")%filename).c_str());
+    dbecho(1, str(boost::format("Writing nodes to debug file %s... ")%filename).c_str());
 
 
     ofstream debugfile (filename.c_str());
@@ -3323,16 +3237,20 @@ namespace paraDIS {
     debugfile << "=================================================" << endl;
     debugfile << endl << endl;
 
+	STARTPROGRESS();
+	uint32_t nodenum = 0, numnodes = Node::mNodes.size();
     for (map<uint32_t, vector<Node*> >::iterator nodepos = Node::mNodes.begin(); nodepos != Node::mNodes.end(); nodepos++) {
       uint32_t key = nodepos->first;
 	  for (vector<Node*>::iterator nodep = nodepos->second.begin(); nodep != nodepos->second.end(); nodep++) {
-		Node *node = *nodep;
+       UPDATEPROGRESS(nodenum, numnodes,  "DebugPrintNodes: ");
+ 		Node *node = *nodep;
 		debugfile << "mNodes[" << key <<"]: " << node->Stringify(false ) << endl;
 		debugfile << "**************************************************************" << endl << endl;
 	  }
 	}
-    dbecho(1, "Wrote full nodes to debug file\n"); ;
-    return;
+    COMPLETEPROGRESS(numnodes,  "DebugPrintNodes: ");
+	dbecho(1, "Wrote full nodes to debug file\n"); ;
+	return;
   }
   
   //===========================================================================
@@ -3592,7 +3510,6 @@ namespace paraDIS {
     debugfile << "Total memory used by arms: " << Arm::mArms.size() * sizeof(Arm) << endl;
     debugfile << "Number of arm segments: " << ArmSegment::mArmSegments.size() << endl;
     debugfile << "Memory used by arm segments and their pointers: " << ArmSegment::mArmSegments.size() * (sizeof(ArmSegment)) << endl;
-    dbecho(1, "Done writing arm details to debug file \n");
     
     return;
   }
@@ -3611,9 +3528,12 @@ namespace paraDIS {
     debugfile << "Meta-Arms file written on " << timestamp() << " by " << GetLibraryVersionString("DebugPrintMetaArms") << endl;
 
     debugfile <<"There are " << mMetaArms.size() << " MetaArms." << endl;
+	uint32_t manum = 0, nummaarms = mMetaArms.size(); 
+	STARTPROGRESS();
     vector<boost::shared_ptr<MetaArm> >::iterator pos = mMetaArms.begin(), endpos = mMetaArms.end();
     uint32_t armnum = 0;
     while (pos != endpos) {
+	  UPDATEPROGRESS(manum, nummaarms,  "CreateNodesAndArmSegments: ");
       debugfile << "MetaArm #" << armnum << ": " << (*pos)->Stringify(0) << endl;
       debugfile.flush();
 #if INSANE_DEBUG
@@ -3628,10 +3548,11 @@ namespace paraDIS {
       ++armnum;
       ++pos;
     }
-    debugfile << "Number of Metaarms: " << mMetaArms.size()<< endl;
+	  debugfile << "Number of Metaarms: " << mMetaArms.size()<< endl;
     debugfile << "Total memory used by arms: " << mMetaArms.size() * sizeof(MetaArm) << endl;
     
-    dbecho(1, "Finished writing MetaArm details to debug file\n");
+    COMPLETEPROGRESS(nummaarms,  "CreateNodesAndArmSegments: ");
+    dbecho(1, "Finished writing MetaArm details to debug file %s\n", filename.c_str());
     return;
   }
   
@@ -3728,10 +3649,9 @@ namespace paraDIS {
 	std::vector<boost::shared_ptr<MetaArm> >::iterator marm; 
 	fprintf(povdeclfile, "/* ======================================== */ \n"); 
 	fprintf(povdeclfile, "/* BEGIN METAARM LIST */ \n"); 
-	  fprintf(povdeclfile, "/* ======================================== */ \n"); 
-
+	fprintf(povdeclfile, "/* ======================================== */ \n"); 
 	//	fprintf(povdeclfile, "union {\n\tunion {\n");
-	for (marm = mMetaArms.begin(); marm != mMetaArms.end(); marm++, marmnum++) {
+	for (marm = mMetaArms.begin(), marmnum=0; marm != mMetaArms.end(); marm++, marmnum++) {
 	  UPDATEPROGRESS(marmnum, numMarms, "Writing MetaArms to povray file");
 	  vector<Node *> marmnodes = (*marm)->GetNodes();
 	  if (!marmnodes.size()) continue;
@@ -3828,7 +3748,7 @@ namespace paraDIS {
 	  
 	}
 	COMPLETEPROGRESS(numMarms, "Writing MetaArms to povray  files");
-	dbprintf(2, "Wrote %d segments out of %d into povray object file\n", segsWritten, ArmSegment::mArmSegments.size()); 
+	dbecho(1, "Wrote %d segments out of %d into povray object file\n", (int)segsWritten, (int)ArmSegment::mArmSegments.size()); 
 	for (std::map<uint32_t, ArmSegment *>::iterator pos = ArmSegment::mArmSegments.begin(); pos != ArmSegment::mArmSegments.end(); pos++) {
 	  ArmSegment * seg = pos->second; 
 	  int segid = seg->GetID();
@@ -4986,9 +4906,9 @@ namespace paraDIS {
 	  }
 
 	  if (mDoDebugOutput) {
-		DebugPrintMetaArms();
 		DebugPrintArms();
 		DebugPrintNodes();
+		DebugPrintMetaArms();
 	  }
 	  
     } catch (string err) {
