@@ -3937,14 +3937,15 @@ namespace paraDIS {
 		numnodes += Arm::mArms[armnum]->mNodes.size() - Arm::mArms[armnum]->mNumWrappedSegments;
       }
       fprintf(segfile, "\nPOINTS %d float\n", numnodes);
-
+	  uint32_t nodeswritten = 0; 
       for (uint32_t armnum = 0; armnum < numarms; armnum++) {
 		Arm *arm = Arm::mArms[armnum+firstarm]; 
-		uint32_t armsegs = 0; 
+		uint32_t armsegs = 0, armnodes = 0; 
         Node *previous = NULL;
         for (deque<Node*>::const_iterator node = arm->mNodes.begin(); node != arm->mNodes.end(); node++) {
           if (*node) {
             fprintf(segfile, "%f %f %f\n", (*node)->mLocation[0], (*node)->mLocation[1], (*node)->mLocation[2]);
+			nodeswritten++; 
             if (previous) {
               numsegs ++;
 			  armsegs++; 
@@ -3958,10 +3959,18 @@ namespace paraDIS {
 		  dbecho(0, "armsegs %d != theArm->mNumNormalSegments %d for arm: %s\n", armsegs,arm ->mNumNormalSegments, arm->Stringify(0).c_str()); 
 		  errexit;
 		}
-		
+		if (armnodes != arm->mNodes.size() - arm->mNumWrappedSegments) {
+		  dbecho (0, "Arm %d: armnodes (%d) != arm->mNodes.size - arm->mNumWrappedSegments (%d) in WriteVTKFile()\n", arm->mArmID, armnodes, arm->mNodes.size() - arm->mNumWrappedSegments); 
+		paradis_assert(nodeswritten == numnodes) ;
+	  }
+		  
 		UPDATEPROGRESS(armnum, numarms, "Writing points for arms"); 
       }
 	  COMPLETEPROGRESS(numarms,  "Writing points for arms"); 
+	  if (nodeswritten != numnodes) {
+		dbecho (0, "Arm %d: nodeswritten (%d) != numnodes (%d) in WriteVTKFile()\n"", arm->mArmID, nodeswritten, numnodes); 
+		paradis_assert(nodeswritten == numnodes) ;
+	  }
 
       // ----------------------------------------------------------
       // 3. Segment file: Segments (connectivity)
