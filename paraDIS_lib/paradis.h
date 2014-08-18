@@ -565,9 +565,6 @@ namespace paraDIS {
     void init(void) {
       mScrewType = SCREW_UNDEFINED;
       mSegmentIndex = mNextSegmentIndex; 
-	  if (mSegmentIndex == 446019) {
-		int am446019 = true; 
-	  }
       mNextSegmentIndex++; 
 	  mParentArm = NULL; 
 	  mLightTheFuseDistance = 0; 
@@ -655,6 +652,7 @@ namespace paraDIS {
    
     /*! 
       Replace one segment endpoint with the given new one.  
+	  Remove self from oldEP neighbors, and add to newEP neighbors.
     */     
     void ReplaceEndpoint(Node *oldEP, Node *newEP) {
       if (mEndpoints[0] == oldEP) {
@@ -664,6 +662,8 @@ namespace paraDIS {
       } else {
         throw string("Error in ReplaceEndpoint -- there is no such endpoint"); 
       }
+	  oldEP->RemoveNeighborSegment(this); 
+	  newEP->mNeighborSegments.push_back(this); 
       return;
     }
 
@@ -869,7 +869,7 @@ namespace paraDIS {
     /*!
       Helper for DetachLoopFromNode and DetachAndFuse, does the detach part
     */ 
-    void DetachAndReplaceNode(Node *node, Node *replacement); 
+    void ReplaceTerminalNode(Node *node, Node *replacement); 
 
     /*!
       During decomposition, cross arms are removed from terminal nodes.  
