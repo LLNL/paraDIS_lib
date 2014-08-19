@@ -109,10 +109,10 @@ int main(int argc, char *argv[]) {
       vtkfile = true; 
       // jsonfile = true; // very slow on large files
       // povrayfuse = true; // very slow on large files
-      povrayfile = true; 
+      // povrayfile = true; // very slow on large files
       summary = true; 
       if (verbosity == -1) {
-        verbosity = 5; 
+        verbosity = 1; 
       }
     }
 
