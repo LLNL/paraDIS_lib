@@ -827,19 +827,19 @@ namespace paraDIS {
     for (uint32_t segnum = 0; segnum < mNeighborSegments.size()-1; ++segnum) {
       int8_t btype = mNeighborSegments[segnum]->GetBurgersType();
       if (!matched[segnum]) {
-        for (uint32_t match = segnum+1; match < mNeighborSegments.size(); ++match) {
-          if (!matched[match] &&
-              mNeighborSegments[match]->GetBurgersType() == btype) {
-            matched[match] = matched[segnum] = true;
+        for (uint32_t other = segnum+1; other < mNeighborSegments.size() && !matched[segnum]; ++other) {
+          if (!matched[other] &&
+              mNeighborSegments[other]->GetBurgersType() == btype) {
+            matched[other] = matched[segnum] = true;
             armpair[0] = mNeighborSegments[segnum]->mParentArm;
-            armpair[1] = mNeighborSegments[match]->mParentArm;
+            armpair[1] = mNeighborSegments[other]->mParentArm;
             armpair[0]->mExtendOrDetach = armpair[1]->mExtendOrDetach = true;
             crossarms.push_back(armpair);
             dbprintf(4, str(boost::format("Node::IdentifyCrossArms(): node(%1%): found crossing arms %2% and %3%.\n") % GetNodeIDString() % (armpair[0]->mArmID) % (armpair[1]->mArmID)).c_str());
             if (mNeighborSegments.size()- 2*crossarms.size() < 5)
               return crossarms;
           }
-        }/* match < mNeighborSegments.size(); */
+        }/* other < mNeighborSegments.size(); */
       } /* (!matched[segnum]) */
     } /* segnum < mNeighborSegments.size()-1 */
     return crossarms;
@@ -1434,6 +1434,7 @@ namespace paraDIS {
 	}
 	else {
 	  dbprintf(5, str(boost::format("Arm::ReplaceTerminalNode(arm %1%).ERROR  Our original node is not at either end of mNodes.\n")%mArmID).c_str()); 
+	  printNodes(); 
 	  errexit; 
 	}
     dbprintf(5, str(boost::format("Arm::ReplaceTerminalNode(arm %1%).  Our Replacement  node for arm is: %2%.  Original node is now: %3%\n") % mArmID % (replacement->Stringify()) % (node->Stringify())).c_str()); 
@@ -1719,24 +1720,24 @@ namespace paraDIS {
 
   //===========================================================================
   void Arm::printNodes(void) const {
-	if (dbg_isverbose() < 6) return; 
+	if (dbg_isverbose() < 5) return; 
 	dbprintf(6, "Arm::printNodes (arm %d)\n", mArmID); 
 	for (uint32_t n = 0; n < mNodes.size(); n++) {
 	  string nodestring = "(NULL)"; 
 	  if (mNodes[n]) nodestring =  mNodes[n]->Stringify(); 
-	  dbprintf(6, "Arm %d, Node %d: %s\n", mArmID, n, nodestring.c_str()); 
+	  dbprintf(5, "Arm %d, Node %d: %s\n", mArmID, n, nodestring.c_str()); 
 	}
 	return; 
   }
 
   //===========================================================================
   void Arm::printSegments(void) const {
-	if (dbg_isverbose() < 6) return; 
+	if (dbg_isverbose() < 5) return; 
 	dbprintf(6, "Arm::printSegments (arm %d)\n", mArmID); 
 	for (uint32_t n = 0; n < mSegments.size(); n++) {
 	  string segstring = "(NULL)"; 
 	  if (mSegments[n]) segstring =  mSegments[n]->Stringify(); 
-	  dbprintf(6, "Arm %d, Seg %d: %s\n", mArmID, n, segstring.c_str()); 
+	  dbprintf(5, "Arm %d, Seg %d: %s\n", mArmID, n, segstring.c_str()); 
 	}
 	return; 
   }
