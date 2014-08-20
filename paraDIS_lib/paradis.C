@@ -1521,7 +1521,7 @@ namespace paraDIS {
   //===========================================================================
   void Arm::ExtendBySegments(Arm *sourceArm, Node *sharedNode, bool reuseSegments) {
 	dbprintf(6, "Arm::ExtendBySegments(arm %d): sourceArm = %d, sharedNode = %s, reuse = %d\n", mArmID, sourceArm->mArmID, sharedNode->Stringify(0, true).c_str(), (int)reuseSegments);
-	dbprintf(6, "Arm::ExtendBySegments(arm %d): Before extension the arm looks like this: %s \n", mArmID, Stringify(0,false).c_str());
+	dbprintf(6, "Arm::ExtendBySegments(arm %d): destination arm (*this) looks like this: %s \n", mArmID, Stringify(0,false).c_str());
 	paradis_assert(sourceArm->mSegments.size() && mNodes.size() && mSegments.size());
 	  
 	//======================================================================
@@ -1584,21 +1584,26 @@ namespace paraDIS {
 
 	
 
-	if (!destForward) { // D....0 is wrong
+	if (!destForward) { // 0....D forward order is required
 	  reverse(mNodes.begin(), mNodes.end()); 
-	  reverse(mSegments.begin(), mSegments.end()); 
-	  dbprintf(6, "Arm::ExtendBySegments(arm %d): Reversed  arm %d .\n", mArmID, mArmID); 
-	  printNodes(); 
-	  printSegments(); 
-	}
+	  reverse(mSegments.begin(), mSegments.end()); 	 
+	  dbprintf(6, "Arm::ExtendBySegments(arm %d): 0....D forward order is required.  Reversing destination arm.\n", mArmID);
+	} else {
+	  dbprintf(6, "Arm::ExtendBySegments(arm %d): 0....D forward order is detected.  Not reversing destination arm.\n", mArmID);
+	}	
+	printNodes(); 
+	printSegments(); 
+	
 	if (!sourceForward) { // 0....S forward order is required
 	  reverse(sourceArm->mNodes.begin(), sourceArm->mNodes.end()); 
 	  reverse(sourceArm->mSegments.begin(), sourceArm->mSegments.end()); 
-	  dbprintf(6, "Arm::ExtendBySegments(arm %d): Reversed source arm %d .\n", mArmID, sourceArm->mArmID); 
-	  sourceArm->printNodes(); 
-	  sourceArm->printSegments(); 
+	  dbprintf(6, "Arm::ExtendBySegments(arm %d): 0....S forward order is required.  Reversing source arm %d .\n", mArmID, sourceArm->mArmID); 
+	} else {
+	  dbprintf(6, "Arm::ExtendBySegments(arm %d): 0....S forward order is detected.  Did not reverse source arm.\n", mArmID);
 	} 
-
+	sourceArm->printNodes(); 
+	sourceArm->printSegments(); 
+	
 	// NOW START ADDING SOURCE NODES
 	// remove shared node -- it will be replaced as needed
 	mNodes.pop_front();   
@@ -1617,7 +1622,7 @@ namespace paraDIS {
 		nodestring = dupe + node->Stringify(); 
 	  }
 	  if (!nodenum) {
-		dbprintf(6, "Arm::ExtendBySegments(arm %d): special case:  the first node %d has to be connected to our first segment %d\n", mArmID, node->mNodeIndex, mSegments[0]->mSegmentIndex); 
+		dbprintf(6, "Arm::ExtendBySegments(arm %d): special case:  the first node %d has to be connected to destination first segment %d\n", mArmID, node->mNodeIndex, mSegments[0]->mSegmentIndex); 
 		node->mNeighborSegments.clear(); 
 		node->mNeighborSegments.push_back(mSegments[0]); 
 		mSegments[0]->mEndpoints[0] = node; 
@@ -1695,7 +1700,7 @@ namespace paraDIS {
 	mNodes[0]->mNeighborArms.push_back(this); 
 
 	if (mTerminalNodes.size() == 2 && mTerminalNodes[0] == mTerminalNodes[1]) {
-    dbprintf(5, "\nArm::ExtendBySegments(%d): After extension the arm is a loop (has two matching terminal nodes)", mArmID);
+    dbprintf(5, "\nArm::ExtendBySegments(%d): After extension the destination arm is a loop (has two matching terminal nodes)", mArmID);
 	  mTerminalNodes.clear(); 
 	  mTerminalNodes.push_back(mNodes[0]); 
 	  mTerminalSegments.clear(); 
@@ -1703,7 +1708,7 @@ namespace paraDIS {
 	  mArmType = ARM_LOOP; 
 	}
 
-    dbprintf(5, "\nArm::ExtendBySegments(%d): After extension the arm looks like this: %s", mArmID, Stringify(0,false).c_str());
+    dbprintf(5, "\nArm::ExtendBySegments(%d): After extension the destination arm looks like this: %s", mArmID, Stringify(0,false).c_str());
 	printNodes(); 
 	printSegments(); 
 
@@ -1762,7 +1767,9 @@ namespace paraDIS {
 	  dbprintf(5, "testNodes.size(%d) != mNodes.size(%d)\n", testNodes.size(), mNodes.size()) ; 
 	  printNodes(); 
 	}
-	if (mArmType == ARM_LOOP && mNodes[1] != testNodes[1]) {
+	if (mArmType == ARM_LOOP &&
+		(mNodes[1] != testNodes[1] || 
+		 (!mNodes[1] && mNodes[2] != testNodes[2]))) {
 	  reverse(testNodes.begin(), testNodes.end()); 
 	}
 	for (uint32_t n = 0; n < mNodes.size(); n++) {
