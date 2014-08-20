@@ -3241,7 +3241,7 @@ namespace paraDIS {
 	  }
 	}
     COMPLETEPROGRESS(numnodes,  "DebugPrintNodes: ");
-	dbecho(1, "Wrote full nodes to debug file\n"); ;
+	//dbecho(1, "Wrote full nodes to debug file\n"); ;
 	return;
   }
   
@@ -3527,7 +3527,7 @@ namespace paraDIS {
     vector<boost::shared_ptr<MetaArm> >::iterator pos = mMetaArms.begin(), endpos = mMetaArms.end();
     uint32_t armnum = 0;
     while (pos != endpos) {
-	  UPDATEPROGRESS(manum, nummaarms,  "CreateNodesAndArmSegments: ");
+	  UPDATEPROGRESS(manum, nummaarms,  "Creating MetaArms: ");
       debugfile << "MetaArm #" << armnum << ": " << (*pos)->Stringify(0) << endl;
       debugfile.flush();
 #if INSANE_DEBUG
@@ -3545,7 +3545,7 @@ namespace paraDIS {
 	  debugfile << "Number of Metaarms: " << mMetaArms.size()<< endl;
     debugfile << "Total memory used by arms: " << mMetaArms.size() * sizeof(MetaArm) << endl;
     
-    COMPLETEPROGRESS(nummaarms,  "CreateNodesAndArmSegments: ");
+    COMPLETEPROGRESS(nummaarms,  "Creating MetaArms: ");
     dbecho(1, "Finished writing MetaArm details to debug file %s\n", filename.c_str());
     return;
   }
@@ -3905,8 +3905,10 @@ namespace paraDIS {
     float armsperfile = (float)(Arm::mArms.size())/segfiles.size();
     for (uint32_t fileno = 0; fileno < segfiles.size(); fileno++) {
 	  dbprintf(5, "Writing segment file %s\n", segfilenames[fileno].c_str()); 
-	  STARTPROGRESS()   ;
-      FILE *segfile = segfiles[fileno];
+      
+	  STARTPROGRESS();
+	  
+	  FILE *segfile = segfiles[fileno];
       string filename = segfilenames[fileno];
       uint32_t firstarm =  armsperfile * fileno;
       uint32_t lastarm = armsperfile *(fileno + 1) - 1;
