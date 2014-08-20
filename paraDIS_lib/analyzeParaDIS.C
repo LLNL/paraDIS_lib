@@ -26,7 +26,9 @@ int main(int argc, char *argv[]) {
 
   TCLAP::ValueArg<string> basenameFlag("b", "basename", "set output basename (default: if datafile = rs0001.data, then basename = rs0001)", false, "", "basename", cmd); 
 
-  TCLAP::SwitchArg debugfilesFlag("d", "debugfiles", "dump out detailed debug files in output directory", cmd); 
+  TCLAP::SwitchArg debugFlag("d", "debug", "same as -v 6 --debugfiles --full", cmd); 
+
+  TCLAP::SwitchArg debugfilesFlag("", "debugfiles", "dump out detailed debug files in output directory", cmd); 
 
   TCLAP::SwitchArg noDebugfilesFlag("", "no-debugfiles", "do NOT dump out detailed debug files in output directory", cmd); 
 
@@ -36,7 +38,7 @@ int main(int argc, char *argv[]) {
 
   TCLAP::ValueArg<string> fileoutFlag("o", "outfile", "Print output to outdir/filename.  If filename is stderr, then print to stderr. Default: outdir/basename.out", false, "", "filename", cmd); 
 
-  TCLAP::SwitchArg fullout("F", "full", "Same as running --stats --debugfiles --tagfile --vtkfile --povrayfile.  Note that using --no-renumber can also help.", cmd); 
+  TCLAP::SwitchArg fulloutFlag("F", "full", "Same as running --stats --tagfile.", cmd); 
 
   TCLAP::SwitchArg jsonfileFlag("J", "json-file", "export results to JSON file for visualization and other analysis", cmd); 
 
@@ -92,7 +94,9 @@ int main(int argc, char *argv[]) {
       exit(0);
     }
 
-    bool debugfiles = debugfilesFlag.getValue(); 
+	bool debug = debugFlag.getValue(); 
+	bool fullout = debug || fulloutFlag.getValue(); 
+    bool debugfiles = debug || debugfilesFlag.getValue(); 
     bool stats = statsFlag.getValue(); 
     bool tagfile = tagfileFlag.getValue();
     int verbosity = verbosityFlag.getValue(); 
@@ -102,7 +106,12 @@ int main(int argc, char *argv[]) {
     bool summary = summaryFlag.getValue(); 
 	bool povrayfuse = (povrayfuseFlag.getValue() != -1); 
 
-    if (fullout.getValue()) {
+	
+	if (verbosity == -1) {
+	  if (fullout) verbosity = 1; 
+	  if (debug) verbosity = 6; 
+	}
+    if (fullout) {
       // debugfiles = true;  // very slow on large files
       stats = true; 
       tagfile = true;
@@ -111,15 +120,12 @@ int main(int argc, char *argv[]) {
       // povrayfuse = true; // very slow on large files
       // povrayfile = true; // very slow on large files
       summary = true; 
-      if (verbosity == -1) {
-        verbosity = 1; 
-      }
     }
-
+	  
     if (noDebugfilesFlag.getValue()) {
       debugfiles = false; 
     }
-
+	  
     if (verbosity == -1) {
       verbosity = 0; 
     }
