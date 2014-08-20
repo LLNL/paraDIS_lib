@@ -72,7 +72,7 @@ int main(int argc, char *argv[]) {
 
   TCLAP::SwitchArg vtkfileFlag("V", "vtk-file", "export results to VTK fileset for VisIt parallel visualization", cmd); 
 
-  TCLAP::UnlabeledMultiArg<string> dumpfiles("dumpfiles", "dump files name(s)", true, "dump file name(s)", cmd); 
+  TCLAP::UnlabeledMultiArg<string> dumpfiles("dumpfiles", "dump files name(s)", false, "dump file name(s)", cmd); 
  
   try {
 	cmd.parse(argc, argv);
@@ -132,6 +132,12 @@ int main(int argc, char *argv[]) {
     if (verbosity) {
       cerr << "verbosity is " << verbosity << endl; 
     }
+	if (!dumpfiles.getValue().size()) {	  
+	  cmd.getOutput()->usage(cmd); 
+	  cerr << "ERROR:  you must supply at least one dumpfile to analyze." << endl; 
+	  exit(1); 
+	}
+	  
     for (vector<string>::const_iterator dfile = dumpfiles.getValue().begin(); dfile != dumpfiles.getValue().end(); dfile++) {
       string basename = basenameFlag.getValue(); 
       if (basename == "") {
