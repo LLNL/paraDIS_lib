@@ -93,25 +93,54 @@ std::string INDENT(int i) {
   theTime=theTimer.elapsed_time();									\
   thePercent=0
 
+static vector<int> GetAllBurgersTypes(void) {
+  vector<int> alltypes; 
+  alltypes.push_back(BURGERS_UNKNOWN); 
+  alltypes.push_back(BURGERS_NONE); 
+  alltypes.push_back(BURGERS_PPP); 
+  alltypes.push_back(BURGERS_PPM); 
+  alltypes.push_back(BURGERS_PMP); 
+  alltypes.push_back(BURGERS_PMM);
+  alltypes.push_back(BURGERS_200);
+  alltypes.push_back(BURGERS_020);
+  alltypes.push_back(BURGERS_002); 
+  alltypes.push_back(BURGERS_220); 
+  alltypes.push_back(BURGERS_202); 
+  alltypes.push_back(BURGERS_022); 
+  alltypes.push_back(BURGERS_311); 
+  alltypes.push_back(BURGERS_131); 
+  alltypes.push_back(BURGERS_113); 
+  alltypes.push_back(BURGERS_222); 
+  alltypes.push_back(BURGERS_004); 
+  alltypes.push_back(BURGERS_331); 
+  alltypes.push_back(BURGERS_313); 
+  alltypes.push_back(BURGERS_133); 
+  return alltypes;
+}
+
+
 string BurgersTypeNames(int btype) {
   switch (btype) {
   case BURGERS_UNKNOWN  : return "UNKNOWN";
-  case BURGERS_NONE   : return "NONE";
-  case BURGERS_PPP     : return "PPP";
-  case BURGERS_PPM    : return "PPM";
-  case BURGERS_PMP   : return "PMP";
-  case BURGERS_PMM   : return "PMM";
-  case BURGERS_200     : return "200";
+  case BURGERS_NONE     : return "NONE";
+  case BURGERS_PPP      : return "PPP";
+  case BURGERS_PPM      : return "PPM";
+  case BURGERS_PMP      : return "PMP";
+  case BURGERS_PMM      : return "PMM";
+  case BURGERS_200      : return "200";
   case BURGERS_020      : return "020";
-  case BURGERS_002    : return "002";
-  case BURGERS_220     : return "220";
+  case BURGERS_002      : return "002";
+  case BURGERS_220      : return "220";
   case BURGERS_202      : return "202";
   case BURGERS_022      : return "022";
   case BURGERS_311      : return "311";
-  case BURGERS_131     : return "131";
-  case BURGERS_113    : return "113";
-  case BURGERS_222    : return "222";
-  case BURGERS_004     : return "004";
+  case BURGERS_131      : return "131";
+  case BURGERS_113      : return "113";
+  case BURGERS_222      : return "222";
+  case BURGERS_004      : return "004";
+  case BURGERS_331      : return "331";
+  case BURGERS_313      : return "313";
+  case BURGERS_133      : return "133"; 
   default: return "UNKNOWN CODE";
   }
 }
@@ -193,6 +222,12 @@ int InterpretBurgersType(vector<float> burg) {
            (abs(catarray[0]) == 0 && catarray[1] == 4 && abs(catarray[2]) == 0) ||
            (catarray[0] == 4 && abs(catarray[1]) == 0 && abs(catarray[2]) == 0) )
     burgersType = BURGERS_004;
+   else if (abs(catarray[0]) == 1 && abs(catarray[1]) == 3 && catarray[2] == 3)
+     burgersType = BURGERS_133;
+   else if (abs(catarray[0]) == 3 && abs(catarray[1]) == 1 && catarray[2] == 3)
+     burgersType = BURGERS_313;
+   else if (abs(catarray[0]) == 3 && abs(catarray[1]) == 3 && catarray[2] == 1)
+     burgersType = BURGERS_331;
   else {
     burgersType = BURGERS_UNKNOWN;
     dbprintf(3, "\n\n********************************\n");
@@ -275,7 +310,7 @@ namespace paraDIS {
   string Arm::mTraceFileBasename;
   double Arm::mLongestLength = 0.0;
   double Arm::mDecomposedLength = 0.0;
-  vector<int32_t> Arm::mNumDecomposed(7, 0); // statistics
+  vector<int32_t> Arm::mNumDecomposed(NUM_ENERGY_LEVELS+1, 0); // statistics
   int32_t Arm::mNumDestroyedInDetachment = 0;
   double Arm::mTotalArmLengthBeforeDecomposition = 0.0;
   double Arm::mTotalArmLengthAfterDecomposition = 0.0;
@@ -550,9 +585,7 @@ namespace paraDIS {
 
 		if (!*nodepos) continue; // wrappage
 
-		uint32_t nodeID = (*nodepos)->mNodeIndex;
-		vtkfile <<  nodeID << " ";
-		vtkfile.flush();
+		vtkfile <<  (*nodepos)->mNodeIndex << " ";
 	  }
 	}
     vtkfile << endl << endl;
@@ -581,7 +614,6 @@ namespace paraDIS {
             "Segments, arms, and metaarms have Burgers vectors associated with them.\n"
             "  //  Segment BURGERS TYPES: (P = plus(+) and M = minus(-))\n"
   "// These are valued in order of increasing energy levels, corresponding to the sum of the square of the components of the burgers vector.  \n"
-  "#define BURGERS_DECOMPOSED  -2  // for segments that are decomposed\n"
   "#define BURGERS_UNKNOWN     -1  // analysis failed\n"
   "#define BURGERS_NONE        0   // no analysis done yet\n"
   "#define BURGERS_PPP         10  // +++  BEGIN ENERY LEVEL 1\n"
@@ -599,6 +631,9 @@ namespace paraDIS {
   "#define BURGERS_113         42\n"
   "#define BURGERS_222         50  // BEGIN ENERGY LEVEL 5\n"
   "#define BURGERS_004         60  // BEGIN ENERGY LEVEL 6\n"
+  "#define BURGERS_331         70  // BEGIN ENERGY LEVEL 7\n"
+  "#define BURGERS_313         71\n"
+  "#define BURGERS_133         72\n"
   "\n"
   "===================================================================\n"
   "NODE TYPES and MONSTER NODES: \n"
@@ -798,7 +833,7 @@ namespace paraDIS {
     // first, identify looped cross arms
     for (uint32_t segnum = 0; segnum < mNeighborSegments.size()-1; segnum++) {
       if (!matched[segnum] &&
-          mNeighborSegments[segnum]->mParentArm->mTerminalNodes.size() == 1) {
+          mNeighborSegments[segnum]->mParentArm->mArmType == ARM_LOOP) {
         dbprintf(4, str(boost::format("Node::IdentifyCrossArms(): node(%1%): found potential crossing loop arm %2%.\n") % GetNodeIDString() % mNeighborSegments[segnum]->mParentArm->mArmID).c_str());
         armpair[0] = NULL;
         for (uint32_t match = segnum+1; match < mNeighborSegments.size(); ++match) {
@@ -1054,7 +1089,7 @@ namespace paraDIS {
    */
   bool Arm::HaveFourUniqueType111ExternalArms(void) {
 
-    if (mTerminalNodes.size() != 2) return false;
+    if (mArmType == ARM_LOOP) return false;
 
     // enforce "at least one 3 armed endpoint" condition
     if (mTerminalNodes[0]->mNeighborSegments.size() != 3 && mTerminalNodes[1]->mNeighborSegments.size() != 3 ) return false;
@@ -1169,79 +1204,57 @@ namespace paraDIS {
     int err = 0;
     if (mCheckedForLinkedLoop) return;
     mCheckedForLinkedLoop = true;
-    
+	if (!mNodes.size()) return; 
     /*!
-      Iff we have one terminal node with four arms and one neighbor, or two terminal nodes with three arms and num neighbors == 2, then we are part of a linked loop.
+	  Iff 
+ 	  CASE A:  we have one terminal node with four arms and one neighbor arm, or 
+ 	  CASE B:  two terminal nodes with three arms and num (non-self) neighbors == 2, then we are part of a linked loop.
       Note that it's not true that if you have two terminal nodes with N arms and number of arms on each terminal node == N-1 that it's necessarily a linked loop, although it certainly is an interesting beast.
     */
-    
-    bool notPartOfLoop = false; //set for early termination
-    int numTerminalNodeArms = 0; // all terminal nodes must have the same number of arms.
-    // Count the number of distinct neighboring arms to this one
-    vector<Arm*> myNeighbors;
-    vector<Node *>::iterator termNode = mTerminalNodes.begin(), endNode = mTerminalNodes.end();
-    for (; !notPartOfLoop && termNode != endNode; termNode++) {
-      int neighborNum = (*termNode)->mNeighborSegments.size();
-      if (!numTerminalNodeArms) {
-        numTerminalNodeArms = neighborNum;
-      } else if (neighborNum != numTerminalNodeArms) {
-        notPartOfLoop = true;
-        break;
-      }
-
-      while (neighborNum --) {
-        Arm *neighbor = (*termNode)->mNeighborArms[neighborNum];
-        bool knownNeighbor = (neighbor == this);
-        if (!knownNeighbor &&
-            neighbor->mCheckedForLinkedLoop) {
-
-          /*!
-            Since this neighbor has been checked, we cannot be
-            part of a linked loop, or we would already be marked as such.
-            Just a quick reality check to confirm it and we're done.
-          */
-
-		  paradis_assert(!neighbor->mPartOfLinkedLoop); 
-		  notPartOfLoop = true;
-          break;
-        }
-        int myNeighborNum = myNeighbors.size();
-        while (!knownNeighbor && myNeighborNum--) {
-          if (myNeighbors[myNeighborNum] == neighbor) {
-            // duplicates are ok, and for linked loops, actually expected
-            knownNeighbor = true;
-          }
-        }
-        if (!knownNeighbor) {
-          // Aha!  We have a new neighbor of us
-          myNeighbors.push_back(neighbor);
-        }// found a new neighbor
-      }// looking at all neighbors of terminal node
-    } // looking at both terminal nodes
-
-    /*!
-      Are we part of a linked loop? See definition above -- it's tricky.
-    */
-
-    if (!notPartOfLoop) {
-      if ((myNeighbors.size() ==  2 && mTerminalNodes.size() == 2 && numTerminalNodeArms == 3) ||
-          (myNeighbors.size() == 1 && mTerminalNodes.size() == 1 && numTerminalNodeArms == 4)) {
-        mPartOfLinkedLoop = true;
-      }
-    }
-    
-    /*!
-      If we are not part of a linked loop, none of our neighbors are,
-      and if we are part of a linked loop, all of our neighbors are.
-      So mark this arm and all neighbors of both terminal nodes appropriately.
-    */
-    int neighborNum = myNeighbors.size();
-    while (neighborNum --) {
-      myNeighbors[neighborNum]->mCheckedForLinkedLoop = true;
-      myNeighbors[neighborNum]->mPartOfLinkedLoop = mPartOfLinkedLoop;
-    }
-    return;
-    
+	// CASE A
+ 	map<Arm*, bool> myNeighbors; 
+ 	if (mArmType == ARM_LOOP) {
+ 	  if (mNodes[0]->mNeighborSegments.size() == 4) {
+ 		int n = 4; 
+ 		while (n--) {		 
+ 		  Arm *arm = mNodes[0]->mNeighborSegments->mParentArm; 
+ 		  myNeighbors[arm] = true;  
+		}
+	  }
+	  if (mFoundArmIDs.size() == 2) {
+		mPartOfLinkedLoop = true;
+	  }
+	}
+ 
+	else if (mNodes.size() > 1) {
+	  // check for CASE B
+	  int nodenum = 0; 
+	  while (true) {
+		int n = mNodes[nodenum]->mNeighborSegments.size()
+		  if (n != 3) break; 
+		while (n--) {
+		  Arm *arm = mNodes[nodenum]->mNeighborSegments->mParentArm; 
+		  myNeighbors[arm] = true;  
+		}
+		if (mFoundArmIDs.size() > 3 || nodenum == mNodes.size()-1) break; 
+		nodenum = mNodes.size()-1; 
+	  }
+	  if (mFoundArmIDs.size() == 3) {
+		mPartOfLinkedLoop = true;
+	  }
+	}
+	
+	/*!
+	  If we are not part of a linked loop, none of our neighbors are,
+	  and if we are part of a linked loop, all of our neighbors are.
+	  So mark this arm and all neighbors of both terminal nodes appropriately.
+	*/
+	for (map<Arm*, bool>::iterator arm = myNeighbors.begin(); arm != myNeighbors.end(); arm++) {
+	  arm->first->mCheckedForLinkedLoop = true;
+	  arm->first->mPartOfLinkedLoop = mPartOfLinkedLoop;
+	}
+	return;
+	
   }
 #endif // LINKED_LOOPS
   
@@ -1288,10 +1301,8 @@ namespace paraDIS {
 		  endNode = mTerminalNodes[mTerminalNodes.size()-1-i]; 
 		}
 	  }	
-	  paradis_assert(startNode); 
-	}
-	paradis_assert(endNode); 
-	
+	  paradis_assert(endNode); 
+	}	
 	// ===============================================
 	// Find start segment
 	ArmSegment *startSegment = NULL; 
@@ -1365,9 +1376,10 @@ namespace paraDIS {
 #if LINKED_LOOPS
     CheckForLinkedLoops();
 #endif
-    if (!mNumNormalSegments) {
-      dbprintf(5, "Arm::Classify(%d): no segments in arm.\n", mArmID);
-      return;
+	if (!mNodes.size() || !mSegments.size()) {
+	  dbprintf(5, "Arm::Classify(%d): empty arm.\n", mArmID);
+ 	  mArmType = ARM_EMPTY; 
+	  return;
     }
 	int termnode = mTerminalNodes.size(); 
 	while (termnode--) {
@@ -1376,30 +1388,27 @@ namespace paraDIS {
 		mArmType = ARM_BOUNDARY; 
 	  }
 	}  
-	if (mArmType != ARM_BOUNDARY) {
-	  if (mTerminalNodes.size() == 1) {
-		mArmType = ARM_LOOP;
+	if (mArmType != ARM_BOUNDARY && mArmType != ARM_LOOP) {
+	  if (mTerminalNodes[0]->IsTypeM() && mTerminalNodes[1]->IsTypeM()) {
+		mArmType = ARM_MM_111;
+	  } else if (mTerminalNodes[0]->IsTypeM() || mTerminalNodes[1]->IsTypeM()){
+		mArmType = ARM_MN_111;
 	  } else {
-		if (mTerminalNodes[0]->IsTypeM() && mTerminalNodes[1]->IsTypeM()) {
-		  mArmType = ARM_MM_111;
-		} else if (mTerminalNodes[0]->IsTypeM() || mTerminalNodes[1]->IsTypeM()){
-		  mArmType = ARM_MN_111;
-		} else {
-		  mArmType = ARM_NN_111;
-		}
-		
-		// This changes _111 to _200 by definition
-		int btype = mTerminalSegments[0]->GetBurgersType();
-		if (btype == BURGERS_NONE || btype == BURGERS_UNKNOWN) {
-		  mArmType = ARM_UNKNOWN;
-		}
-		else {
-		  // All non-loop arms should be type 111 now.
-		  paradis_assert(btype == BURGERS_PPP || btype == BURGERS_PPM ||
-						 btype == BURGERS_PMP || btype == BURGERS_PMM); 
-		}
+		mArmType = ARM_NN_111;
+	  }
+	  
+	  // This changes _111 to _200 by definition
+	  int btype = mTerminalSegments[0]->GetBurgersType();
+	  if (btype == BURGERS_NONE || btype == BURGERS_UNKNOWN) {
+		mArmType = ARM_UNKNOWN;
+	  }
+	  else {
+		// All non-loop arms should be type 111 now.
+		paradis_assert(btype == BURGERS_PPP || btype == BURGERS_PPM ||
+					   btype == BURGERS_PMP || btype == BURGERS_PMM); 
 	  }
 	}
+	
     
     if (mThreshold > 0 && mArmLength < mThreshold) {
       if (mArmType == ARM_NN_111) mArmType = ARM_SHORT_NN_111;
@@ -1473,7 +1482,7 @@ namespace paraDIS {
 
 	// =========================================================
 	// we cannot be a loop.
-	paradis_assert(mTerminalNodes.size() == 2);
+	paradis_assert(mArmType != ARM_LOOP);
 
 	// new code:  we should be able to just set it up so we can call ExtendBySegments()
 	// =========================================================
@@ -1691,7 +1700,7 @@ namespace paraDIS {
 	  mTerminalNodes.push_back(mNodes[0]); 
 	  mTerminalSegments.clear(); 
 	  mTerminalSegments.push_back(mSegments[0]); 
-	  Classify(); 
+	  mArmType = ARM_LOOP; 
 	}
 
     dbprintf(5, "\nArm::ExtendBySegments(%d): After extension the arm looks like this: %s", mArmID, Stringify(0,false).c_str());
@@ -1753,7 +1762,7 @@ namespace paraDIS {
 	  dbprintf(5, "testNodes.size(%d) != mNodes.size(%d)\n", testNodes.size(), mNodes.size()) ; 
 	  printNodes(); 
 	}
-	if (mTerminalNodes.size() == 1 && mNodes[1] != testNodes[1]) {
+	if (mArmType == ARM_LOOP && mNodes[1] != testNodes[1]) {
 	  reverse(testNodes.begin(), testNodes.end()); 
 	}
 	for (uint32_t n = 0; n < mNodes.size(); n++) {
@@ -1772,7 +1781,7 @@ namespace paraDIS {
 	  dbprintf(5, "testSegs.size(%d) != mSegments.size(%d)\n", testSegs.size(), mSegments.size()) ; 
 	  printSegments(); 
 	}
-	if (mTerminalNodes.size() == 1 && testSegs[0] != mSegments[0]) {
+	if (mArmType == ARM_LOOP && testSegs[0] != mSegments[0]) {
 	  reverse(testSegs.begin(), testSegs.end()); 
 	}
 	for (uint32_t n = 0; n < mSegments.size(); n++) {
@@ -1795,10 +1804,8 @@ namespace paraDIS {
     // identify the shared terminal node in the neighbor arm:
     dbprintf(5, "\n======================================\n   ExtendByArm(source = %d): Extending arm: %s\n", sourceArm->mArmID, Stringify(0, false).c_str());
 
-    bool isLoop = false;
     ArmSegment * otherSharedSegment = NULL;
-    if (mTerminalNodes.size() == 1) {
-      isLoop = true;
+    if (mArmType == ARM_LOOP) {
       if (mTerminalSegments.size() != 1) {
 		dbprintf(0, "ExtendByArm(%d): We have a looped arm but there is more than one terminal segment.  This seems wrong.\n", mArmID); 
 		abort(); 
@@ -1817,28 +1824,21 @@ namespace paraDIS {
 	  dbprintf(4, "ExtendByArm(%d): We are extending a looped arm, so have to duplicate our terminal node for the algorithm to proceed correctly.\n", mArmID);
       mTerminalNodes.push_back(sharedNode);
     }
-	paradis_assert( mTerminalNodes.size() == 2)
-
-    bool sourceIsLoop = (sourceArm->mTerminalNodes.size() == 1);
-    paradis_assert(!sourceIsLoop); 
+	paradis_assert( mTerminalNodes.size() == 2);
 	
-    if (!isLoop) {
+	paradis_assert(sourceArm->mArmType != ARM_LOOP); 
+	
+    if (mArmType != ARM_LOOP) {
       dbprintf(5, "ExtendByArm(%d): CASE 1: no loops: extend by source once.\n", mArmID);
       ExtendBySegments(sourceArm, sharedNode, reuseSegments);
     }
-    else /* if (isLoop && !sourceIsLoop) */  {
+    else /* if (mArmType == ARM_LOOP && !sourceIsLoop) */  {
       dbprintf(5, "ExtendByArm(%d): CASE 2: This arm is a loop, extend by source twice, possibly reuseing the segments the second time.\n", mArmID);
       ExtendBySegments(sourceArm, sharedNode, false);
       ExtendBySegments(sourceArm, sharedNode, reuseSegments);
     }
 
-
-    if (mTerminalNodes.size() == 2 && mTerminalNodes[0] == mTerminalNodes[1]) {
-      dbprintf(5, "ExtendByArm(%d): After extending the arm it now forms a loop.  Consolidating terminal nodes.\n", mArmID);
-      mTerminalNodes.erase(++mTerminalNodes.begin(), mTerminalNodes.end());
-    }
-
-    MakeAncestor(sourceArm);
+	MakeAncestor(sourceArm);
     
     dbprintf(5, "\nExtendByArm(%d): After extension the source arm looks like this: %s", sourceArm->mArmID, sourceArm->Stringify(0,false).c_str());
 	sourceArm->printNodes(); 
@@ -1880,7 +1880,7 @@ namespace paraDIS {
     vector<int> numneighbors;
     vector<int> extendedArmIDs;
 
-    if (numTermNodes == 0 || numTermNodes == 1) {
+    if (mArmType == ARM_LOOP) {
       dbprintf(4, "Arm::Decompose(energy %d, arm %d): Looped arm, will not decompose\n", energy,  mArmID);
       WriteTraceFiles("0-loop-no-decomposition");
       mDecomposing = false;
@@ -2144,7 +2144,7 @@ namespace paraDIS {
       dbprintf(4, "Candidate is type 200 and we shall try to recurse..\n", mMetaArmID);
     }
     uint32_t nodenum = candidate->mTerminalNodes.size();
-	paradis_assert(nodenum > 1); // cannot be a loop
+	paradis_assert(candidate->mArmType != ARM_LOOP); // cannot be a loop
 
     Node * otherNode = NULL;
     while (nodenum --) {
@@ -2912,36 +2912,19 @@ namespace paraDIS {
     //if (!dbg_isverbose()) return;
     //dbprintf(3, "Beginning PrintArmStats()");
     string summary;     
-    double armLengths[7] = {0}, totalArmLength=0;
+    double armLengths[NUM_ENERGY_LEVELS+1] = {0}, totalArmLength=0;
     
 
-    uint32_t numArms[7] = {0};  // number of arms of each type
+    uint32_t numArms[NUM_ENERGY_LEVELS+1] = {0};  // number of arms of each type
     uint32_t totalArms=0;
 #if LINKED_LOOPS
     double linkedLoopLength = 0;
     uint32_t numLinkedLoops = 0;
 #endif
     
-    double *armLengthBins = NULL;
-    long *armBins = NULL;
-    if (mNumBins) {
-      armLengthBins = (double*)calloc(mNumBins, sizeof(double));
-      armBins = (long*)calloc(mNumBins, sizeof(long));
-    }
-    //NN types corresponding to burgers values of the NN arms:
-    const char *armTypes[7] = {
-      "NN_200",
-      "NN_020",
-      "NN_002",
-      "NN_+++",
-      "NN_++-",
-      "NN_+-+",
-      "NN_-++"
-    };
-    
-    double shortLengths[16] = {0}, longLengths[16]={0};
-    uint32_t numShortArms[16]={0}, numLongArms[16]={0};
-
+	map<int, double> shortLengths, longLengths, armLengthBins;
+ 	map<int, uint32_t> numShortArms, numLongArms, armBins;
+	
     vector<Arm *>::iterator armpos = Arm::mArms.begin(), armend = Arm::mArms.end();
     while (armpos != armend) {
       double length = (*armpos)->GetLength();
@@ -3012,7 +2995,7 @@ namespace paraDIS {
     summary += str(boost::format("%50s%12d\n")%"Total number of segments after decomposition:" % (ArmSegment::mArmSegments.size()));
     summary += "===========================================\n";
     totalArmLength = 0; 
-    int i = 0; for (i=0; i<7; i++) {
+    int i = 0; for (i=0; i<NUM_ENERGY_LEVELS+1; i++) {
       summary += str(boost::format("%40s = %d\n")%(str(boost::format("Number of %s arms") % ArmTypeNames(i-1))) % numArms[i]);
       summary += str(boost::format("%40s = %.2f\n")%(str(boost::format("Total length of %s arms") % ArmTypeNames(i-1))) % armLengths[i]);
       totalArmLength += armLengths[i]; 
@@ -3040,29 +3023,30 @@ namespace paraDIS {
     if (mThreshold >= 0.0) {
       summary += "\n\n----------------------\n";
       summary += str(boost::format("THRESHOLD data.  Threshold = %.2f\n") % mThreshold);
-      int n = 0;
-      for (n=0; n<16; n++) {
-        summary += "----------------------\n";
-        summary += str(boost::format("Total number of %s arms: %d\n") % armTypes[n] % (numShortArms[n] + numLongArms[n]));
-        summary += str(boost::format("Total length of %s arms: %.2f\n") % armTypes[n] % (shortLengths[n] + longLengths[n]));
-        summary += str(boost::format("Number of %s arms SHORTER than threshold = %d\n") % armTypes[n] % numShortArms[n]);
-        summary += str(boost::format("Total length of %s arms shorter than threshold = %.2f\n") % armTypes[n] % shortLengths[n]);
-        summary += str(boost::format("Number of %s arms LONGER than threshold = %d\n") % armTypes[n] % numLongArms[n]);
-        summary += str(boost::format("Total length of %s arms longer than threshold = %.2f\n") % armTypes[n] % longLengths[n]);
-        summary += "\n";
-      }
+	  vector<int> burgvals = GetAllBurgersTypes(); 
+	  for (vector<int>::iterator burg = burgvals.begin(); burg != burgvals.end(); burg++) {
+		summary += "----------------------\n";
+		string armType = BurgersTypeNames(*burg); 
+		summary += str(boost::format("Total number of %s arms: %d\n") % armType % (numShortArms[n] + numLongArms[n]));
+		summary += str(boost::format("Total length of %s arms: %.2f\n") % armType % (shortLengths[n] + longLengths[n]));
+		summary += str(boost::format("Number of %s arms SHORTER than threshold = %d\n") % armType % numShortArms[n]);
+		summary += str(boost::format("Total length of %s arms shorter than threshold = %.2f\n") % armType % shortLengths[n]);
+		summary += str(boost::format("Number of %s arms LONGER than threshold = %d\n") % armType % numLongArms[n]);
+		summary += str(boost::format("Total length of %s arms longer than threshold = %.2f\n") % armType % longLengths[n]);
+		summary += "\n";
+	  }
     }
     
     // write a row of arm lengths to make analysis via spreadsheet easier
     summary += "----------------------\n";
     summary += "Key: NN_200\tNN_020\tNN_002\tNN_+++\tNN_++-\tNN_+-+\tNN_-++\n";
     summary += "SHORT ARM LENGTHS:\n";
-    n=0; while (n<16) {
+    n=0; while (n<NUM_BURGERS_TYPES) {
       summary += str(boost::format("%.2f\t") %  shortLengths[n]);
       ++n;
     }
     summary += "\nLONG ARM LENGTHS:\n";
-    n = 0; while (n<16) {
+    n = 0; while (n<NUM_BURGERS_TYPES) {
       summary += str(boost::format("%.2f\t") %  longLengths[n]);
       ++n;
     }
@@ -3091,7 +3075,7 @@ namespace paraDIS {
     summary += "DECOMPOSITION STATISTICS\n";
     summary += "----------------------\n";
     int energy = 0;
-    while (energy < 7) {
+    while (energy < NUM_ENERGY_LEVELS+1) {
       summary += str(boost::format("Decomposed arms, energy level %d: %d\n") % energy % Arm::mNumDecomposed[energy]);
       energy++;
     }
@@ -3173,8 +3157,8 @@ namespace paraDIS {
     while (a--) {
       Arm::mArms[a]->mSeen = false;
     }
-    uint32_t armnum = 0, metaarmcounts[7]={0};
-    double metaarmtypelengths[7] = {0.0}, totalEPDist = 0.0;
+    uint32_t armnum = 0, metaarmcounts[NUM_ENERGY_LEVELS+1]={0};
+    double metaarmtypelengths[NUM_ENERGY_LEVELS+1] = {0.0}, totalEPDist = 0.0;
     uint32_t numarms = 0;
     for (vector<boost::shared_ptr<MetaArm> >::iterator pos = mMetaArms.begin(); pos != mMetaArms.end(); ++pos) {
       if ((*pos)->mTerminalNodes.size() == 2) {
@@ -3311,7 +3295,8 @@ namespace paraDIS {
 		  otherEnd->mNeighborSegments.size() != 2) {
         if (otherEnd == iStartNode) {
           dbprintf(4, "DataSet::FindEndOfArm: Arm %d: LOOP detected\n", theArm->mArmID);
-        }
+		  theArm->mArmType = ARM_LOOP; 
+		}
         /*!
           we have looped or found a terminal node -- stop
         */
@@ -3370,6 +3355,7 @@ namespace paraDIS {
 			  FindEndOfArm(node, &endNode1, node->mNeighborSegments[1], endSegment1 , theArm, true);
 			  if (endNode0 == endNode1) {
 				dbprintf(5, "DataSet::BuildArms(): Arm %d is a loop as both directions terminated in the same endpoint.\n", theArm->mArmID);
+				theArm->mArmType = ARM_LOOP; 
 			  } 
 			  else {
 				theArm->mTerminalNodes.push_back(endNode1);
@@ -3431,8 +3417,8 @@ namespace paraDIS {
 	ArmSegment::mNumBeforeDecomposition = ArmSegment::mArmSegments.size(); 
    uint32_t armnum = 0;
     vector<Arm*> newArms;
-    int energyLevel = 7, numarms=Arm::mArms.size();
-    vector<int32_t> numDecomposed(7, 0);
+    int energyLevel = NUM_ENERGY_LEVELS+1, numarms=Arm::mArms.size();
+    vector<int32_t> numDecomposed(NUM_ENERGY_LEVELS+1, 0);
     while (energyLevel-- > 1) {
       if (energyLevel == 1 && !Arm::mTraceArms.size()) {
         // skip level 1; the only reason to do level 1 is to trace arms
@@ -4226,7 +4212,7 @@ namespace paraDIS {
       fprintf(nodefile, "\n");
       // ----------------------------------------------------------
       // Node file: Node IsLoop
-      fprintf(nodefile, "SCALARS node_index int\n");
+      fprintf(nodefile, "SCALARS node_isLoop int\n");
       fprintf(nodefile, "LOOKUP_TABLE default\n");
       nodepos = firstnodepos;
       for (uint32_t nodenum = 0;  nodenum < numnodes; nodenum++, nodepos++) {
