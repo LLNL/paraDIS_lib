@@ -1,25 +1,59 @@
 #!/usr/bin/env bash 
 # This script is for fullscale rendering, as well as quick and dirty looks at the current image, using multires and other speedups
-#  
+#  Example: 
+# fast=true glowradius=5 dofuse=1 afterglow=Off srun -n 40 -W 500000 renderfuse_parallel.sh |& tee render.out
+# 
+# set -e
+PROG=$(basename $0)
+usage() {
+	echo "$0 -- render the render.inc file with povray" 
+	echo "$0 [options]"
+	echo "----------------------------------------------------"
+	echo "OPTIONS:"
+	echo "-b/--basename name:   Set to \"name\" to render name-obj.pov and name-decl.pov.  Default: rs0240"
+	echo "-f/--fast:            Same as --quality 7 --no-antialias"
+	echo "-h/--help:            print this menu" 
+	echo "-A/--no-antialias:    Set Antialias to Off."
+	echo "-q/--quality n:       Set Quality to 'n' (9 is full)."
+}
 
 errexit() {
 	echo $1
 	exit ${2:-1}
 }
-
 . ${HOME}/current_projects/RC_bash_lib/shellfuncs.sh || errexit "Could not source shellfuncs.sh"
 
-set -vx
+getopt -T > /dev/null
+if [ $? -eq 4 ]; then
+  # GNU enhanced getopt is available
+  ARGS=$(getopt --name "$PROG" --long no-antialias,basename:,fast,help,quality:,verbose --options Ab:fhq: -- "$@")
+else
+  # Original getopt is available (no long option names, no whitespace, no sorting)
+  ARGS=$(getopt b:fhq:v "$@")
+fi
+if [ $? -ne 0 ]; then
+  echo "$PROG: usage error (use -h for help)" >&2
+  exit 2
+fi
+eval set -- $ARGS
+while [ $# -gt 0 ]; do
+    case "$1" in
+        -A | --no-antialias)  antialias=Off;;
+        -b | --basename)      basename="$2"; shift;;
+        -f | --fast)          fast=true;;
+        -h | --help)          usage; exit 0;;
+        -q | --quality)       quality="$2"; shift;;
+		-v | --verbose)       VERBOSE=true;;
+        --)                   shift; break;; # end of options
+    esac
+    shift
+done
+if $VERBOSE; then 
+	set -xv
+fi
 wdir=`dirname $0`
 cd $wdir
 echo; echo; echo beginning $0; echo; echo
-
-if [ "$1" == "--quick" ] || [ "$1" == "-q" ]; then 
-	quick=true
-	shift
-else
-	quick=false
-fi
 basename=${1:-${basename:-rs0240}}
 
 # usage: startrow height procnum numprocs
@@ -76,6 +110,7 @@ if [ $numprocs -gt 1 ]; then
 	echo "output for processor $procnum on host $(uname -n) is going to $logfile"
 	exec >& $logfile
 fi
+echo "$(date): $0 $@"
 
 inifile=$outdir/logistics/${basename}_${frame}.ini 
 outfile=$outdir/images/${basename}_${frame}.png  
@@ -95,13 +130,15 @@ display=${display:-On}
 segdistance=${segdistance:-0}
 dofuse=${dofuse:-0}
 glowradius=${glowradius:-1}
+afterglow=${afterglow:-On}
+
 if [ "$dofuse" != 0 ]; then 
 	doglow=0
 else 
 	doglow=${doglow:-0}
 fi
 
-if $quick; then 
+if $fast; then 
 	antialias=Off
 	quality=7
 else
@@ -130,6 +167,7 @@ Declare=AnimateGrow=${doglow}
 Declare=Backdrop=${backdrop:-0}
 Declare=DoAxes=${doaxes:-0}
 Declare=DoBounds=${dobounds:-1}
+Declare=DoAfterglow=${afterglow}
 Declare=GlowRadius=${glowradius}
 Declare=SegmentDistance=${segdistance}
 Declare=Shadows=1
@@ -155,5 +193,5 @@ cat $inifile
 
 povray $inifile
 
-mv $tmpfile $outfile
+# mv $tmpfile $outfile
 echo render complete

@@ -30,50 +30,59 @@ background { 0.2*(0.333*Yellow + Brown) }
 #ifndef (GlowRadius) 
   #declare GlowRadius = 1;
 #end
+#ifndef (DoAfterglow)
+   #declare DoAfterglow = 0; 
+#end
+#warning concat("DoAfterglow is ",str(DoAfterglow,0,0),"\n")
+ 
 /*  ============================================================== */
 #macro ColorFromBurgers(burgers)
-/* good 11-color map from http:/* colorbrewer2.org   */
+/* good 11-color map from http://colorbrewer2.org  
   #warning concat("Got burgers value: ",str(burgers,0,0),"\n")
+  NOTE:  The strange structure of declaring a #local then "returning" it
+  is because returning values from a control structure in a macro is a problem.
+  http://news.povray.org/povray.newusers/thread/%3Cweb.53fbf1308ac336b8784e7dc60%40news.povray.org%3E/
 */
-#switch(burgers)
-#range (-5,-1)											
-rgb <141,211,199>/255.0
-#break
-#case (0)
-rgb <255,255,179>/255.0
-#break
-#case (10)
-rgb <190,186,218>/255.0
-#break
-#case (11)
-rgb <251,128,114>/255.0
-#break
-#case (12)
-rgb <128,177,211>/255.0
-#break
-#case (13)
-rgb <253,180,98>/255.0
-#break
-#range (20,29)
-rgb <179,222,105>/255.0
-#break
-#range (30,39)
-rgb <252,205,229>/255.0
-#break
-#range (40,49)
-rgb <217,217,217>/255.0
-#break
-#case (50)
-rgb <188,128,189>/255.0
-#break
-#case (60)
-rgb <204,235,197>/255.0
-#break
-#else
-#error concat("Got unexpected burgers value: ",str(burgers,0,0),"\n")
-rgb <1.0,1.0,1.0>
-#break
+  #switch(burgers)
+	#range (-5,-1)											
+	  #local burgerscolor = rgb <141,211,199>/255.0;
+	#break
+	#case (0)
+	  #local burgerscolor = rgb <255,255,179>/255.0;
+	#break
+	#case (10)
+	  #local burgerscolor = rgb <190,186,218>/255.0;
+	#break
+	#case (11)
+	  #local burgerscolor = rgb <251,128,114>/255.0;
+	#break
+	#case (12)
+	  #local burgerscolor = rgb <128,177,211>/255.0;
+	#break
+	#case (13)
+	  #local burgerscolor = rgb <253,180,98>/255.0;
+	#break
+	#range (20,29)
+	  #local burgerscolor = rgb <179,222,105>/255.0;
+	#break
+	#range (30,39)
+	  #local burgerscolor = rgb <252,205,229>/255.0;
+	#break
+	#range (40,49)
+	  #local burgerscolor = rgb <217,217,217>/255.0;
+	#break
+	#case (50)
+	  #local burgerscolor = rgb <188,128,189>/255.0;
+	#break
+	#case (60)
+	  #local burgerscolor = rgb <204,235,197>/255.0;
+	#break
+  #else
+	#error concat("Got unexpected burgers value: ",str(burgers,0,0),"\n")
+	#local burgerscolor = rgb <1.0,1.0,1.0>;
+  #break
 #end 
+burgerscolor
 #end
 
 /* =========================================================== */
@@ -84,12 +93,12 @@ rgb <1.0,1.0,1.0>
   #if (!AnimateFuse & !AnimateGrow) 
 	  texture {	
 		pigment  { 
-		  color ColorFromBurgers(burger)
+		  color ColorFromBurgers(burger);
 		}
 		finish { ambient color ColorFromBurgers(burger) * .2 }
 	  }	
   #else
-	#if (!glowing & !afterglow) 
+	#if (!glowing & ( !DoAfterglow | !afterglow) )
 	  texture {	
 		pigment  { 
 		  color ColorFromBurgers(burger) * 0.3
@@ -97,13 +106,15 @@ rgb <1.0,1.0,1.0>
 	  }
 	#end
 	#if (glowing)
-	  /* #warning "GLOWING!" */
+	  #warning "GLOWING!" 
 	  texture {	
 		pigment  { 
 		  color ColorFromBurgers(burger) 
 		}
 		finish { ambient color ColorFromBurgers(burger) * 3 }
 	  }
+	  #declare C = color (ColorFromBurgers(burger) * 3); 
+	  #warning concat("The color is ",CRGBStr(C,0,0),"\n")
 	  /* overdriven green sparkle texture: */
 	  /* texture { pigment { granite  color_map {
   [0.0 color rgbf 1 ]	    
@@ -117,7 +128,7 @@ rgb <1.0,1.0,1.0>
 	  */
 	#end
 	#if (afterglow) 
-	  /* #warning "AFTERGLOW!" */
+	  #warning "AFTERGLOW!" 
 	  texture {	
 		pigment  { 
 		  color ColorFromBurgers(burger) 
