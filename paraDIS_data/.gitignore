@@ -1,2 +1,4 @@
 *-output
 *.out
+callgrind*
+*core
