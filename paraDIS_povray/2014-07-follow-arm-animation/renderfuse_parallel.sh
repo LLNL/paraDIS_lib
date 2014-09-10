@@ -1,12 +1,12 @@
 #!/usr/bin/env bash
-# example:  
-# data=rs1907 
-# data=rs0240 
-# srun -W 3000000 -n 100 renderfuse_parallel.sh $data |& tee renderfuse_parallel-$(date +%F-%H-%M-%S).log
+# Automatically runs render.sh in parallel.  To run in serial, Just use render.sh
+# #xample:  
+# 
+
 
 PROG=$(basename $0)
 usage() {
-	echo "$0 -- launches render.sh in parallel and sets up logs, images etc. to land in the right subdirectory.  to run in serial, Just use render.sh" 
+	echo "$0 -- launches render.sh sets up logs, images etc. to land in the right subdirectory.  to run in serial, Just use render.sh" 
 	echo "$0 [options] -- [render.sh options]"
 	echo "----------------------------------------------------"
 	echo "OPTIONS:"
@@ -41,38 +41,48 @@ if [ $? -ne 0 ]; then
   exit 2
 fi
 eval set -- $ARGS
+# Parameters are now sorted: options appear first, followed by --, then arguments
+# e.g. entering: "foo bar" -o abc baz -v
+#      produces: -o 'abc' -v -- 'foo bar' 'baz'
  
-timesteps=180
-logonly=false
-numnodes=$(expr 4 * $SLURM_JOB_NUM_NODES)
-basename=rs0240
-outdir=${basename}_$(date +%F-%H-%M-%S)
-
-while [ $# -gt 0 ]; do
-    case "$1" in
-        -b | --basename)  basename="$2"; shift;;
-        -h | --help)      usage; exit 0;;
-        -n | --numnodes)  numnodes="$2"; shift;;
-        -t | --timesteps) timesteps="$2"; shift;;
-        -o | --outdir)    outdir="$2"; shift;;
-        -v | --verbose)   VERBOSE=yes;;
-        --)               shift; break;; # end of options
-    esac
-    shift
-done
-if $VERBOSE; then
-	set -xv
-fi
 # compute some values
 export procnum=`getprocnum` 2>/dev/null
 export numprocs=`getnumprocs` 2>/dev/null
 
+timesteps=180
+logonly=false
+numtasks=$(expr 4 * $numprocs)
+basename=rs0240
+outdir=${basename}_$(date +%F-%H-%M-%S)
+ischild=false
+VERBOSEFLAG=
+while [ $# -gt 0 ]; do
+    case "$1" in
+        -b | --basename)  basename="$2"; shift;;
+		-c | --childproc) ischild=true;;
+        -h | --help)      usage; exit 0;;
+        -n | --numtasks)  numtasks="$2"; shift;;
+        -t | --timesteps) timesteps="$2"; shift;;
+        -o | --outdir)    outdir="$2"; shift;;
+        -v | --verbose)   VERBOSEFLAG='-v';;
+        --)               shift; break;; # end of options
+    esac
+    shift
+done
+
 
 mkdir -p $outdir/logistics
-# just redirect srun to a single file instead of doing this: 
-# logfile=$outdir/logistics/renderfuse_parallel_${procnum}.log
-# echo Sending output to logfile $logfile
-# exec >& $logfile 
+
+if ! $ischild && [ "$numtasks" -gt 1 ]; then 
+	logfile=$outdir/renderfuse_parallel-$(date +%F-%H-%M-%S).log
+	echo "Executing $numtasks tasks in parallel.  logfile is $logfile"
+	srun -W 3000000 -n $numtasks $0 --childproc -b $basename -t $timesteps -o $outdir $VERBOSEFLAG |& tee $logfile	
+	exit $?
+fi
+
+if [ ! -z "$VERBOSEFLAG" ]; then
+	set -xv
+fi
 
 declfile=${basename}-decl.pov
 objfile=${basename}-obj.pov
@@ -90,10 +100,7 @@ for thing in procnum numprocs basename distPerTimestep outdir; do
 done
 
 cp $0 $outdir
-# pushd $outdir
-# tmpdir=$(mktemp -d --tmpdir=$outdir)
-# cp ${basename}-{decl,obj}.pov $tmpdir/
-# basename=$tmpdir/$(basename $basename)
+
 # start looping\
 frame=$procnum
 mydist=$(expr \( $frame + 1 \)  \* $distPerTimestep);
