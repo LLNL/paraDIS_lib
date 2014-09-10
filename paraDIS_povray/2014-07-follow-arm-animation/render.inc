@@ -93,7 +93,7 @@ burgerscolor
   #if (!AnimateFuse & !AnimateGrow) 
 	  texture {	
 		pigment  { 
-		  color ColorFromBurgers(burger);
+		  color ColorFromBurgers(burger)
 		}
 		finish { ambient color ColorFromBurgers(burger) * .2 }
 	  }	
