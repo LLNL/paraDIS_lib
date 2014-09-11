@@ -34,10 +34,10 @@ errexit() {
 getopt -T > /dev/null
 if [ $? -eq 4 ]; then
   # GNU enhanced getopt is available
-	ARGS=$(getopt --name "$PROG" --long no-antialias,basename:,fast,help,quality:,verbose --options Ab:fhq: -- "$@")
+	ARGS=$(getopt --name "$PROG" --long no-antialias,basename:,childproc,display,fast,help,numtasks:,outdir:,quality:,serial,timesteps:,verbose --options Ab:cdfhn:o:q:st:v -- "$@")
 else
   # Original getopt is available (no long option names, no whitespace, no sorting)
-	ARGS=$(getopt b:fhq:v "$@")
+	ARGS=$(getopt Ab:cdfhn:o:q:st:v "$@")
 fi
 if [ $? -ne 0 ]; then
 	echo "$PROG: usage error (use -h for help)" >&2
@@ -55,7 +55,7 @@ export numprocs=`getnumprocs` 2>/dev/null
 display=Off
 timesteps=180
 logonly=false
-numtasks=$(expr 4 * $numprocs)
+numtasks=$(expr 4 \* $numprocs)
 basename=rs0240
 outdir=${basename}_$(date +%F-%H-%M-%S)
 ischild=false
@@ -74,7 +74,7 @@ while [ $# -gt 0 ]; do
 -q | --quality)       quality="$2"; shift;;
 -s | --serial)        numtasks=1; shift;;
 -t | --timesteps)     timesteps="$2"; shift;;
--v | --verbose)       VERBOSE=true;;
+-v | --verbose)       VERBOSEFLAG='-v';;
 --)                   shift; break;; # end of options
 esac
 shift
@@ -83,6 +83,7 @@ done
 mkdir -p $outdir/{logistics,images}
 
 if ! $ischild && [ "$numtasks" -gt 1 ]; then 
+	logfile=$outdir/parallel_render-$(date +%F-%H-%M-%S)-master.log
 	echo "Executing $numtasks tasks in parallel.  logfile is $logfile"
 	srun -W 3000000 -n $numtasks $0 --childproc -b $basename -t $timesteps -o $outdir $VERBOSEFLAG |& tee $logfile	
 	exit $?
@@ -94,7 +95,7 @@ if [ $numtasks -gt 1 ]; then
 	exec >& $logfile
 fi
 
-echo; echo; echo "beginning $(date): $0 $@"; echo; echo
+echo; echo; echo "beginning $(date): $0 $ARGS"; echo; echo
 
 if [ ! -z "$VERBOSEFLAG" ]; then
 	set -xv
@@ -112,7 +113,7 @@ cd $wdir
 declfile=${basename}-decl.pov
 objfile=${basename}-obj.pov
 maxdist=$(grep ParaDIS_MaxLightTheFuseDistance $declfile | sed  -e 's/.*= \([0-9]*\);/\1/')
-if [ "$maxdist" == "" ] || ! expr $maxdist + 1; then 
+if [ -z "$maxdist"  ] || [ $(expr $maxdist + 1) -lt 1 ]; then 
 	errexit "Cannot get maxdist from declaration file $declfile"
 fi
 distPerTimestep=$(expr $maxdist / $timesteps)
@@ -189,22 +190,22 @@ for thing in basename frame declfile objfile outdir logfile inifile outfile; do
 	eval echo $thing is '\"$'$thing'\"'
 done
 
-povfile=$outdir/logistics/${basename}-task_${tasknum}-combined.pov
+# tmpfile=$(mktemp -u)
+povfile=$outdir/logistics/${basename}-proc${procnum}-combined.pov
 cat ${declfile} render.inc ${objfile} > $povfile
 
-# start looping\
+# start looping
 frame=$procnum
 mydist=$(expr \( $frame + 1 \)  \* $distPerTimestep);
 while [ "$mydist" -le "$maxdist" ]; do 
 
+	echo "Working on frame $frame"
 	debug="${debug:-Declare=debug=1}"
 
 
 	inifile=$outdir/logistics/${basename}_${frame}.ini 
 	outfile=$outdir/images/${basename}_${frame}.png  
 	
-
-# tmpfile=$(mktemp -u)
 	cat <<EOF >$inifile
 	Antialias=$antialias
 	Antialias_Threshold=0.2
@@ -235,7 +236,7 @@ while [ "$mydist" -le "$maxdist" ]; do
 	Video_Mode=1
 	Verbose=On
 	;; Declare=camPath=1
-	EOF
+EOF
 
 	echo 'inifile contents:'
 	cat $inifile
