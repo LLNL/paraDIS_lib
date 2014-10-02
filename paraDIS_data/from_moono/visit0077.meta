@@ -1,0 +1,42 @@
+#
+#  ParaDiS metadata file for VisIt output
+#
+PARADIS PARALLEL 1.0
+
+#
+#  Description of contents
+#
+DESCRIPTION "This is a dummy description..."
+
+#
+#  Node file section
+#
+NODE FILES 1
+BINARY D=8 F=4 L=8 I=4
+
+#
+#  node file data format
+#
+FORMAT NodePos(D:3) NodeNumSegments(I:1)
+
+#
+#  file list
+#
+FILE visit0077.node : 72518
+
+#
+#  Segment file section
+#
+SEGMENT FILES 1
+BINARY D=8 F=4 L=8 I=4
+
+#
+#  segment file data format
+#
+FORMAT StartPos(D:3) EndPos(D:3) BurgersVec(D:3) PlaneNormal(D:3) BurgID(I:1)
+
+#
+#  file list
+#
+FILE visit0077.seg : 80029
+
