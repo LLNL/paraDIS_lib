@@ -49,8 +49,8 @@ eval set -- $ARGS
 #      produces: -o 'abc' -v -- 'foo bar' 'baz'
 
 # compute some values
-export procnum=`getprocnum` 2>/dev/null
-export numprocs=`getnumprocs` 2>/dev/null
+export procnum=${SLURM_PROCID:-0}
+export numprocs=${SLURM_NPROCS:-${SLURM_JOB_NUM_NODES:-1}}
 
 display=Off
 timesteps=180
@@ -80,11 +80,11 @@ esac
 shift
 done
 
-mkdir -p $outdir/{logistics,images}
-
 if [ $numtasks -gt 1 ] && [ -z "$SLURM_NPROCS" ]; then 
 	errexit "You are requesting to run $numtasks tasks, but SLURM is not available for parallelism.  Please use the -s flag if you want to run serial."
 fi
+
+mkdir -p $outdir/{logistics,images}
 
 if ! $ischild && [ "$numtasks" -gt 1 ]; then 
 	logfile=$outdir/parallel_render-$(date +%F-%H-%M-%S)-master.log
