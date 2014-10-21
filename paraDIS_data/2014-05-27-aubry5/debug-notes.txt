@@ -1,0 +1,33 @@
+
+===========================================================================================
+FIRST SIGN OF TROUBLE: 
+MetaArm::GetNodes(MetaArm 30649): Get all loop node locations for all member arms.
+Arm::GetNodes(arm 181364) got 3 nodes
+
+MetaArm::GetNodes(MetaArm 30649): Got 3 nodes from new armID 181364
+MetaArm::GetNodes(MetaArm 30649): lastNode is 1180341
+Arm::GetNodes(arm 184180) got 2 nodes
+
+MetaArm::GetNodes(MetaArm 30649): Got 2 nodes from new armID 184180
+MetaArm::GetNodes(MetaArm 30649): deleting duplicate end node FullNode index 1180341, NodeID: (241,432), type 4, neighbor arms: <184180, 184255, 184105, 181364>, 4 neighbor segments, location: (2329.34 57.3757 -184.146), address 0xc74a080
+Neighbor segments:<829148, 829486, 1009018, 1009019>
+.
+MetaArm::GetNodes(MetaArm 30649): lastNode is 1179863
+Arm::GetNodes(arm 181380) got 5 nodes
+
+MetaArm::GetNodes(MetaArm 30649): Got 5 nodes from new armID 181380
+MetaArm::GetNodes(MetaArm 30649): deleting duplicate end node FullNode index 1179863, NodeID: (241,291), type 4, neighbor arms: <184180, 184181, 184193, 181380>, 4 neighbor segments, location: (2330.34 60.3111 -182.757), address 0xc743260
+Neighbor segments:<829148, 829149, 1008976, 1008977>
+.
+MetaArm::GetNodes(MetaArm 30649): lastNode is 1159795
+Arm::GetNodes(arm 181219) got 2 nodes
+
+ERROR: Arm::GetNodes(arm 181219) got 2 nodes but should have gotten 5
+
+MetaArm::GetNodes(MetaArm 30649): Got 2 nodes from new armID 181219
+MetaArm::GetNodes(MetaArm 30649): lastNode is 1159729
+MetaArm::GetNodes(MetaArm 30649): returning 10 nodes.
+===========================================================================================
+Arm 181219 from arms file: 
+181219      5     10    42.040764      2.863338       (237,764) N         4         2321.978271    2.004995       -221.661591    (237,743) N         4         2319.655762    0.541196       -222.475189    
+===========================================================================================

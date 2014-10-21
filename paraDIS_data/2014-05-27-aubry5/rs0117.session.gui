@@ -1,0 +1,118 @@
+<?xml version="1.0"?>
+<Object name="VisIt">
+    <Field name="Version" type="string">2.7.2</Field>
+    <Object name="GUI">
+        <Object name="FileServerList">
+            <Field name="path" type="string">/nfs/tmp2/rcook/paradis/paraDIS/paraDIS_data/2014-05-27-aubry5/rs0117-trace-output-2014-05-29-11-34</Field>
+            <Field name="filter" type="string">*visit</Field>
+            <Field name="useCurrentDir" type="bool">true</Field>
+            <Field name="automaticFileGrouping" type="bool">false</Field>
+            <Field name="smartFileGrouping" type="bool">false</Field>
+            <Field name="showDotFiles" type="bool">false</Field>
+            <Object name="recentpaths">
+                <Field name="localhost" type="stringVector">"/nfs/tmp2/rcook/paradis/paraDIS/paraDIS_data" "/nfs/tmp2/rcook/paradis/paraDIS_data/004-arm" "/nfs/tmp2/rcook/ArtieRodgers/2013-02-movie" "/nfs/tmp2/rcook/paradis/paraDIS_data" "/nfs/tmp2/rcook/paradis/paraDIS/paraDIS_data/2014-05-27-aubry5" "/nfs/tmp2/rcook/paradis/paraDIS/paraDIS_data/2014-05-27-aubry5/rs0117-trace-output-2014-05-29-11-34" </Field>
+            </Object>
+        </Object>
+        <Object name="AppearanceAttributes">
+            <Field name="useSystemDefault" type="bool">true</Field>
+            <Field name="background" type="string">#c0c0c0</Field>
+            <Field name="foreground" type="string">#000000</Field>
+            <Field name="fontName" type="string">Helvetica,12,-1,5,50,0,0,0,0,0</Field>
+            <Field name="style" type="string">motif</Field>
+            <Field name="orientation" type="int">0</Field>
+            <Field name="defaultForeground" type="string">#000000</Field>
+            <Field name="defaultBackground" type="string">#d4d0c8</Field>
+            <Field name="defaultFontName" type="string">"Sans Serif,9,-1,5,50,0,0,0,0,0"</Field>
+            <Field name="defaultStyle" type="string">windows</Field>
+            <Field name="defaultOrientation" type="int">0</Field>
+        </Object>
+        <Object name="Annotation">
+            <Field name="x" type="int">38</Field>
+            <Field name="y" type="int">123</Field>
+            <Field name="width" type="int">517</Field>
+            <Field name="height" type="int">785</Field>
+            <Field name="visible" type="bool">true</Field>
+            <Field name="posted" type="bool">false</Field>
+            <Field name="activeTab" type="int">2</Field>
+        </Object>
+        <Field name="postWhenShown" type="bool">false</Field>
+        <Object name="Compute engines">
+            <Field name="x" type="int">179</Field>
+            <Field name="y" type="int">53</Field>
+            <Field name="width" type="int">359</Field>
+            <Field name="height" type="int">365</Field>
+            <Field name="visible" type="bool">false</Field>
+            <Field name="posted" type="bool">false</Field>
+        </Object>
+        <Object name="File open">
+            <Field name="x" type="int">179</Field>
+            <Field name="y" type="int">53</Field>
+            <Field name="width" type="int">617</Field>
+            <Field name="height" type="int">454</Field>
+            <Field name="visible" type="bool">false</Field>
+        </Object>
+        <Object name="Information">
+            <Field name="x" type="int">460</Field>
+            <Field name="y" type="int">158</Field>
+            <Field name="width" type="int">504</Field>
+            <Field name="height" type="int">301</Field>
+            <Field name="visible" type="bool">false</Field>
+        </Object>
+        <Object name="View">
+            <Field name="x" type="int">179</Field>
+            <Field name="y" type="int">75</Field>
+            <Field name="width" type="int">368</Field>
+            <Field name="height" type="int">556</Field>
+            <Field name="visible" type="bool">false</Field>
+            <Field name="posted" type="bool">false</Field>
+            <Field name="activeTab" type="int">4</Field>
+        </Object>
+        <Object name="MainWin">
+            <Field name="x" type="int">44</Field>
+            <Field name="y" type="int">22</Field>
+            <Field name="width" type="int">404</Field>
+            <Field name="height" type="int">1178</Field>
+            <Field name="SPLITTER_VALUES_V2" type="floatVector">0 0.543128 0.453081 </Field>
+        </Object>
+        <Object name="Pseudocolor plot attributes">
+            <Field name="x" type="int">124</Field>
+            <Field name="y" type="int">503</Field>
+            <Field name="width" type="int">488</Field>
+            <Field name="height" type="int">639</Field>
+            <Field name="visible" type="bool">false</Field>
+            <Field name="posted" type="bool">false</Field>
+        </Object>
+        <Object name="Resample operator attributes">
+            <Field name="x" type="int">460</Field>
+            <Field name="y" type="int">136</Field>
+            <Field name="width" type="int">453</Field>
+            <Field name="height" type="int">517</Field>
+            <Field name="visible" type="bool">false</Field>
+            <Field name="posted" type="bool">false</Field>
+        </Object>
+        <Object name="Triangulate Regular Points operator attributes">
+            <Field name="x" type="int">231</Field>
+            <Field name="y" type="int">236</Field>
+            <Field name="width" type="int">351</Field>
+            <Field name="height" type="int">192</Field>
+            <Field name="visible" type="bool">false</Field>
+            <Field name="posted" type="bool">false</Field>
+        </Object>
+        <Object name="Tube operator attributes">
+            <Field name="x" type="int">122</Field>
+            <Field name="y" type="int">76</Field>
+            <Field name="width" type="int">412</Field>
+            <Field name="height" type="int">297</Field>
+            <Field name="visible" type="bool">false</Field>
+            <Field name="posted" type="bool">false</Field>
+        </Object>
+        <Field name="plotDatabases" type="stringVector">"localhost:/nfs/tmp2/rcook/paradis/paraDIS/paraDIS_data/2014-05-27-aubry5/rs0117-trace-output-2014-05-29-11-34/rs0117-segments.visit" </Field>
+        <Object name="TimeFormat">
+            <Field name="displayMode" type="string">Cycles</Field>
+            <Field name="precision" type="int">5</Field>
+        </Object>
+        <Field name="showSelectedFiles" type="bool">false</Field>
+        <Field name="allowFileSelectionChange" type="bool">true</Field>
+        <Field name="enableWarningMessagePopups" type="bool">true</Field>
+    </Object>
+</Object>
