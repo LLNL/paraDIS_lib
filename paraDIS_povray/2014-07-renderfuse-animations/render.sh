@@ -82,6 +82,10 @@ done
 
 mkdir -p $outdir/{logistics,images}
 
+if [ $numtasks -gt 1 ] && [ -z "$SLURM_NPROCS" ]; then 
+	errexit "You are requesting to run $numtasks tasks, but SLURM is not available for parallelism.  Please use the -s flag if you want to run serial."
+fi
+
 if ! $ischild && [ "$numtasks" -gt 1 ]; then 
 	logfile=$outdir/parallel_render-$(date +%F-%H-%M-%S)-master.log
 	echo "Executing $numtasks tasks in parallel.  logfile is $logfile"
