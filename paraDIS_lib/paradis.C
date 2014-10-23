@@ -3602,6 +3602,7 @@ namespace paraDIS {
 	fprintf(povdeclfile, "#declare ParaDIS_MetaArmPoints = array[%d]\n", numMarms);  
 	fprintf(povdeclfile, "#declare ParaDIS_MetaArmSegments = array[%d]\n", numMarms);  
 	fprintf(povdeclfile, "#declare ParaDIS_MetaArmSplines = array[%d]\n", numMarms);  
+	fprintf(povdeclfile, "#declare ParaDIS_MetaArmSmoothSplines = array[%d]\n", numMarms);  
 	fprintf(povdeclfile, "#declare ParaDIS_MetaArmSweeps = array[%d]\n", numMarms);  
 	fprintf(povdeclfile, "#declare ParaDIS_MetaArmIDs = array[%d]\n", numMarms);  
 	fprintf(povdeclfile, "#declare ParaDIS_MetaArmBurgers = array[%d]\n", numMarms);  
@@ -3675,29 +3676,47 @@ namespace paraDIS {
 	  }
 	  fprintf(povdeclfile, "} \n"); 
 
+	  vector<string> smoothPoints; // collect an alternative subsampled spline to reduce camera jitter
 	  fprintf(povdeclfile, "#declare ParaDIS_MetaArmSplines[%d] = spline { \n\tnatural_spline\n", marmnum); 
 	  nodenum = 0; 
-	  numnodes += numwraps * 19;  // take as long to animate a wrap as to animate along 20 nodes, thus additional 19 steps per wrap.
+	  numnodes += numwraps * 19;  // Insert additional 19 nodes at each wrap, increasing one step to 20.
 	  for (vector<Node*>::iterator node = marmnodes.begin(); 
 		   node != marmnodes.end(); node++, nodenum++) {
 		if (*node) {			  
 		  povLocString = (*node)->GetPovrayLocationString(); 
 		  fprintf(povdeclfile, "\t%0.5f, %s\n", nodenum/(numnodes-1.0), povLocString.c_str()); 
+		  if (nodenum % 20 == 0) {
+			smoothPoints.push_back(str(boost::format("%0.5f, %s")%(nodenum/(numnodes-1.0))%povLocString));
+		  }
 		}			
 		if (!*node) {
+		  // always push a wrapped node to smoothed points as they are important
+		  smoothPoints.push_back(str(boost::format("%0.5f, %s")%(nodenum/(numnodes-1.0))%povLocString));
 		  ++node; 
 		  string nextLocString = (*node)->GetPovrayLocationString(); 
-		  fprintf(povdeclfile, "\t/* WRAP */\n");
+		  fprintf(povdeclfile, "\t/* WRAP 20 transition points. */\n");
 		  float GS = nodenum/(numnodes-1.0), GE = (nodenum + 19.0)/(numnodes-1.0); 
 		  for (int step = 0; step < 20; step++) {
+			nodenum++; 
 			float GC = nodenum/(numnodes-1.0);  
 			fprintf(povdeclfile, "\t%0.5f, InterpVCos(%f, %f, %f, %s, %s, 0)\n", GC, GC, GS, GE,  povLocString.c_str(), nextLocString.c_str()); 
+			if (nodenum % 20 == 0) {
+			  smoothPoints.push_back(str(boost::format("%0.5f, InterpVCos(%f, %f, %f, %s, %s, 0)") %GC %GC %GS %GE %povLocString %nextLocString));
+			}
 		  }
 		  fprintf(povdeclfile, "\t/* END WRAP */\n");
 		}
 	  }	  
 	  fprintf(povdeclfile, "} /* end spline */ \n"); 
 
+	  // ======================================================================
+	  // Now write the smoothed spline which will be used for camera animation
+	  fprintf(povdeclfile, "#declare ParaDIS_MetaArmSmoothSplines[%d] = spline { \n\tnatural_spline\n", marmnum); 
+	  for (vector<string>::iterator pos = smoothPoints.begin(); pos != smoothPoints.end(); pos++) {
+		fprintf(povdeclfile, "\t%s\n", pos->c_str()); 
+	  }
+	  fprintf(povdeclfile, "} /* end smoothed spline */ \n"); 
+	  
 	  // ======================================================================
 	  // Now write sphere sweeps to union into the sweep file for metaarm.  
 	  // There will be multiple sweeps due to wrapping (periodic bounds)
