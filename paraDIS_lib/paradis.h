@@ -72,7 +72,6 @@ string MetaArmTypeNames(int mtype);
 
 int BurgersCategory(float burgval); 
 int InterpretBurgersType(vector<float>burg); 
-static vector<int> GetAllBurgersTypes(void); // for enumeration 
 string BurgersTypeNames(int btype); 
 
 //  Segment BURGERS TYPES: (P = plus(+) and M = minus(-))
@@ -95,11 +94,17 @@ string BurgersTypeNames(int btype);
 #define BURGERS_311         40  // BEGIN ENERGY LEVEL 4
 #define BURGERS_131         41
 #define BURGERS_113         42
-#define BURGERS_222         50 // BEGIN ENERGY LEVEL 5
-#define BURGERS_004         60 // BEGIN ENERGY LEVEL 6
+#define BURGERS_222         50  // BEGIN ENERGY LEVEL 5
+#define BURGERS_004         60  // BEGIN ENERGY LEVEL 6
 #define BURGERS_331         70  // BEGIN ENERGY LEVEL 7
 #define BURGERS_313         71
 #define BURGERS_133         72
+#define BURGERS_420         81  // BEGIN ENERGY LEVEL 8
+#define BURGERS_240         82 
+#define BURGERS_024         83 
+#define BURGERS_042         84 
+#define BURGERS_204         85 
+#define BURGERS_402         86 
 //extern const char *BurgersTypeNames[] ; 
 
 // SCREW TYPE is a characteristic of an arm segment that Jaime Marian uses

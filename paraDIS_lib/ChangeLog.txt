@@ -1,5 +1,6 @@
 2014-10-22: version 2.6.1 (tag "v2.6.1")
 		Bugfix for povray spline generator code
+		Added 6 BURGERS types at energy level 8 to handle some new data.  
 
 2014-08-12: version 2.6.0 (tag "v2.6.0")
        Changes to internal data structure changes and analyzeParaDIS program defaults so that by default the user sees excellent performance and readability at the expense of modest increase in memory usage.  
