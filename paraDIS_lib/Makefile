@@ -132,8 +132,8 @@ depend:
 
 # DO NOT DELETE
 
-chaos_5_x86_64_ib/paradis.o: paradis.h paradis_version.h
-chaos_5_x86_64_ib/paradis_c_interface.o: paradis.h paradis_c_interface.h
-chaos_5_x86_64_ib/paradisStreaming.o: paradisStreaming.h paradis.h
-chaos_5_x86_64_ib/paradisTest.o: paradis.h
-chaos_5_x86_64_ib/analyzeParaDIS.o: paradis_c_interface.h paradis.h
+paradis.o: paradis.h paradis_version.h
+paradis_c_interface.o: paradis.h paradis_c_interface.h
+paradisStreaming.o: paradisStreaming.h paradis.h
+paradisTest.o: paradis.h
+analyzeParaDIS.o: paradis_c_interface.h paradis.h
