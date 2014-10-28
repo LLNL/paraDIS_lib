@@ -76,8 +76,8 @@ string BurgersTypeNames(int btype);
 
 //  Segment BURGERS TYPES: (P = plus(+) and M = minus(-))
 // These are valued in order of increasing energy levels, corresponding to the sum of the square of the components of the burgers vector.  
-#define NUM_ENERGY_LEVELS  7
-#define NUM_BURGERS_TYPES  20
+#define NUM_ENERGY_LEVELS  8
+#define NUM_BURGERS_TYPES  26
 
 #define BURGERS_UNKNOWN     -1  // analysis failed
 #define BURGERS_NONE        0   // no analysis done yet
