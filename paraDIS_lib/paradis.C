@@ -115,6 +115,12 @@ static vector<int> GetAllBurgersTypes(void) {
   alltypes.push_back(BURGERS_331); 
   alltypes.push_back(BURGERS_313); 
   alltypes.push_back(BURGERS_133); 
+  alltypes.push_back(BURGERS_420); 
+  alltypes.push_back(BURGERS_240); 
+  alltypes.push_back(BURGERS_024); 
+  alltypes.push_back(BURGERS_042); 
+  alltypes.push_back(BURGERS_204); 
+  alltypes.push_back(BURGERS_402); 
   return alltypes;
 }
 
@@ -141,6 +147,12 @@ string BurgersTypeNames(int btype) {
   case BURGERS_331      : return "331";
   case BURGERS_313      : return "313";
   case BURGERS_133      : return "133"; 
+  case BURGERS_420      : return "420";  
+  case BURGERS_240      : return "240";  
+  case BURGERS_024      : return "024";  
+  case BURGERS_042      : return "042";  
+  case BURGERS_204      : return "204";  
+  case BURGERS_402      : return "402";  
   default: return "UNKNOWN CODE";
   }
 }
@@ -228,11 +240,24 @@ int InterpretBurgersType(vector<float> burg) {
      burgersType = BURGERS_313;
    else if (abs(catarray[0]) == 3 && abs(catarray[1]) == 3 && catarray[2] == 1)
      burgersType = BURGERS_331;
+   else if (abs(catarray[0]) == 0 && abs(catarray[1]) == 2 && catarray[2] == 4)
+	 return BURGERS_024; 
+   else if (abs(catarray[0]) == 0 && abs(catarray[1]) == 4 && catarray[2] == 2)
+	 return BURGERS_042; 
+   else if (abs(catarray[0]) == 2 && abs(catarray[1]) == 0 && catarray[2] == 4)
+	 return BURGERS_204; 
+   else if (abs(catarray[0]) == 2 && abs(catarray[1]) == 4 && catarray[2] == 0)
+	 return BURGERS_240; 
+   else if (abs(catarray[0]) == 4 && abs(catarray[1]) == 0 && catarray[2] == 2)
+	 return BURGERS_402; 
+   else if (abs(catarray[0]) == 4 && abs(catarray[1]) == 2 && catarray[2] == 0)
+	 return BURGERS_420; 
   else {
     burgersType = BURGERS_UNKNOWN;
     dbprintf(3, "\n\n********************************\n");
-    dbprintf(3, "Warning: segment has unknown type: burgers = (%f, %f, %f), categories=(%d, %d, %d)\n", burg[0], burg[1], burg[2], catarray[0], catarray[1], catarray[2]);
+    dbprintf(3, "ERROR: segment has unknown type: burgers = (%f, %f, %f), categories=(%d, %d, %d).  This will cause problems later in analysis.\n", burg[0], burg[1], burg[2], catarray[0], catarray[1], catarray[2]);
     dbprintf(3, "\n********************************\n\n");
+	abort(); 
   }
   return burgersType;
 }
@@ -3336,7 +3361,6 @@ namespace paraDIS {
 
     STARTPROGRESS();
 
-    uint32_t armnum = 0;
     
     int nodenum = 0, totalNodes = Node::mNodes.size();
     try {
@@ -3370,7 +3394,7 @@ namespace paraDIS {
 				theArm->mTerminalSegments.push_back(endSegment1);
 			  }
 			}
-			dbprintf(5, "DataSet::BuildArms() (from middle of arm):  Pushing back arm %d: %s\n", armnum++, theArm->Stringify(0, false).c_str());
+			dbprintf(5, "DataSet::BuildArms() (from middle of arm):  Pushing back arm %d: %s\n", Arm::mArms.size(), theArm->Stringify(0, false).c_str());
 
             Arm::mTotalArmLengthBeforeDecomposition += theArm->mArmLength;
 
@@ -3394,19 +3418,19 @@ namespace paraDIS {
               if (endSegment != startSegment) {
                 theArm->mTerminalSegments.push_back(endSegment);
               }
-              dbprintf(5, "DataSet::BuildArms(): (from end of arm) Pushing back arm %d: %s\n", armnum++, theArm->Stringify(0).c_str());
+              dbprintf(5, "DataSet::BuildArms(): (from end of arm) Pushing back arm %d: %s\n",  Arm::mArms.size(), theArm->Stringify(0).c_str());
               Arm::mTotalArmLengthBeforeDecomposition += theArm->mArmLength;
            }
             ++neighbornum;
           }
         }
 
-        UPDATEPROGRESS(nodenum, totalNodes, str(boost::format("BuildArms: %1% arms created.")%armnum));
+        UPDATEPROGRESS(nodenum, totalNodes, str(boost::format("BuildArms: %1% arms created.")%(Arm::mArms.size())));
      }
     } catch (string err) {
-      throw string("Arm #")+intToString(armnum)+": "+err;
+      throw str(boost::format("Arm #%1%: %2%")%(Arm::mArms.size())%err);
     }
-    COMPLETEPROGRESS(totalNodes, str(boost::format("BuildArms: %1% arms created.")%armnum));
+    COMPLETEPROGRESS(totalNodes, str(boost::format("BuildArms: %1% arms created.")%(Arm::mArms.size())));
     
     //  print a quick detail of all traced arms
     if (Arm::mTraceArms.size()) {
@@ -3422,7 +3446,7 @@ namespace paraDIS {
   //===========================================================================
   void DataSet::DecomposeArms(void) {
 	ArmSegment::mNumBeforeDecomposition = ArmSegment::mArmSegments.size(); 
-   uint32_t armnum = 0;
+	uint32_t armnum = 0;
     vector<Arm*> newArms;
     int energyLevel = NUM_ENERGY_LEVELS+1, numarms=Arm::mArms.size();
     vector<int32_t> numDecomposed(NUM_ENERGY_LEVELS+1, 0);
