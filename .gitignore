@@ -2,3 +2,9 @@ slurm*out
 \#*
 .#*
 mf-include
+*-output*
+*.out
+callgrind*
+*core
+hpctoolkit*
+*hpcstruct
