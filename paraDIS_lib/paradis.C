@@ -299,6 +299,14 @@ double AngularDifference(vector<float>v1, vector<float>v2, double v1Length=-1, d
 
 // =====================================================================
 /*!
+  Utility for Povray
+*/
+string GetPovrayLocationString(vector<float> loc) {
+  return str(boost::format("<%f, %f, %f>")%(loc[0])%(loc[1])%(loc[2])); 
+}
+
+// =====================================================================
+/*!
   This prints out a list of arms with their depths to a text file
   and a set of VTK files.
   File created: basename.txt, basename.vtk
@@ -3645,7 +3653,6 @@ namespace paraDIS {
 			
 	// ===============================================================================
 	// NOW the sweep file.  This needs to be done here, because getting it from JSON can jumble the node order due to the undefined order of python dictionary iteratiion
-    FILE * povsweepfile = povdeclfile; 
 	/*string povsweepfilename = str(boost::format("%s/%s.pov")%mOutputDir%mOutputBasename);
     dbecho (0, str(boost::format("Writing POV file %s...\n")%povsweepfilename).c_str()); 
 	FILE * povsweepfile = fopen(povsweepfilename.c_str(), "w");
@@ -3663,7 +3670,7 @@ namespace paraDIS {
 				% Node::mBoundsMin[2] 
 				% Node::mBoundsMax[2]).c_str());
 	*/
-	fprintf(povsweepfile, "#ifndef (SweepRadius)\n#declare SweepRadius = 50;\n#end\n"); 
+	fprintf(povdeclfile, "#ifndef (SweepRadius)\n#declare SweepRadius = 50;\n#end\n"); 
 	// ===============================================================================
 	std::vector<boost::shared_ptr<MetaArm> >::iterator marm; 
 	fprintf(povdeclfile, "/* ======================================== */ \n"); 
@@ -3689,7 +3696,7 @@ namespace paraDIS {
 	  for (vector<Node*>::iterator node = marmnodes.begin(); 
 		   node != marmnodes.end(); node++, nodenum++) {
 		if (*node) {			  
-		  povLocString = (*node)->GetPovrayLocationString(); 
+		  povLocString = GetPovrayLocationString((*node)->mLocation); 
 		}			
 		if (nodenum) fprintf(povdeclfile, ", "); 
 		if (!*node) {
@@ -3704,10 +3711,11 @@ namespace paraDIS {
 	  fprintf(povdeclfile, "#declare ParaDIS_MetaArmSplines[%d] = spline { \n\tnatural_spline\n", marmnum); 
 	  nodenum = 0; 
 	  numnodes += numwraps * 19;  // Insert additional 19 nodes at each wrap, increasing one step to 20.
+	  Node *previousNode = NULL; 
 	  for (vector<Node*>::iterator node = marmnodes.begin(); 
 		   node != marmnodes.end(); node++, nodenum++) {
 		if (*node) {			  
-		  povLocString = (*node)->GetPovrayLocationString(); 
+		  povLocString = GetPovrayLocationString((*node)->mLocation); 
 		  fprintf(povdeclfile, "\t%0.5f, %s\n", nodenum/(numnodes-1.0), povLocString.c_str()); 
 		  if (nodenum % 20 == 0) {
 			smoothPoints.push_back(str(boost::format("%0.5f, %s")%(nodenum/(numnodes-1.0))%povLocString));
@@ -3715,21 +3723,23 @@ namespace paraDIS {
 		}			
 		if (!*node) {
 		  // always push a wrapped node to smoothed points as they are important
-		  smoothPoints.push_back(str(boost::format("%0.5f, %s")%(nodenum/(numnodes-1.0))%povLocString));
+		  smoothPoints.push_back(str(boost::format("%0.5f, %s")%(nodenum/(numnodes-1.0))%(GetPovrayLocationString(previousNode->mLocation))));
 		  ++node; 
-		  string nextLocString = (*node)->GetPovrayLocationString(); 
+		  string nextLocString = GetPovrayLocationString((*node)->mLocation); 
+		  smoothPoints.push_back(str(boost::format("%0.5f, %s")%(nodenum/(numnodes-1.0))%(nextLocString)));
 		  fprintf(povdeclfile, "\t/* WRAP 20 transition points. */\n");
 		  float GS = nodenum/(numnodes-1.0), GE = (nodenum + 19.0)/(numnodes-1.0); 
 		  for (int step = 0; step < 20; step++) {
 			nodenum++; 
 			float GC = nodenum/(numnodes-1.0);  
 			fprintf(povdeclfile, "\t%0.5f, InterpVCos(%f, %f, %f, %s, %s, 0)\n", GC, GC, GS, GE,  povLocString.c_str(), nextLocString.c_str()); 
-			if (nodenum % 20 == 0) {
+			if (nodenum % 10 == 0) {
 			  smoothPoints.push_back(str(boost::format("%0.5f, InterpVCos(%f, %f, %f, %s, %s, 0)") %GC %GC %GS %GE %povLocString %nextLocString));
 			}
 		  }
 		  fprintf(povdeclfile, "\t/* END WRAP */\n");
 		}
+		previousNode = *node; 
 	  }	  
 	  fprintf(povdeclfile, "} /* end spline */ \n"); 
 
@@ -3741,6 +3751,7 @@ namespace paraDIS {
 	  }
 	  fprintf(povdeclfile, "} /* end smoothed spline */ \n"); 
 	  
+	  
 	  // ======================================================================
 	  // Now write sphere sweeps to union into the sweep file for metaarm.  
 	  // There will be multiple sweeps due to wrapping (periodic bounds)
@@ -3750,10 +3761,13 @@ namespace paraDIS {
 	  for (vector<Node*>::iterator node = marmnodes.begin(); 
 		   node != marmnodes.end(); node++, nodenum++) {
 		if (*node) {
-		  sweepnodes.push_back((*node)->GetPovrayLocationString()); 
+		  sweepnodes.push_back(GetPovrayLocationString((*node)->mLocation)); 
 		}			
 		else { 
 		  // we just ended one sweep
+		  if (sweepnodes.size() == 1) {
+			sweepnodes.push_back(sweepnodes[0]); 
+		  }
 		  sweepnodelists.push_back(sweepnodes); 
 		  sweepnodes.clear(); 
 		}
@@ -3761,23 +3775,23 @@ namespace paraDIS {
 	  // collect the last sweep:
 	  sweepnodelists.push_back(sweepnodes); 
 	  if (sweepnodelists.size() > 1) {
-		fprintf(povsweepfile, "#declare ParaDIS_MetaArmSweeps[%d] = union { \n", marmnum);
+		fprintf(povdeclfile, "#declare ParaDIS_MetaArmSweeps[%d] = union { \n", marmnum);
 	  } else {
-		fprintf(povsweepfile, "#declare ParaDIS_MetaArmSweeps[%d] = ", marmnum); 
+		fprintf(povdeclfile, "#declare ParaDIS_MetaArmSweeps[%d] = ", marmnum); 
 	  }
 	  for (uint snum = 0; snum < sweepnodelists.size(); snum++) {		
 		if (sweepnodelists[snum].size()) {
 		  // Just ended a sweep, create the actual object
-		  fprintf(povsweepfile, "\tsphere_sweep { linear_spline\n"); 
-		  fprintf(povsweepfile, "\t\t%d,\n", (int)sweepnodelists[snum].size()); 
+		  fprintf(povdeclfile, "\tsphere_sweep { linear_spline\n"); 
+		  fprintf(povdeclfile, "\t\t%d,\n", (int)sweepnodelists[snum].size()); 
 		  for (uint i = 0; i < sweepnodelists[snum].size(); i++) {
-			fprintf(povsweepfile, "\t\t%s, SweepRadius\n", sweepnodelists[snum][i].c_str()); 
+			fprintf(povdeclfile, "\t\t%s, SweepRadius\n", sweepnodelists[snum][i].c_str()); 
 		  }
-		  fprintf(povsweepfile, "\t} /* end sphere_sweep */\n"); 
+		  fprintf(povdeclfile, "\t} /* end sphere_sweep */\n"); 
 		} 
 	  }
 	  if (sweepnodelists.size() > 1) {
-		fprintf(povsweepfile, "} /* end union */ \n");
+		fprintf(povdeclfile, "} /* end union */ \n");
 	  } 
 
 	  // ======================================================================
@@ -3785,27 +3799,39 @@ namespace paraDIS {
 	  
 	}
 	COMPLETEPROGRESS(numMarms, "Writing MetaArms to povray  files");
-	dbecho(1, "Wrote %d segments out of %d into povray object file\n", (int)segsWritten, (int)ArmSegment::mArmSegments.size()); 
-	for (std::map<uint32_t, ArmSegment *>::iterator pos = ArmSegment::mArmSegments.begin(); pos != ArmSegment::mArmSegments.end(); pos++) {
+	for (std::map<uint32_t, ArmSegment *>::iterator pos = ArmSegment::mArmSegments.begin(); pos != ArmSegment::mArmSegments.end(); pos++) {	  
 	  ArmSegment * seg = pos->second; 
+
+	  if (seg->mWrapped) continue; 
+
 	  int segid = seg->GetID();
 	  int armid = seg->mParentArm->mArmID; 
 	  int maid = seg->mParentArm->GetParentMetaArm()->GetMetaArmID(); 
 	  int burgers = seg->GetBurgersType();
 	  uint32_t distance = seg->mLightTheFuseDistance; 
-	  string ep0loc = seg->GetEndpoint(0)->GetPovrayLocationString(); 
-	  string ep1loc = seg->GetEndpoint(1)->GetPovrayLocationString(); 
+	  vector<float> loc0 = seg->GetEndpoint(0)->mLocation, loc1 = seg->GetEndpoint(1)->mLocation; 
+	  /* vector<float> saved = loc1; 
+	  Wrap(loc0, loc1);
+	  int i = 0; 
+	  for ( i=0; i<3; i++) {
+		if (loc0[i] != loc1[i]) break;
+	  } 
+	  if (i==3) {
+		cerr << str(boost::format("Wrap created identical endpoints in segment ID %1%, arm %2%")% segid % armid) << endl; 
+		abort(); 
+		}*/
 	  string segstring = 
 		str(boost::format("segment(%d, %d, %d, %s, %s, %d, %d)\n")
 			% segid 
 			% armid 
 			% maid 
-			% ep0loc 
-			% ep1loc 
+			% GetPovrayLocationString(loc0)
+			% GetPovrayLocationString(loc1)
 			% burgers
 			% distance);
 	  // dbprintf(5, segstring.c_str()); 
 	  fprintf(povobjfile, segstring.c_str()); 
+	  segsWritten++; 
 	  /*	  if (!seg->second->mSeen) {
 		dbprintf(5, "Not written: %s\n", seg->second->Stringify().c_str()); 
 		seg->second->mSeen = false; 
@@ -3813,9 +3839,9 @@ namespace paraDIS {
 	  */
 	}
 	//fprintf(povdeclfile, "\t}\n}\n");
-	//fclose(povsweepfile); 
-	fclose(povdeclfile); 
+	dbecho(1, "Wrote %d segments out of %d into povray object file\n", (int)segsWritten, (int)(ArmSegment::mArmSegments.size())); 
 	fclose(povobjfile); 
+	fclose(povdeclfile); 
 
   }
 	  

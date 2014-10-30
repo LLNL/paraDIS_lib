@@ -329,12 +329,6 @@ namespace paraDIS {
     }
     
  
-    /*!
-      Accessor
-    */
-	string GetPovrayLocationString(void) {
-	  return str(boost::format("<%f, %f, %f>")%(mLocation[0])%(mLocation[1])%(mLocation[2])); 
-    }
 	  
   	  
     /*!
@@ -727,7 +721,7 @@ namespace paraDIS {
 
 	/* Some segments connect a node at one edge of the subspace to a node outside the subspace.  I think these are ok to draw as-is.  But some segments connect a node to a node on the other side due to periodic boundary conditions.  This segment needs to be "wrapped".  For a "wrapped" segment, create a new "wrapped" node inside the subspace boundary by adding an entire boundary dimension as needed such that the distance to its neighbor is less than half the size of the bounds of the dataset.  Create a new "wrapper segment" connecting the original node to the new "wrapped" node.  This new wrapper segment will not contribute to any distance calculations; it's like a hyperwarp to the wrapped double node. Then change the original segment to connect from the wrapped node to its neighbor.  
     */ 
-    bool Wrap(const rclib::Point<float> &dataSize);
+    // bool Wrap(const rclib::Point<float> &dataSize);
  
     /*! 
       Accessor function.  
