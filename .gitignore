@@ -8,3 +8,9 @@ callgrind*
 *core
 hpctoolkit*
 *hpcstruct
+chaos*
+mf-include
+*.pyc
+boost
+include
+Darwin*
