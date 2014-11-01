@@ -99,12 +99,12 @@ string BurgersTypeNames(int btype);
 #define BURGERS_331         70  // BEGIN ENERGY LEVEL 7
 #define BURGERS_313         71
 #define BURGERS_133         72
-#define BURGERS_420         81  // BEGIN ENERGY LEVEL 8
-#define BURGERS_240         82 
-#define BURGERS_024         83 
-#define BURGERS_042         84 
-#define BURGERS_204         85 
-#define BURGERS_402         86 
+#define BURGERS_420         80  // BEGIN ENERGY LEVEL 8
+#define BURGERS_240         81 
+#define BURGERS_024         82 
+#define BURGERS_042         83 
+#define BURGERS_204         84 
+#define BURGERS_402         85 
 //extern const char *BurgersTypeNames[] ; 
 
 // SCREW TYPE is a characteristic of an arm segment that Jaime Marian uses

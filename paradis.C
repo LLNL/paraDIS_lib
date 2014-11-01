@@ -153,7 +153,7 @@ string BurgersTypeNames(int btype) {
   case BURGERS_042      : return "042";  
   case BURGERS_204      : return "204";  
   case BURGERS_402      : return "402";  
-  default: return "UNKNOWN CODE";
+  default: return str(boost::format("UNKNOWN CODE %1%")%btype);
   }
 }
 
@@ -1846,10 +1846,6 @@ namespace paraDIS {
 
     ArmSegment * otherSharedSegment = NULL;
     if (mArmType == ARM_LOOP) {
-      if (mTerminalSegments.size() != 1) {
-		dbprintf(0, "ExtendByArm(%d): We have a looped arm but there is more than one terminal segment.  This seems wrong.\n", mArmID); 
-		abort(); 
-	  }
 	  dbprintf(4, "ExtendByArm(%d): Extending a looped arm.  We need to duplicate our terminal segment so we can \"double extend\" the arm.\n", mArmID);
 	  // we need to find our other terminal segment so we can "double extend"
 	  otherSharedSegment = mSegments[0]; 
@@ -3395,6 +3391,7 @@ namespace paraDIS {
 			  if (endNode0 == endNode1) {
 				dbprintf(5, "DataSet::BuildArms(): Arm %d is a loop as both directions terminated in the same endpoint.\n", theArm->mArmID);
 				theArm->mArmType = ARM_LOOP; 
+				theArm->mTerminalSegments.push_back(endSegment1);
 			  } 
 			  else {
 				theArm->mTerminalNodes.push_back(endNode1);
@@ -3402,7 +3399,7 @@ namespace paraDIS {
 				theArm->mTerminalSegments.push_back(endSegment1);
 			  }
 			}
-			dbprintf(5, "DataSet::BuildArms() (from middle of arm):  Pushing back arm %d: %s\n", Arm::mArms.size(), theArm->Stringify(0, false).c_str());
+			dbprintf(5, "DataSet::BuildArms() (from middle of arm):  Pushing back arm %d: %s\n", theArm->mArmID, theArm->Stringify(0, false).c_str());
 
             Arm::mTotalArmLengthBeforeDecomposition += theArm->mArmLength;
 
@@ -3426,7 +3423,7 @@ namespace paraDIS {
               if (endSegment != startSegment) {
                 theArm->mTerminalSegments.push_back(endSegment);
               }
-              dbprintf(5, "DataSet::BuildArms(): (from end of arm) Pushing back arm %d: %s\n",  Arm::mArms.size(), theArm->Stringify(0).c_str());
+              dbprintf(5, "DataSet::BuildArms(): (from end of arm) Pushing back arm %d: %s\n",  theArm->mArmID, theArm->Stringify(0).c_str());
               Arm::mTotalArmLengthBeforeDecomposition += theArm->mArmLength;
            }
             ++neighbornum;
