@@ -1,3 +1,6 @@
+2014-10-22: version 2.6.2 (tag "v2.6.2")
+		Bugfix for case where LOOP node has two terminal segments.  This is perfectly fine but the code was complaining about it. 
+
 2014-10-22: version 2.6.1 (tag "v2.6.1")
 		Bugfix for povray spline generator code
 		Added 6 BURGERS types at energy level 8 to handle some new data.  
