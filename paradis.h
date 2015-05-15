@@ -77,34 +77,34 @@ string BurgersTypeNames(int btype);
 //  Segment BURGERS TYPES: (P = plus(+) and M = minus(-))
 // These are valued in order of increasing energy levels, corresponding to the sum of the square of the components of the burgers vector.  
 #define NUM_ENERGY_LEVELS  8
-#define NUM_BURGERS_TYPES  26
+#define NUM_BCC_BURGERS_TYPES  26
 
-#define BURGERS_UNKNOWN     -1  // analysis failed
-#define BURGERS_NONE        0   // no analysis done yet
-#define BURGERS_PPP         10  // +++  BEGIN ENERY LEVEL 1
-#define BURGERS_PPM         11  // ++-
-#define BURGERS_PMP         12  // +-+
-#define BURGERS_PMM         13  // +--
-#define BURGERS_200         20  // BEGIN ENERGY LEVEL 2
-#define BURGERS_020         21  
-#define BURGERS_002         22
-#define BURGERS_220         30  // BEGIN ENERGY LEVEL 3
-#define BURGERS_202         31
-#define BURGERS_022         32
-#define BURGERS_311         40  // BEGIN ENERGY LEVEL 4
-#define BURGERS_131         41
-#define BURGERS_113         42
-#define BURGERS_222         50  // BEGIN ENERGY LEVEL 5
-#define BURGERS_004         60  // BEGIN ENERGY LEVEL 6
-#define BURGERS_331         70  // BEGIN ENERGY LEVEL 7
-#define BURGERS_313         71
-#define BURGERS_133         72
-#define BURGERS_420         80  // BEGIN ENERGY LEVEL 8
-#define BURGERS_240         81 
-#define BURGERS_024         82 
-#define BURGERS_042         83 
-#define BURGERS_204         84 
-#define BURGERS_402         85 
+#define BCC_BURGERS_UNKNOWN     -1  // analysis failed
+#define BCC_BURGERS_NONE        0   // no analysis done yet
+#define BCC_BURGERS_PPP         10  // +++  BEGIN ENERY LEVEL 1
+#define BCC_BURGERS_PPM         11  // ++-
+#define BCC_BURGERS_PMP         12  // +-+
+#define BCC_BURGERS_PMM         13  // +--
+#define BCC_BURGERS_200         20  // BEGIN ENERGY LEVEL 2
+#define BCC_BURGERS_020         21  
+#define BCC_BURGERS_002         22
+#define BCC_BURGERS_220         30  // BEGIN ENERGY LEVEL 3
+#define BCC_BURGERS_202         31
+#define BCC_BURGERS_022         32
+#define BCC_BURGERS_311         40  // BEGIN ENERGY LEVEL 4
+#define BCC_BURGERS_131         41
+#define BCC_BURGERS_113         42
+#define BCC_BURGERS_222         50  // BEGIN ENERGY LEVEL 5
+#define BCC_BURGERS_004         60  // BEGIN ENERGY LEVEL 6
+#define BCC_BURGERS_331         70  // BEGIN ENERGY LEVEL 7
+#define BCC_BURGERS_313         71
+#define BCC_BURGERS_133         72
+#define BCC_BURGERS_420         80  // BEGIN ENERGY LEVEL 8
+#define BCC_BURGERS_240         81 
+#define BCC_BURGERS_024         82 
+#define BCC_BURGERS_042         83 
+#define BCC_BURGERS_204         84 
+#define BCC_BURGERS_402         85 
 //extern const char *BurgersTypeNames[] ; 
 
 // SCREW TYPE is a characteristic of an arm segment that Jaime Marian uses
@@ -573,7 +573,7 @@ namespace paraDIS {
       mNextSegmentIndex++; 
 	  mParentArm = NULL; 
 	  mLightTheFuseDistance = 0; 
-      mOriginalBurgersType = mBurgersType = BURGERS_UNKNOWN; 
+      mOriginalBurgersType = mBurgersType = BCC_BURGERS_UNKNOWN; 
       mSeen = false; 
       int i=2; while (i--) {
         mEndpoints[i] = NULL; 
@@ -918,7 +918,7 @@ namespace paraDIS {
     */
     int8_t GetBurgersType(void) const {
       if (!mTerminalSegments.size() || !mTerminalSegments[0])  {        
-        return BURGERS_UNKNOWN; 
+        return BCC_BURGERS_UNKNOWN; 
       }
       return mTerminalSegments[0]->GetBurgersType(); 
     }
@@ -988,11 +988,11 @@ namespace paraDIS {
     }
 
     bool isType111(void) {
-      return mTerminalSegments.size() && mTerminalSegments[0]->GetBurgersType() >= BURGERS_PPP && mTerminalSegments[0]->GetBurgersType() <= BURGERS_PMM;
+      return mTerminalSegments.size() && mTerminalSegments[0]->GetBurgersType() >= BCC_BURGERS_PPP && mTerminalSegments[0]->GetBurgersType() <= BCC_BURGERS_PMM;
     }
 
     bool isHighEnergy(void) {
-      return  mTerminalSegments.size() && mTerminalSegments[0]->GetBurgersType() >= BURGERS_200; 
+      return  mTerminalSegments.size() && mTerminalSegments[0]->GetBurgersType() >= BCC_BURGERS_200; 
     }
 
     Node *GetCommonNode(Arm *other) {
@@ -1255,7 +1255,7 @@ namespace paraDIS {
 	  if (mTerminalArms.size()) {
 		return mTerminalArms[0]->GetBurgersType(); 
 	  }
-	  return BURGERS_UNKNOWN; 	  
+	  return BCC_BURGERS_UNKNOWN; 	  
 	}
      
 	vector<Node *>mTerminalNodes; // 

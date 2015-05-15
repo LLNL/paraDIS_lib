@@ -95,64 +95,64 @@ std::string INDENT(int i) {
 
 static vector<int> GetAllBurgersTypes(void) {
   vector<int> alltypes; 
-  alltypes.push_back(BURGERS_UNKNOWN); 
-  alltypes.push_back(BURGERS_NONE); 
-  alltypes.push_back(BURGERS_PPP); 
-  alltypes.push_back(BURGERS_PPM); 
-  alltypes.push_back(BURGERS_PMP); 
-  alltypes.push_back(BURGERS_PMM);
-  alltypes.push_back(BURGERS_200);
-  alltypes.push_back(BURGERS_020);
-  alltypes.push_back(BURGERS_002); 
-  alltypes.push_back(BURGERS_220); 
-  alltypes.push_back(BURGERS_202); 
-  alltypes.push_back(BURGERS_022); 
-  alltypes.push_back(BURGERS_311); 
-  alltypes.push_back(BURGERS_131); 
-  alltypes.push_back(BURGERS_113); 
-  alltypes.push_back(BURGERS_222); 
-  alltypes.push_back(BURGERS_004); 
-  alltypes.push_back(BURGERS_331); 
-  alltypes.push_back(BURGERS_313); 
-  alltypes.push_back(BURGERS_133); 
-  alltypes.push_back(BURGERS_420); 
-  alltypes.push_back(BURGERS_240); 
-  alltypes.push_back(BURGERS_024); 
-  alltypes.push_back(BURGERS_042); 
-  alltypes.push_back(BURGERS_204); 
-  alltypes.push_back(BURGERS_402); 
+  alltypes.push_back(BCC_BURGERS_UNKNOWN); 
+  alltypes.push_back(BCC_BURGERS_NONE); 
+  alltypes.push_back(BCC_BURGERS_PPP); 
+  alltypes.push_back(BCC_BURGERS_PPM); 
+  alltypes.push_back(BCC_BURGERS_PMP); 
+  alltypes.push_back(BCC_BURGERS_PMM);
+  alltypes.push_back(BCC_BURGERS_200);
+  alltypes.push_back(BCC_BURGERS_020);
+  alltypes.push_back(BCC_BURGERS_002); 
+  alltypes.push_back(BCC_BURGERS_220); 
+  alltypes.push_back(BCC_BURGERS_202); 
+  alltypes.push_back(BCC_BURGERS_022); 
+  alltypes.push_back(BCC_BURGERS_311); 
+  alltypes.push_back(BCC_BURGERS_131); 
+  alltypes.push_back(BCC_BURGERS_113); 
+  alltypes.push_back(BCC_BURGERS_222); 
+  alltypes.push_back(BCC_BURGERS_004); 
+  alltypes.push_back(BCC_BURGERS_331); 
+  alltypes.push_back(BCC_BURGERS_313); 
+  alltypes.push_back(BCC_BURGERS_133); 
+  alltypes.push_back(BCC_BURGERS_420); 
+  alltypes.push_back(BCC_BURGERS_240); 
+  alltypes.push_back(BCC_BURGERS_024); 
+  alltypes.push_back(BCC_BURGERS_042); 
+  alltypes.push_back(BCC_BURGERS_204); 
+  alltypes.push_back(BCC_BURGERS_402); 
   return alltypes;
 }
 
 
 string BurgersTypeNames(int btype) {
   switch (btype) {
-  case BURGERS_UNKNOWN  : return "UNKNOWN";
-  case BURGERS_NONE     : return "NONE";
-  case BURGERS_PPP      : return "PPP";
-  case BURGERS_PPM      : return "PPM";
-  case BURGERS_PMP      : return "PMP";
-  case BURGERS_PMM      : return "PMM";
-  case BURGERS_200      : return "200";
-  case BURGERS_020      : return "020";
-  case BURGERS_002      : return "002";
-  case BURGERS_220      : return "220";
-  case BURGERS_202      : return "202";
-  case BURGERS_022      : return "022";
-  case BURGERS_311      : return "311";
-  case BURGERS_131      : return "131";
-  case BURGERS_113      : return "113";
-  case BURGERS_222      : return "222";
-  case BURGERS_004      : return "004";
-  case BURGERS_331      : return "331";
-  case BURGERS_313      : return "313";
-  case BURGERS_133      : return "133"; 
-  case BURGERS_420      : return "420";  
-  case BURGERS_240      : return "240";  
-  case BURGERS_024      : return "024";  
-  case BURGERS_042      : return "042";  
-  case BURGERS_204      : return "204";  
-  case BURGERS_402      : return "402";  
+  case BCC_BURGERS_UNKNOWN  : return "UNKNOWN";
+  case BCC_BURGERS_NONE     : return "NONE";
+  case BCC_BURGERS_PPP      : return "PPP";
+  case BCC_BURGERS_PPM      : return "PPM";
+  case BCC_BURGERS_PMP      : return "PMP";
+  case BCC_BURGERS_PMM      : return "PMM";
+  case BCC_BURGERS_200      : return "200";
+  case BCC_BURGERS_020      : return "020";
+  case BCC_BURGERS_002      : return "002";
+  case BCC_BURGERS_220      : return "220";
+  case BCC_BURGERS_202      : return "202";
+  case BCC_BURGERS_022      : return "022";
+  case BCC_BURGERS_311      : return "311";
+  case BCC_BURGERS_131      : return "131";
+  case BCC_BURGERS_113      : return "113";
+  case BCC_BURGERS_222      : return "222";
+  case BCC_BURGERS_004      : return "004";
+  case BCC_BURGERS_331      : return "331";
+  case BCC_BURGERS_313      : return "313";
+  case BCC_BURGERS_133      : return "133"; 
+  case BCC_BURGERS_420      : return "420";  
+  case BCC_BURGERS_240      : return "240";  
+  case BCC_BURGERS_024      : return "024";  
+  case BCC_BURGERS_042      : return "042";  
+  case BCC_BURGERS_204      : return "204";  
+  case BCC_BURGERS_402      : return "402";  
   default: return str(boost::format("UNKNOWN CODE %1%")%btype);
   }
 }
@@ -194,66 +194,66 @@ int BurgersCategory(float burgval) {
 }
 
 int InterpretBurgersType(vector<float> burg) {
-  int burgersType = BURGERS_UNKNOWN;
+  int burgersType = BCC_BURGERS_UNKNOWN;
   
   int catarray[3] =
     {BurgersCategory(burg[0]), BurgersCategory(burg[1]), BurgersCategory(burg[2])};
   if (abs(catarray[0]) == 2 && catarray[1] == 0 && catarray[2] == 0)
-    burgersType = BURGERS_200;
+    burgersType = BCC_BURGERS_200;
   else if (catarray[0] == 0 && abs(catarray[1]) == 2 && catarray[2] == 0)
-    burgersType = BURGERS_020;
+    burgersType = BCC_BURGERS_020;
   else if (catarray[0] == 0 && catarray[1] == 0 && abs(catarray[2]) == 2)
-    burgersType = BURGERS_002;
+    burgersType = BCC_BURGERS_002;
   else if ((catarray[0] == 1 && catarray[1] == 1 && catarray[2] == 1) ||
            (catarray[0] == -1 && catarray[1] == -1 && catarray[2] == -1))
-    burgersType = BURGERS_PPP;
+    burgersType = BCC_BURGERS_PPP;
   else if ((catarray[0] == 1 && catarray[1] == 1 && catarray[2] == -1) ||
            (catarray[0] == -1 && catarray[1] == -1 && catarray[2] == 1))
-    burgersType = BURGERS_PPM;
+    burgersType = BCC_BURGERS_PPM;
   else if ((catarray[0] == 1 && catarray[1] == -1 && catarray[2] == 1) ||
            (catarray[0] == -1 && catarray[1] == 1 && catarray[2] == -1))
-    burgersType = BURGERS_PMP;
+    burgersType = BCC_BURGERS_PMP;
   else if ((catarray[0] == 1 && catarray[1] == -1 && catarray[2] == -1) ||
            (catarray[0] == -1 && catarray[1] == 1 && catarray[2] == 1))
-    burgersType = BURGERS_PMM;
+    burgersType = BCC_BURGERS_PMM;
   else if (abs(catarray[0]) == 2 && abs(catarray[1]) == 2 && catarray[2] == 0)
-    burgersType = BURGERS_220;
+    burgersType = BCC_BURGERS_220;
   else if (abs(catarray[0]) == 2 && catarray[1] == 0 && abs(catarray[2]) == 2)
-    burgersType = BURGERS_202;
+    burgersType = BCC_BURGERS_202;
   else if (catarray[0] == 0 && abs(catarray[1]) == 2 && abs(catarray[2]) == 2)
-    burgersType = BURGERS_022;
+    burgersType = BCC_BURGERS_022;
   else if (abs(catarray[0]) == 2 && abs(catarray[1]) == 2 && abs(catarray[2]) == 2)
-    burgersType = BURGERS_222;
+    burgersType = BCC_BURGERS_222;
   else if (catarray[0] == 3 && abs(catarray[1]) == 1 && abs(catarray[2]) == 1)
-    burgersType = BURGERS_311;
+    burgersType = BCC_BURGERS_311;
   else if (abs(catarray[0]) == 1 && catarray[1] == 3 && abs(catarray[2]) == 1)
-    burgersType = BURGERS_131;
+    burgersType = BCC_BURGERS_131;
   else if (abs(catarray[0]) == 1 && abs(catarray[1]) == 1 && catarray[2] == 3)
-    burgersType = BURGERS_113;
+    burgersType = BCC_BURGERS_113;
   else if ((abs(catarray[0]) == 0 && abs(catarray[1]) == 0 && catarray[2] == 4) ||
            (abs(catarray[0]) == 0 && catarray[1] == 4 && abs(catarray[2]) == 0) ||
            (catarray[0] == 4 && abs(catarray[1]) == 0 && abs(catarray[2]) == 0) )
-    burgersType = BURGERS_004;
+    burgersType = BCC_BURGERS_004;
    else if (abs(catarray[0]) == 1 && abs(catarray[1]) == 3 && catarray[2] == 3)
-     burgersType = BURGERS_133;
+     burgersType = BCC_BURGERS_133;
    else if (abs(catarray[0]) == 3 && abs(catarray[1]) == 1 && catarray[2] == 3)
-     burgersType = BURGERS_313;
+     burgersType = BCC_BURGERS_313;
    else if (abs(catarray[0]) == 3 && abs(catarray[1]) == 3 && catarray[2] == 1)
-     burgersType = BURGERS_331;
+     burgersType = BCC_BURGERS_331;
    else if (abs(catarray[0]) == 0 && abs(catarray[1]) == 2 && catarray[2] == 4)
-	 return BURGERS_024; 
+	 return BCC_BURGERS_024; 
    else if (abs(catarray[0]) == 0 && abs(catarray[1]) == 4 && catarray[2] == 2)
-	 return BURGERS_042; 
+	 return BCC_BURGERS_042; 
    else if (abs(catarray[0]) == 2 && abs(catarray[1]) == 0 && catarray[2] == 4)
-	 return BURGERS_204; 
+	 return BCC_BURGERS_204; 
    else if (abs(catarray[0]) == 2 && abs(catarray[1]) == 4 && catarray[2] == 0)
-	 return BURGERS_240; 
+	 return BCC_BURGERS_240; 
    else if (abs(catarray[0]) == 4 && abs(catarray[1]) == 0 && catarray[2] == 2)
-	 return BURGERS_402; 
+	 return BCC_BURGERS_402; 
    else if (abs(catarray[0]) == 4 && abs(catarray[1]) == 2 && catarray[2] == 0)
-	 return BURGERS_420; 
+	 return BCC_BURGERS_420; 
   else {
-    burgersType = BURGERS_UNKNOWN;
+    burgersType = BCC_BURGERS_UNKNOWN;
     dbprintf(3, "\n\n********************************\n");
     dbprintf(3, "ERROR: segment has unknown type: burgers = (%f, %f, %f), categories=(%d, %d, %d).  This will cause problems later in analysis.\n", burg[0], burg[1], burg[2], catarray[0], catarray[1], catarray[2]);
     dbprintf(3, "\n********************************\n\n");
@@ -647,26 +647,26 @@ namespace paraDIS {
             "Segments, arms, and metaarms have Burgers vectors associated with them.\n"
             "  //  Segment BURGERS TYPES: (P = plus(+) and M = minus(-))\n"
   "// These are valued in order of increasing energy levels, corresponding to the sum of the square of the components of the burgers vector.  \n"
-  "#define BURGERS_UNKNOWN     -1  // analysis failed\n"
-  "#define BURGERS_NONE        0   // no analysis done yet\n"
-  "#define BURGERS_PPP         10  // +++  BEGIN ENERY LEVEL 1\n"
-  "#define BURGERS_PPM         11  // ++-\n"
-  "#define BURGERS_PMP         12  // +-+\n"
-  "#define BURGERS_PMM         13  // +--\n"
-  "#define BURGERS_200         20  // BEGIN ENERGY LEVEL 2\n"
-  "#define BURGERS_020         21  \n"
-  "#define BURGERS_002         22\n"
-  "#define BURGERS_220         30  // BEGIN ENERGY LEVEL 3\n"
-  "#define BURGERS_202         31\n"
-  "#define BURGERS_022         32\n"
-  "#define BURGERS_311         40  // BEGIN ENERGY LEVEL 4\n"
-  "#define BURGERS_131         41\n"
-  "#define BURGERS_113         42\n"
-  "#define BURGERS_222         50  // BEGIN ENERGY LEVEL 5\n"
-  "#define BURGERS_004         60  // BEGIN ENERGY LEVEL 6\n"
-  "#define BURGERS_331         70  // BEGIN ENERGY LEVEL 7\n"
-  "#define BURGERS_313         71\n"
-  "#define BURGERS_133         72\n"
+  "#define BCC_BURGERS_UNKNOWN     -1  // analysis failed\n"
+  "#define BCC_BURGERS_NONE        0   // no analysis done yet\n"
+  "#define BCC_BURGERS_PPP         10  // +++  BEGIN ENERY LEVEL 1\n"
+  "#define BCC_BURGERS_PPM         11  // ++-\n"
+  "#define BCC_BURGERS_PMP         12  // +-+\n"
+  "#define BCC_BURGERS_PMM         13  // +--\n"
+  "#define BCC_BURGERS_200         20  // BEGIN ENERGY LEVEL 2\n"
+  "#define BCC_BURGERS_020         21  \n"
+  "#define BCC_BURGERS_002         22\n"
+  "#define BCC_BURGERS_220         30  // BEGIN ENERGY LEVEL 3\n"
+  "#define BCC_BURGERS_202         31\n"
+  "#define BCC_BURGERS_022         32\n"
+  "#define BCC_BURGERS_311         40  // BEGIN ENERGY LEVEL 4\n"
+  "#define BCC_BURGERS_131         41\n"
+  "#define BCC_BURGERS_113         42\n"
+  "#define BCC_BURGERS_222         50  // BEGIN ENERGY LEVEL 5\n"
+  "#define BCC_BURGERS_004         60  // BEGIN ENERGY LEVEL 6\n"
+  "#define BCC_BURGERS_331         70  // BEGIN ENERGY LEVEL 7\n"
+  "#define BCC_BURGERS_313         71\n"
+  "#define BCC_BURGERS_133         72\n"
   "\n"
   "===================================================================\n"
   "NODE TYPES and MONSTER NODES: \n"
@@ -828,8 +828,8 @@ namespace paraDIS {
       /*!
         We have four uniquely valued arms.  Are they of the right mix?
       */
-      if (btypes[ BURGERS_PPP] && btypes[ BURGERS_PPM] &&
-          btypes[ BURGERS_PMP] && btypes[ BURGERS_PMM]) {
+      if (btypes[ BCC_BURGERS_PPP] && btypes[ BCC_BURGERS_PPM] &&
+          btypes[ BCC_BURGERS_PMP] && btypes[ BCC_BURGERS_PMM]) {
         mNodeType = -mNodeType;  // FOUND MULTIJUNCTION
       }
     }// end if four-armed or higher
@@ -1025,13 +1025,13 @@ namespace paraDIS {
       return mScrewType;
 
     mScrewType = BURGER_NO_SCREW; 
-    if (mBurgersType == BURGERS_PPM) {
+    if (mBurgersType == BCC_BURGERS_PPM) {
       burg[2] = -1; 
     } 
-    else if  (mBurgersType == BURGERS_PMP) {
+    else if  (mBurgersType == BCC_BURGERS_PMP) {
       burg[1] = -1; 
     }  
-    else if  (mBurgersType == BURGERS_PMM) {
+    else if  (mBurgersType == BCC_BURGERS_PMM) {
       burg[1] = burg[2] = -1; 
     } 
     else {
@@ -1432,13 +1432,13 @@ namespace paraDIS {
 	  
 	  // This changes _111 to _200 by definition
 	  int btype = mTerminalSegments[0]->GetBurgersType();
-	  if (btype == BURGERS_NONE || btype == BURGERS_UNKNOWN) {
+	  if (btype == BCC_BURGERS_NONE || btype == BCC_BURGERS_UNKNOWN) {
 		mArmType = ARM_UNKNOWN;
 	  }
 	  else {
 		// All non-loop arms should be type 111 now.
-		paradis_assert(btype == BURGERS_PPP || btype == BURGERS_PPM ||
-					   btype == BURGERS_PMP || btype == BURGERS_PMM); 
+		paradis_assert(btype == BCC_BURGERS_PPP || btype == BCC_BURGERS_PPM ||
+					   btype == BCC_BURGERS_PMP || btype == BCC_BURGERS_PMM); 
 	  }
 	}
 	
@@ -3077,12 +3077,12 @@ namespace paraDIS {
     summary += "----------------------\n";
     summary += "Key: NN_200\tNN_020\tNN_002\tNN_+++\tNN_++-\tNN_+-+\tNN_-++\n";
     summary += "SHORT ARM LENGTHS:\n";
-    n=0; while (n<NUM_BURGERS_TYPES) {
+    n=0; while (n<NUM_BCC_BURGERS_TYPES) {
       summary += str(boost::format("%.2f\t") %  shortLengths[n]);
       ++n;
     }
     summary += "\nLONG ARM LENGTHS:\n";
-    n = 0; while (n<NUM_BURGERS_TYPES) {
+    n = 0; while (n<NUM_BCC_BURGERS_TYPES) {
       summary += str(boost::format("%.2f\t") %  longLengths[n]);
       ++n;
     }
