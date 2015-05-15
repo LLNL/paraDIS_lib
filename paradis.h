@@ -563,7 +563,7 @@ namespace paraDIS {
 	  ep0->mNeighborSegments.push_back(this); 
 	  mEndpoints[1] = ep1; 
 	  ep1->mNeighborSegments.push_back(this); 
-	  mBurgersType = burgersType; 
+	  mOriginalBurgersType = mBurgersType = burgersType; 
 	  return; 
 	}
 	  
@@ -573,7 +573,7 @@ namespace paraDIS {
       mNextSegmentIndex++; 
 	  mParentArm = NULL; 
 	  mLightTheFuseDistance = 0; 
-      mBurgersType = BURGERS_UNKNOWN; 
+      mOriginalBurgersType = mBurgersType = BURGERS_UNKNOWN; 
       mSeen = false; 
       int i=2; while (i--) {
         mEndpoints[i] = NULL; 
@@ -709,11 +709,6 @@ namespace paraDIS {
     }
 
     
-    void SetBurgersType(int btype) {
-      mBurgersType = btype; 
-    }
-
-
  	// ========================
     bool HasEndpoint(Node *ep) {
       return (mEndpoints[0] == ep || mEndpoints[1] == ep);
@@ -769,7 +764,7 @@ namespace paraDIS {
      /*!
       The burgers-type is defined above.  
     */ 
-    int8_t mBurgersType; 
+    int8_t mBurgersType, mOriginalBurgersType; 
 
      /*!
       The screw type is defined above and is derived from the burgers type. 

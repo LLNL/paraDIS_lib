@@ -4135,7 +4135,28 @@ namespace paraDIS {
 	  //COMPLETEPROGRESS(numarms, "Writing segment burgers types for arms"); 
 
       // ----------------------------------------------------------
-      // 6. Segment file: Segment metaarm type
+      // 6. Segment file: Segment Original Burgers type before decomposition
+      // Work in progress:  haven't figured out yet how to print these in the correct order in an efficient way.  The information is there, though, in each segment, stored as mOriginalBurgersType
+      // So for now, commenting this out.  
+      /*       fprintf(segfile, "SCALARS original_burgers_type int\n");
+      fprintf(segfile, "LOOKUP_TABLE default\n");
+      for (uint32_t armnum = 0; armnum < numarms; armnum++) {
+        Arm *theArm = Arm::mArms[armnum+firstarm];
+        if (!theArm->mNumNormalSegments)
+          continue;
+        uint32_t burgertype = theArm->GetBurgersType();
+        for (uint32_t segnum = 0; segnum < theArm->mNumNormalSegments; segnum++) {
+          fprintf(segfile, "%d ", burgertype);
+        }
+		UPDATEPROGRESS(armnum, numarms, "Writing segment burgers types for arms"); 
+      }
+      fprintf(segfile, "\n");
+      */ 
+	  //COMPLETEPROGRESS(numarms, "Writing segment burgers types for arms"); 
+
+ 
+      // ----------------------------------------------------------
+      // 7. Segment file: Segment metaarm type
       // ----------------------------------------------------------
       fprintf(segfile, "SCALARS metaarm_type int\n");
       fprintf(segfile, "LOOKUP_TABLE default\n");
@@ -4153,7 +4174,7 @@ namespace paraDIS {
 	  //COMPLETEPROGRESS(numarms, "Writing segment metaarm types for arms"); 
 
       // ----------------------------------------------------------
-      // 7. Segment file: block (file) number
+      // 8. Segment file: block (file) number
       // ----------------------------------------------------------
       fprintf(segfile, "SCALARS block_number int\n");
       fprintf(segfile, "LOOKUP_TABLE default\n");
@@ -4170,7 +4191,7 @@ namespace paraDIS {
       //COMPLETEPROGRESS(numarms, "Writing segment block (file) numbers for arms"); 
 
       // ----------------------------------------------------------
-      // 8. Segment file: segment Screw Type for Jaime Marian
+      // 9. Segment file: segment Screw Type for Jaime Marian
       // ----------------------------------------------------------
       fprintf(segfile, "SCALARS screw_type int\n");
       fprintf(segfile, "LOOKUP_TABLE default\n");
