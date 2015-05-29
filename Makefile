@@ -14,7 +14,7 @@ CWD = $(shell pwd)
 MF-INCLUDE = $(shell cd ..; pwd)/mf-include
 include $(MF-INCLUDE)/mf-include.common
 
-SFILES = paradis.C paradis_c_interface.C paradisStreaming.C paradisTest.C analyzeParaDIS.C
+SFILES = paradis.C paradis_c_interface.C paradisStreaming.C paradisTest.C analyzeParaDIS.C BurgersTypes.C
 
 CPPLIBDIR=$(projdir)/RC_cpp_lib
 CLIBDIR=$(CPPLIBDIR)/RC_c_lib
@@ -32,7 +32,7 @@ PARADISLIB = $(CWD)/$(SYS_TYPE)/lib/libparadis.a
 RCCLIB=$(INSTALL_DIR)/lib/librcc.a 
 RCCPPLIB=$(INSTALL_DIR)/lib/librccpp.a 
 TARGETS = $(CWD)/$(SYS_TYPE)/bin/analyzeParaDIS $(CWD)/$(SYS_TYPE)/bin/paradisTest $(CWD)/$(SYS_TYPE)/bin/paradisStreamingTest 
-SOURCES = analyzeParaDIS.C  paradis.h paradisStreaming.h paradis.C paradisTest.C paradis_c_interface.h paradisStreaming.C  paradisStreamingTest.C  paradis_c_interface.C  paradis_types.h  
+SOURCES = analyzeParaDIS.C  paradis.h paradisStreaming.h paradis.C paradisTest.C paradis_c_interface.h paradisStreaming.C  paradisStreamingTest.C  paradis_c_interface.C  paradis_types.h   BurgersTypes.C
 
 all: timestamp $(TARGETS)
 
@@ -61,30 +61,37 @@ install-debug:
 
 libparadis: $(PARADISLIB) 
 
-$(SYS_TYPE)/paradis.o: paradis.C
+$(SYS_TYPE)/%.o: %.C
 	@echo; echo '***************************************'; echo 
+	echo building $@ due to $?
 	$(CXX)  $(CXXFLAGS) -c -o $@ -DUSE_ABORT=1 $<
 	@echo DONE WITH $@
 	@echo; echo '***************************************'; echo 
 
-$(SYS_TYPE)/paradisStreaming.o: paradisStreaming.C
+$(SYS_TYPE)/xxparadis.o: paradis.C
+	@echo; echo '**************XXXXXXXXXX*************************'; echo 
+	$(CXX)  $(CXXFLAGS) -c -o $@ -DUSE_ABORT=1 $<
+	@echo DONE WITH $@
 	@echo; echo '***************************************'; echo 
+
+$(SYS_TYPE)/xxparadisStreaming.o: paradisStreaming.C
+	@echo; echo '**************XXXXXXXXXX**************************'; echo 
 	$(CXX)  $(CXXFLAGS) -c -o $@  $<
 	@echo DONE WITH $@
 	@echo; echo '***************************************'; echo 
 
-$(SYS_TYPE)/paradis_c_interface.o: paradis_c_interface.C
-	@echo; echo '***************************************'; echo 
+$(SYS_TYPE)/xxparadis_c_interface.o: paradis_c_interface.C
+	@echo; echo '**************XXXXXXXXXX**************************'; echo 
 	$(CXX)  $(CXXFLAGS) -c -o $@  $<
 	@echo DONE WITH $@
 	@echo; echo '***************************************'; echo 
 
 
-$(PARADISLIB): $(RCCLIB) $(RCCPPLIB) $(SYS_TYPE)/paradis_c_interface.o  $(SYS_TYPE)/paradis.o $(SYS_TYPE)/paradisStreaming.o 
+$(PARADISLIB): $(RCCLIB) $(RCCPPLIB) $(SYS_TYPE)/paradis_c_interface.o  $(SYS_TYPE)/paradis.o $(SYS_TYPE)/paradisStreaming.o  $(SYS_TYPE)/BurgersTypes.o 
 	[ -d $(SYS_TYPE)/lib/rclibobjs ] ||  mkdir -p $(SYS_TYPE)/lib/rclibobjs
 	cd $(SYS_TYPE)/lib/rclibobjs && ar -x $(RCCPPLIB) &&  ar -x $(RCCLIB)
 #	ar -rc $@ $(SYS_TYPE)/paradis_c_interface.o  $(SYS_TYPE)/paradis.o $(RCCLIB) $(RCCPPLIB)
-	ar -rc $@ $(SYS_TYPE)/paradisStreaming.o $(SYS_TYPE)/paradis_c_interface.o  $(SYS_TYPE)/paradis.o $(SYS_TYPE)/lib/rclibobjs/*.o
+	ar -rc $@ $(SYS_TYPE)/paradisStreaming.o $(SYS_TYPE)/paradis_c_interface.o  $(SYS_TYPE)/paradis.o  $(SYS_TYPE)/BurgersTypes.o $(SYS_TYPE)/lib/rclibobjs/*.o
 	@echo DONE WITH $@
 
 $(CWD)/$(SYS_TYPE)/bin/paradisTest: $(SYS_TYPE)/paradisTest.o $(PARADISLIB) 
@@ -132,8 +139,12 @@ depend:
 
 # DO NOT DELETE
 
-chaos_5_x86_64_ib/paradis.o: paradis.h paradis_version.h
-chaos_5_x86_64_ib/paradis_c_interface.o: paradis.h paradis_c_interface.h
+chaos_5_x86_64_ib/paradis.o: paradis.h BurgersTypes.h paradis_version.h
+chaos_5_x86_64_ib/paradis_c_interface.o: paradis.h BurgersTypes.h
+chaos_5_x86_64_ib/paradis_c_interface.o: paradis_c_interface.h
 chaos_5_x86_64_ib/paradisStreaming.o: paradisStreaming.h paradis.h
-chaos_5_x86_64_ib/paradisTest.o: paradis.h
+chaos_5_x86_64_ib/paradisStreaming.o: BurgersTypes.h
+chaos_5_x86_64_ib/paradisTest.o: paradis.h BurgersTypes.h
 chaos_5_x86_64_ib/analyzeParaDIS.o: paradis_c_interface.h paradis.h
+chaos_5_x86_64_ib/analyzeParaDIS.o: BurgersTypes.h
+chaos_5_x86_64_ib/BurgersTypes.o: BurgersTypes.h
