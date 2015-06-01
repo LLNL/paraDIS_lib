@@ -126,7 +126,7 @@ namespace paraDIS {
       ===========================================
       destructor
     */ 
-    ~Node()  {
+    virtual ~Node()  {
 	  printf ("Need to remove this node from the global list before destroying.  Not implemented yet.\n"); 
 	  abort(); 
       return; 

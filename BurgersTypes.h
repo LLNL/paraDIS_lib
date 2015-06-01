@@ -46,7 +46,6 @@ double AngularDifference(vector<float>v1, vector<float>v2, double v1Length=-1, d
 // These are valued in order of increasing energy levels, corresponding to the sum of the square of the components of the burgers vector.  
 #define NUM_BCC_ENERGY_LEVELS  8
 #define NUM_BCC_BURGERS_TYPES  26
-
 //  Segment BCC_BURGERS TYPES: (P = plus(+) and M = minus(-))
 #define BCC_BURGERS_UNKNOWN     -1  // analysis failed
 #define BCC_BURGERS_NONE         0  // no analysis done yet
@@ -77,6 +76,7 @@ double AngularDifference(vector<float>v1, vector<float>v2, double v1Length=-1, d
 
 /* ========================================  */ 
 //  Segment HCP_BURGERS TYPES: Currently an arbitrary pile of meaningless junk
+extern vector<vector<float> > hcpBurgersList; 
 
 /* ========================================  */ 
 

@@ -64,7 +64,7 @@ libparadis: $(PARADISLIB)
 $(SYS_TYPE)/%.o: %.C
 	@echo; echo '***************************************'; echo 
 	echo building $@ due to $?
-	$(CXX)  $(CXXFLAGS) -c -o $@ -DUSE_ABORT=1 $<
+	$(CXX) -std=c++0x $(CXXFLAGS)  -c -o $@ -DUSE_ABORT=1 $<
 	@echo DONE WITH $@
 	@echo; echo '***************************************'; echo 
 

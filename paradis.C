@@ -1369,15 +1369,9 @@ namespace paraDIS {
       if (sourceArm->mTerminalNodes[sourceSharedTermNodeNum] == sharedNode) break;
     }
 	paradis_assert(sourceSharedTermNodeNum != -1);
-    int sourceNonSharedNum = -1;
 	
 	paradis_assert(sourceArm->mTerminalNodes.size() == 2);
-	sourceNonSharedNum = 1-sourceSharedTermNodeNum;
 
-   Node *sourceNonSharedNode = NULL;
-    if (sourceNonSharedNum != -1) {
-      sourceNonSharedNode = sourceArm->mTerminalNodes[sourceNonSharedNum];
-    } 
 
 	/*
 	  Find the terminal segment that has the shared node as an endpoint.
@@ -4247,21 +4241,16 @@ namespace paraDIS {
             "BurgersType","(NumArms):<Arm List>");
     uint32_t armnum = 0;
     for (vector<boost::shared_ptr<MetaArm> >::iterator pos = mMetaArms.begin(); pos != mMetaArms.end(); ++pos) {
-      int numtermnodes = (*pos)->mTerminalNodes.size(), numNeighbors[2] = {0};
+      int numtermnodes = (*pos)->mTerminalNodes.size();
       int numtermarms = (*pos)->mTerminalArms.size();
       double eplength = 0.0;
       string ids[2]; ids[1] = "--";
       float loc[2][3]={{0}};
-      int ntypes[2]={0}, armtypes[2] = {0};
+      int ntypes[2]={0};
       if (numtermarms < 1 || numtermarms > 2) {
         dbprintf(0,  "WARNING: arm # %d has %d terminal arms\n", armnum, numtermarms);
         dbprintf(0,  (*pos)->Stringify(0).c_str());
-      } else {
-        armtypes[0] = (*pos)->mTerminalArms[0]->mArmType;
-        if ((*pos)->mTerminalArms.size() == 2) {
-          armtypes[1] = (*pos)->mTerminalArms[1]->mArmType;
-        }
-      }
+      } 
       if (numtermnodes < 1 || numtermnodes > 2) {
         dbprintf(0,  "WARNING: arm # %d has %d terminal nodes\n", armnum, numtermnodes);
         dbprintf(0,  (*pos)->Stringify(0).c_str());
@@ -4270,7 +4259,6 @@ namespace paraDIS {
         while (i--) {
           (*pos)->mTerminalNodes[i]->GetLocation(loc[i]);
           ntypes[i] = (*pos)->mTerminalNodes[i]->GetNodeType();
-          numNeighbors[i] = (*pos)->mTerminalNodes[i]->mNeighborSegments.size();
           ids[i]  = str(boost::format("(%1%,%2%)")
                         % (*pos)->mTerminalNodes[i]->GetNodeSimulationDomain()
                         % (*pos)->mTerminalNodes[i]->GetNodeSimulationID());
