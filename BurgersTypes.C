@@ -15,7 +15,7 @@
 
 
 /* Per new info from Moono c. late May 2015 */ 
-vector<vector<float> > hcpBurgersList {
+/* vector<vector<float> > hcpBurgersList {
   {-0.500000000, 0.86602540378, 0.0000000000}, 
   {1.0000000000, 0.0000000000, 0.0000000000},
   {-0.500000000, -0.86602540378, 0.0000000000},
@@ -58,7 +58,7 @@ vector<vector<float> > hcpBurgersList {
   {-1.0000000000, -1.7320508076, 0.0000000000},
   {-0.500000000, -0.86602540378, 3.1360000000}
 };
-
+*/ 
 /* If needed, we can now initialize a vector of structs using C++-11 syntax
    in a more "listlike" way.  
 */ 
@@ -71,6 +71,30 @@ public:
   int energyLevel; 
   string name; 
 };
+
+// Test the burgers for equality
+bool operator == (const BurgerTypeInfo&b1, const vector<float> &bval) {
+  for (int i=0; i<3; i++) {
+    if (fabs(bval[i]-b1.burg[i])>BURGERS_EPSILON) return false; 
+  }
+  return true; 
+}
+
+// This will be used for sorting the burgtypes by burgnum for display output
+bool compareByBurgnum  (const BurgerTypeInfo&b1, const BurgerTypeInfo &b2) {
+  return b1.burgnum < b2.burgnum; 
+}
+
+// This will be used for sorting the burgtypes by burgers vector for faster compares
+bool compareByVector (const BurgerTypeInfo&b1, const BurgerTypeInfo &b2) {
+  for (int i=0; i<3; i++) {
+    if (b2.burg[i]-b1.burg[i]>BURGERS_EPSILON) return true; // b1 < b2
+    if (b1.burg[i]-b2.burg[i]>BURGERS_EPSILON) return false;// b2 < b1
+    // b1.burg[i] and b2.burg[i] are equal within BURGERS_EPSILON; check next
+  }
+  return false; // the two are equal within BURGERS_EPSILON
+}
+
 
 BurgerTypeInfo test {1000, {-0.500000000, 0.86602540378, 0.0000000000}, 0, "HCP0"};
 
@@ -210,11 +234,13 @@ string MetaArmTypeNames(int mtype) {
 // =====================================================================
 int InterpretBurgersType(vector<float> burg) {
   static int doBCC = -1; 
-  if (doBCC < 0) {
+  if (doBCC < 0) { 
+    // Sort the HCP Burgers vector for quick finds later:
+    std::sort(HCPBurgInfos.begin(), HCPBurgInfos.end(), compareByVector); 
     for (int i = 0; i<3; i++) {
       if (fabs(burg[i])>BURGERS_EPSILON) {
         if (fabs(burg[i]/0.577350 - (int)(burg[i]/0.577350))>BURGERS_EPSILON) {
-          doBCC = 0; 
+          doBCC = 0;           
         }
         else {
           doBCC = 1; 
@@ -234,17 +260,20 @@ int InterpretBurgersType(vector<float> burg) {
 
 // =====================================================================
 int InterpretHCPBurgersType(vector<float> burg) {
-  vector<int> catarray(3,0); 
-  for (int i = 0; i<3; i++) {
-    catarray[i] = burg[i]/0.577350;
-    if (catarray[i] < -1 ) catarray[i] *= -1;
-    if (abs(catarray[i]) > 4) {
-      dbprintf(1, "\n\n********************************\n");
-      dbprintf(1, "WARNING: Weird value %g encountered in Category\n", catarray[i]);
-      dbprintf(1, "\n********************************\n\n");
-    }
+  vector<BurgerTypeInfo>::iterator pos = 
+    find(HCPBurgInfos.begin(), HCPBurgInfos.end(), burg); 
+  if (pos == HCPBurgInfos.end()) {
+    for (int i=0; i<3; i++) burg[i] *= -1.0; 
+    pos = find(HCPBurgInfos.begin(), HCPBurgInfos.end(), burg); 
   }
-  return 666;  
+  if (pos == HCPBurgInfos.end()) {
+    dbprintf(1, "\n\n********************************\n");
+    dbprintf(1, "WARNING: Weird burgers vector <%g,%g,%g> encountered\n", burg[0], burg[1], burg[2]);
+    dbprintf(1, "\n********************************\n\n");
+    return -42; 
+  }
+  
+  return pos->burgnum;  
 }
 
 // =====================================================================
