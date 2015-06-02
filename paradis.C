@@ -138,12 +138,12 @@ namespace paraDIS {
   uint32_t ArmSegment::mMaxLightTheFuseDistance = 0;
   
   vector<Arm *> Arm::mArms;
+  map<int, int32_t> Arm::mNumDecomposed; // statistics
   vector<int32_t> Arm::mTraceArms;
-  uint8_t Arm::mTraceDepth;
+  uint16_t Arm::mTraceDepth;
   string Arm::mTraceFileBasename;
   double Arm::mLongestLength = 0.0;
   double Arm::mDecomposedLength = 0.0;
-  vector<int32_t> Arm::mNumDecomposed(NUM_BCC_ENERGY_LEVELS+1, 0); // statistics
   int32_t Arm::mNumDestroyedInDetachment = 0;
   double Arm::mTotalArmLengthBeforeDecomposition = 0.0;
   double Arm::mTotalArmLengthAfterDecomposition = 0.0;
@@ -600,12 +600,14 @@ namespace paraDIS {
 	return s;
   }
   //===========================================================================
-  void Node::ComputeNodeType(void) {
+  void Node::ComputeNodeType(bool BCC) {
     /*!
       set my own type according to what I know -- this covers all nodes except butterfly ends.
     */
     mNodeType = mNeighborSegments.size();  // true for vast majority of nodes.
-    
+
+    if (!BCC) return; 
+
     if (mNodeType >= 4) {//four-armed is forewarned!  Oh, I'm funny.
       /*!
         check for a multijunction
@@ -618,7 +620,7 @@ namespace paraDIS {
       while (neighbor--) {
         const ArmSegment *theSegment =
           dynamic_cast<const ArmSegment *>(mNeighborSegments[neighbor]);
-        int8_t btype =  theSegment->GetBurgersType();
+        int16_t btype =  theSegment->GetBurgersType();
         if (btypes[btype] || btype < 0) {
           continue; //not a monster, we're done
         }
@@ -693,7 +695,7 @@ namespace paraDIS {
     
     // next, identify non-looped cross arms
     for (uint32_t segnum = 0; segnum < mNeighborSegments.size()-1; ++segnum) {
-      int8_t btype = mNeighborSegments[segnum]->GetBurgersType();
+      int16_t btype = mNeighborSegments[segnum]->GetBurgersType();
       if (!matched[segnum]) {
         for (uint32_t other = segnum+1; other < mNeighborSegments.size() && !matched[segnum]; ++other) {
           if (!matched[other] &&
@@ -739,7 +741,7 @@ namespace paraDIS {
   }
 
   //===========================================================================
-  int8_t ArmSegment::GetMNType(void) const {
+  int16_t ArmSegment::GetMNType(void) const {
     return mParentArm->mArmType;
   }
 
@@ -758,7 +760,7 @@ namespace paraDIS {
   }
 
   //===========================================================================
-  uint8_t ArmSegment::GetMetaArmType(void) {
+  uint16_t ArmSegment::GetMetaArmType(void) {
     if (!mParentArm) {
       dbprintf(0, "ERROR: GetMetaArmType() called on parentless segment.\n");
       return METAARM_UNKNOWN;
@@ -819,7 +821,7 @@ namespace paraDIS {
 
 	
   //===========================================================================
-  int8_t ArmSegment::ComputeScrewType(void) {
+  int16_t ArmSegment::ComputeScrewType(void) {
     vector<float> burg(3,1.0); 
     if (mScrewType != SCREW_UNDEFINED) 
       return mScrewType;
@@ -1023,7 +1025,7 @@ namespace paraDIS {
   }
 
   //===========================================================================
-  uint8_t Arm::GetMetaArmType(void) {
+  uint16_t Arm::GetMetaArmType(void) {
     if (!mParentMetaArm) {
       dbprintf(0, "Error: GetMetaArmType() called on parentless arm.\n");
       return METAARM_UNKNOWN;
@@ -1214,38 +1216,50 @@ namespace paraDIS {
  	  mArmType = ARM_EMPTY; 
 	  return;
     }
-	int termnode = mTerminalNodes.size(); 
-	while (termnode--) {
-	  if (mTerminalNodes[termnode]->mNeighborSegments.size() == 1) {
-		dbprintf(4, "Arm::Classify(%d): Found terminal node with a single neighbor.  Marking as ARM_BOUNDARY.\n", mArmID); 
-		mArmType = ARM_BOUNDARY; 
-	  }
-	}  
-	if (mArmType != ARM_BOUNDARY && mArmType != ARM_LOOP) {
-	  if (mTerminalNodes[0]->IsTypeM() && mTerminalNodes[1]->IsTypeM()) {
-		mArmType = ARM_MM_111;
-	  } else if (mTerminalNodes[0]->IsTypeM() || mTerminalNodes[1]->IsTypeM()){
-		mArmType = ARM_MN_111;
-	  } else {
-		mArmType = ARM_NN_111;
-	  }
-	  
-	  // This changes _111 to _200 by definition
-	  int btype = mTerminalSegments[0]->GetBurgersType();
-	  if (btype == BCC_BURGERS_NONE || btype == BCC_BURGERS_UNKNOWN) {
-		mArmType = ARM_UNKNOWN;
-	  }
-	  else {
-		// All non-loop arms should be type 111 now.
-		paradis_assert(btype == BCC_BURGERS_PPP || btype == BCC_BURGERS_PPM ||
-					   btype == BCC_BURGERS_PMP || btype == BCC_BURGERS_PMM); 
-	  }
-	}
+    int16_t burg = GetBurgersType(); 
+    if (burg == HCP_BURGERS_UNKNOWN || burg >= 1000) { // HCP ARM 
+      mArmType = burg; 
+      if (burg != HCP_BURGERS_UNKNOWN &&
+          mTerminalNodes.size() == 2 && 
+          mTerminalNodes[0]->mNeighborSegments.size() == 3 && 
+          mTerminalNodes[1]->mNeighborSegments.size() == 3) {
+        mArmType += HCP_ARM_OF_INTEREST;
+      }
+    } 
+    else {  // BCC ARM
+      int termnode = mTerminalNodes.size(); 
+      while (termnode--) {
+        if (mTerminalNodes[termnode]->mNeighborSegments.size() == 1) {
+          dbprintf(4, "Arm::Classify(%d): Found terminal node with a single neighbor.  Marking as ARM_BOUNDARY.\n", mArmID); 
+          mArmType = ARM_BOUNDARY; 
+        }
+      }  
+      if (mArmType != ARM_BOUNDARY && mArmType != ARM_LOOP) {
+        if (mTerminalNodes[0]->IsTypeM() && mTerminalNodes[1]->IsTypeM()) {
+          mArmType = ARM_MM_111;
+        } else if (mTerminalNodes[0]->IsTypeM() || mTerminalNodes[1]->IsTypeM()){
+          mArmType = ARM_MN_111;
+        } else {
+          mArmType = ARM_NN_111;
+        }
+        
+        // This changes _111 to _200 by definition
+        int btype = mTerminalSegments[0]->GetBurgersType();
+        if (btype == BCC_BURGERS_NONE || btype == BCC_BURGERS_UNKNOWN) {
+          mArmType = ARM_UNKNOWN;
+        }
+        else {
+          // All non-loop arms should be type 111 now.
+          paradis_assert(btype == BCC_BURGERS_PPP || btype == BCC_BURGERS_PPM ||
+                         btype == BCC_BURGERS_PMP || btype == BCC_BURGERS_PMM); 
+        }
+      }
 	
     
-    if (mThreshold > 0 && mArmLength < mThreshold) {
-      if (mArmType == ARM_NN_111) mArmType = ARM_SHORT_NN_111;
-    }
+      if (mThreshold > 0 && mArmLength < mThreshold) {
+        if (mArmType == ARM_NN_111) mArmType = ARM_SHORT_NN_111;
+      }
+    } /* end BCC ARM */ 
     dbprintf(5, "Arm::Classify(%d): gave arm type %d (%s).\n", mArmID, mArmType, ArmTypeNames(mArmType).c_str());
     return;
   }
@@ -1475,7 +1489,7 @@ namespace paraDIS {
 	  paradis_assert(mSegments[0]->HasEndpoint(sharedNode)); 
 	}
 	uint32_t segnum = 0; 
-	int8_t myBurgers = mTerminalSegments[0]->mBurgersType; 
+	int16_t myBurgers = mTerminalSegments[0]->mBurgersType; 
 	for (deque<ArmSegment *>::iterator pos = sourceArm->mSegments.begin(); pos != sourceArm->mSegments.end(); pos++, segnum++) {
 	  ArmSegment *seg = *pos; 
 	  
@@ -1694,7 +1708,7 @@ namespace paraDIS {
 	}
 	
 	
-	int8_t burgtype = GetBurgersType();
+	int16_t burgtype = GetBurgersType();
     if (burgtype/10 != energy)
       return false; // not yet
 		
@@ -2748,10 +2762,11 @@ namespace paraDIS {
     //if (!dbg_isverbose()) return;
     //dbprintf(3, "Beginning PrintArmStats()");
     string summary;     
-    double armLengths[NUM_BCC_ENERGY_LEVELS+1] = {0}, totalArmLength=0;
+    map<int, double>  armLengths; 
+    double totalArmLength=0;
     
 
-    uint32_t numArms[NUM_BCC_ENERGY_LEVELS+1] = {0};  // number of arms of each type
+    map<int, uint32_t> numArmsByType;  // number of arms of each type
     uint32_t totalArms=0;
 #if LINKED_LOOPS
     double linkedLoopLength = 0;
@@ -2770,7 +2785,7 @@ namespace paraDIS {
         continue;
       }
       if (mThreshold >= 0) {
-        int8_t btype = (*armpos)->GetBurgersType();
+        int16_t btype = (*armpos)->GetBurgersType();
         if (!btype) {
           printf("Error:  armpos has no terminal segments!\n");
         }
@@ -2795,7 +2810,7 @@ namespace paraDIS {
       }
       armLengths[armType+1] += length;
       totalArmLength += length;
-      numArms[armType+1]++;
+      numArmsByType[armType+1]++;
 
       totalArms++;
 #if LINKED_LOOPS
@@ -2831,10 +2846,11 @@ namespace paraDIS {
     summary += str(boost::format("%50s%12d\n")%"Total number of segments after decomposition:" % (ArmSegment::mArmSegments.size()));
     summary += "===========================================\n";
     totalArmLength = 0; 
-    int i = 0; for (i=0; i<NUM_BCC_ENERGY_LEVELS+1; i++) {
-      summary += str(boost::format("%40s = %d\n")%(str(boost::format("Number of %s arms") % ArmTypeNames(i-1))) % numArms[i]);
-      summary += str(boost::format("%40s = %.2f\n")%(str(boost::format("Total length of %s arms") % ArmTypeNames(i-1))) % armLengths[i]);
-      totalArmLength += armLengths[i]; 
+    vector<int> energyLevels; 
+    for (map<int, uint32_t>::iterator pos = numArmsByType.begin(); pos != numArmsByType.end(); pos++) {
+      summary += str(boost::format("%40s = %d\n")%(str(boost::format("Number of %s arms") % ArmTypeNames(pos->first))) % pos->second);
+      summary += str(boost::format("%40s = %.2f\n")%(str(boost::format("Total length of %s arms") % ArmTypeNames(pos->first))) % armLengths[pos->first]);
+      totalArmLength += armLengths[pos->first]; 
       summary += "----------------------\n";
     }
     summary += str(boost::format("%40s = %.2f\n")%"Total length of all arm types" % totalArmLength);
@@ -2944,7 +2960,7 @@ namespace paraDIS {
     summary += str(boost::format("total length of all segments: %.2f\n") % totalSegmentLength);
     summary += "\n===========================================\n\n";
     for (i=0; i<11; i++) {
-      summary += str(boost::format("%s: number of segs = %d\n") % ArmTypeNames(i).c_str(), numArms[i]);
+      summary += str(boost::format("%s: number of segs = %d\n") % ArmTypeNames(i).c_str(), numArmsByType[i]);
       summary += str(boost::format("%s: total length of segments = %.2f\n") % ArmTypeNames(i).c_str() % armLengths[i]);
       summary += "----------------------\n";
     }
@@ -2964,7 +2980,7 @@ namespace paraDIS {
     for (vector<Node*>::iterator nodepos = Node::mNodeVector.begin(); nodepos !=  Node::mNodeVector.end(); nodepos++) {
 	  Node *node = *nodepos; 
 	  if (node && node->GetNodeType() < 0 && !node->mWrapped) {
-		uint8_t theType = - node->GetNodeType();
+		uint16_t theType = - node->GetNodeType();
 		if (theType >= monsterTypes.size()) {
 		  monsterTypes.resize(theType+1);
 		}
@@ -2977,7 +2993,7 @@ namespace paraDIS {
     s += "MONSTER NODE SUMMARY STATISTICS \n";
     s += "=========================================================================\n";
     s += str(boost::format("Total monster nodes: %1%\n") %monsterTypes[0]);
-    for (uint8_t t = 1; t < monsterTypes.size(); t++) {
+    for (uint16_t t = 1; t < monsterTypes.size(); t++) {
       if (monsterTypes[t]) {
         s += str(boost::format("Type -%1% monster nodes: %2%\n") % (int)t % monsterTypes[t]);
       }
@@ -2988,7 +3004,7 @@ namespace paraDIS {
 
   //===========================================================================
   string DataSet::MetaArmSummary(void) {
-
+    if (mDataType == PARADIS_DATATYPE_HCP) return "NO METAARM INFO AVAILABLE FOR HCP"; 
     uint32_t a = Arm::mArms.size();
     while (a--) {
       Arm::mArms[a]->mSeen = false;
@@ -3356,7 +3372,7 @@ namespace paraDIS {
     vector<boost::shared_ptr<MetaArm> >::iterator pos = mMetaArms.begin(), endpos = mMetaArms.end();
     uint32_t armnum = 0;
     while (pos != endpos) {
-	  UPDATEPROGRESS(manum, nummaarms,  "Creating MetaArms: ");
+	  UPDATEPROGRESS(manum, nummaarms,  "Printing MetaArms: ");
       debugfile << "MetaArm #" << armnum << ": " << (*pos)->Stringify(0) << endl;
       debugfile.flush();
 #if INSANE_DEBUG
@@ -3479,7 +3495,7 @@ namespace paraDIS {
 	  vector<Node *> marmnodes = (*marm)->GetNodes();
 	  if (!marmnodes.size()) continue;
 	  int32_t metaArmID = (*marm)->GetMetaArmID(); 
-	  int8_t metaArmType = (*marm)->GetMetaArmType(), 
+	  int16_t metaArmType = (*marm)->GetMetaArmType(), 
 		burgers = (*marm)->GetBurgersType(); 
 	  fprintf(povdeclfile, "\n/* ======================================== */ \n"); 
 	  fprintf(povdeclfile, "#declare ParaDIS_MetaArmIDs[%d] = %d;\n", marmnum, metaArmID); 
@@ -4488,8 +4504,8 @@ namespace paraDIS {
 
   //=========================================================================
   void DataSet::ComputeNodeTypes(void) {
-    for (vector<Node*>::iterator pos = Node::mNodeVector.begin(); pos !=  Node::mNodeVector.end(); pos++) {
-      (*pos)->ComputeNodeType();
+    for (vector<Node*>::iterator pos = Node::mNodeVector.begin(); pos !=  Node::mNodeVector.end(); pos++) {        
+      (*pos)->ComputeNodeType(mDataType == PARADIS_DATATYPE_BCC);
     }
   }
 
@@ -4764,7 +4780,7 @@ namespace paraDIS {
       SetVerbosity(dblevelSave);
       
       BuildArms();
-
+ 
       if (mDoStats && mDoDebugOutput) {
         PrintArmFile((char *)"debug-before-decomp");
       }
@@ -4774,11 +4790,10 @@ namespace paraDIS {
       if (mDataType !=  PARADIS_DATATYPE_HCP) {
         DecomposeArms();
       }
-
+      // return; OK
       ComputeNodeTypes();
-
-      ClassifyArms(); // This also computes their lengths...
-
+      // return;  bad
+      ClassifyArms(); 
 
 #if INSANE_DEBUG
       if (mDoDebugOutput) {
@@ -4786,7 +4801,10 @@ namespace paraDIS {
       }
 #endif
 
-      FindMetaArms();
+
+      if (mDataType !=  PARADIS_DATATYPE_HCP) {
+        FindMetaArms();
+      }
 
       TagNodes(); // for Meijie
 
@@ -4805,7 +4823,9 @@ namespace paraDIS {
       throw string("Error in DataSet::ReadData reading data from file ")+mDataFilename+":\n" + err;
     }
     if (mDoStats) {
-      PrintMetaArmFile();
+      if (mDataType !=  PARADIS_DATATYPE_HCP) {
+        PrintMetaArmFile();
+      }
       PrintArmFile();
     }
 

@@ -27,24 +27,24 @@ namespace ParaDIS {
   struct segment; 
   
   //=======
-  typedef int8_t MonsterInfo; 
+  typedef int16_t MonsterInfo; 
 #define MONSTER_UNKNOWN -1 
 #define MONSTER_YES -4 
 #define MONSTER_MIXED -44 
 #define MONSTER_NO 0
   
-  typedef int8_t  ButterflyInfo; 
+  typedef int16_t  ButterflyInfo; 
 #define BUTTERFLY_UNKNOWN -1
 #define BUTTERFLY_YES -3
 #define BUTTERFLY_MONSTER -33
 #define BUTTERFLY_NO 0
   
-  typedef int8_t superBoolean;
+  typedef int16_t superBoolean;
 #define NO (0)
 #define YES (1)
 #define UNKNOWN (-1)
   
-  typedef int8_t  BoundaryStatus; 
+  typedef int16_t  BoundaryStatus; 
 #define INBOUNDS (0)
 #define OUTOFBOUNDS (1)
 #define BOUNDARY (2)
@@ -172,8 +172,8 @@ namespace ParaDIS {
     node *endpoints[2]; 
     arm *parentArm; 
     u_int32_t unk_domain, unk_domainID; //so we know when we see the next node
-    u_int8_t filtered, drawn, wrapped; 
-    u_int8_t burgersValue; 
+    u_int16_t filtered, drawn, wrapped; 
+    u_int16_t burgersValue; 
     BoundaryStatus _boundaryStatus; 
     int segnum; // zero based
     //float burg[3], 
@@ -243,8 +243,8 @@ namespace ParaDIS {
     vector<segment *> _segments, _terminalSegments; 
     vector<node*> _terminalNodes; 
     vector<node*> _interiorNodes;
-    int8_t filtered, drawn;
-    int8_t _burgers; 
+    int16_t filtered, drawn;
+    int16_t _burgers; 
     BoundaryStatus _boundaryStatus; 
     ButterflyInfo _butterflyBody; 
     arm_type _armtype; 

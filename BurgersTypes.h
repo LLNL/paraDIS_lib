@@ -1,7 +1,6 @@
 #pragma once
 /* http://en.wikipedia.org/wiki/Pragma_once */
 #include "boost/cstdint.hpp"
-using boost::int8_t;
 using boost::int16_t;
 using boost::int32_t;
 using boost::uint32_t;
@@ -39,15 +38,15 @@ double AngularDifference(vector<float>v1, vector<float>v2, double v1Length=-1, d
 
 #define BURGERS_EPSILON (0.000001)
 
-#define PARADIS_DATATYPE_UNKNOWN (-1)
+#define PARADIS_DATATYPE_UNKNOWN (42)
 #define PARADIS_DATATYPE_BCC     (0) 
 #define PARADIS_DATATYPE_HCP     (1) 
 
 // These are valued in order of increasing energy levels, corresponding to the sum of the square of the components of the burgers vector.  
 #define NUM_BCC_ENERGY_LEVELS  8
 #define NUM_BCC_BURGERS_TYPES  26
-//  Segment BCC_BURGERS TYPES: (P = plus(+) and M = minus(-))
-#define BCC_BURGERS_UNKNOWN    (-1) // analysis failed
+// Segment BCC_BURGERS TYPES: (P = plus(+) and M = minus(-))
+#define BCC_BURGERS_UNKNOWN    4242 // analysis failed
 #define BCC_BURGERS_NONE         0  // no analysis done yet
 #define BCC_BURGERS_PPP         10  // +++ BEGIN ENERY LEVEL 1
 #define BCC_BURGERS_PPM         11  // ++- 
@@ -76,18 +75,19 @@ double AngularDifference(vector<float>v1, vector<float>v2, double v1Length=-1, d
 
 /* ========================================  */ 
 //  Segment HCP_BURGERS TYPES: Currently an arbitrary pile of meaningless junk
-#define HCP_BURGERS_UNKNOWN (-42) 
+#define HCP_BURGERS_UNKNOWN (4242) 
+#define HCP_ARM_OF_INTEREST (1000) 
 
 /* ========================================  */ 
 
 // SCREW TYPE is a characteristic of an arm segment that Jaime Marian uses
-#define SCREW_UNDEFINED  -1
+#define SCREW_UNDEFINED  4242
 #define BURGER_NO_SCREW  0
 #define BURGER_SCREW     1
 #define BURGER_EDGE      2
 
 // Arm MN types:
-#define ARM_EMPTY         -1 // marked for deletion after decomposition step
+#define ARM_EMPTY          4242 // marked for deletion after decomposition step
 #define ARM_UNKNOWN        0
 #define ARM_UNINTERESTING  1
 #define ARM_LOOP           2

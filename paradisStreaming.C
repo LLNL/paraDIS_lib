@@ -250,8 +250,8 @@ void ParadisDumpFile::ReadPreamble(void) {
   }
   
   //===========================================================================
-uint8_t ParadisDumpFile::ComputeBurgersType(float burg[3]) {
-  uint8_t burgersType = 0;
+uint16_t ParadisDumpFile::ComputeBurgersType(float burg[3]) {
+  uint16_t burgersType = 0;
   // type 100 nodes are valued 1-3, and type 111 nodes are valued 4-7
   int valarray[3] = 
 	{Category(burg[0]), Category(burg[1]), Category(burg[2])};
@@ -290,7 +290,7 @@ uint8_t ParadisDumpFile::ComputeBurgersType(float burg[3]) {
   Nodes will be added in either one or two chunks, each ending with a terminal node, unless it's a loop.  If the first chunk does NOT start with a terminal node, there will be a second chunk, starting in the other direction from the first node seen, so push_front() all new nodes on the deque until you see the first terminal node, then push_back() the remaining nodes on the deque.  If you see a second terminal node, then check it to see if it's the same as the first and eliminate it if so.  You will then have a nice sorted list of nodes.
   Return true if firstNode is purged, else return false; 
 */
-bool ParadisDumpFile::EmitArm(ParadisNode *firstNode, ParadisNode *otherNode, uint8_t burgersType){
+bool ParadisDumpFile::EmitArm(ParadisNode *firstNode, ParadisNode *otherNode, uint16_t burgersType){
   dbprintf(5, "\n********  BEGIN EmitArm *********\n"); 
   bool firstNodePurged = false; 
   ParadisArm *theArm = new ParadisArm(burgersType); 

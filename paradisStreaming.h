@@ -31,7 +31,7 @@ namespace paraDIS {
   public: 
 	ParadisNodeID() :mDomainID(0), mNodeID(0) {}
 
-	ParadisNodeID(const ParadisNodeID &other, uint8_t burgers) :
+	ParadisNodeID(const ParadisNodeID &other, uint16_t burgers) :
 	  mDomainID(other.mDomainID), mNodeID(other.mNodeID), mBurgers(burgers) {}
 
 	ParadisNodeID(uint32_t domainNum, uint32_t nodeNum) {
@@ -53,7 +53,7 @@ namespace paraDIS {
 	}
 	void test(void); 
 	uint32_t mDomainID, mNodeID; 
-	uint8_t  mBurgers; 
+	uint16_t  mBurgers; 
   }; 
   
   //  =======================================================================
@@ -70,8 +70,8 @@ namespace paraDIS {
 	void IsPartOfPartialArm(bool setvalue) {  mPartOfPartialArm = setvalue; }
 	bool IsNeighborComplete(void) { return mNumNeighbors == mNeighbors.size(); }
 	bool IsTerminalNode(void) { return mNumNeighbors != 2; }
-	void SetNumNeighbors(uint8_t num) { mNumNeighbors = num; }
-	uint8_t NumNeighbors(void) { return mNumNeighbors; }
+	void SetNumNeighbors(uint16_t num) { mNumNeighbors = num; }
+	uint16_t NumNeighbors(void) { return mNumNeighbors; }
 	
 	string Stringify(bool fullinfo); 
 	void SetLocation(const Point<float>&location) { mLocation = location; }
@@ -84,7 +84,7 @@ namespace paraDIS {
 	/*!
 	  This makes inNode our neighbor, and makes us their neighbor.  No check is made to see if we already were neighbors, because this is only called when a node sees a neighbor that already exists, which only happens once per pair of neighbors.   
 	*/ 
-	void MarkAsNeighbors(ParadisNode *inNode, uint8_t burgers) {
+	void MarkAsNeighbors(ParadisNode *inNode, uint16_t burgers) {
 	  /* saved check for redundancy... not necessary as I noted...
 		 if (!mNeighbors.size() || 
 		 find(mNeighbors.begin(), mNeighbors.end(), inNode->mID) 
@@ -102,10 +102,10 @@ namespace paraDIS {
 	
 	
 	bool mPartOfPartialArm; 
-	uint8_t mArmRefCount; // number of arms we are members of that have not been emitted.  When this reaches zero, we can be purged from the cache. 
+	uint16_t mArmRefCount; // number of arms we are members of that have not been emitted.  When this reaches zero, we can be purged from the cache. 
 	Point<float> mLocation; 
 	ParadisNodeID mID; 
-	uint8_t mNumNeighbors; // to determine if terminal and if neighbor-complete 
+	uint16_t mNumNeighbors; // to determine if terminal and if neighbor-complete 
 	vector<ParadisNodeID> mNeighbors; 
   }; // end ParadisNode 
   
@@ -118,7 +118,7 @@ namespace paraDIS {
   struct ParadisMinimalNode {
 	ParadisMinimalNode(const ParadisNode *other); 
 
-	uint8_t mNumNeighbors; // to determine if terminal and if neighbor-complete 
+	uint16_t mNumNeighbors; // to determine if terminal and if neighbor-complete 
 	Point<float> mLocation; 
 	uint32_t mDomainID, mNodeID; 
   }; 
@@ -128,7 +128,7 @@ namespace paraDIS {
   //  =======================================================================
   class  ParadisArm {
   public: 
-	ParadisArm(uint8_t burgers) :mBurgersType(burgers) {mNodes = new deque<ParadisNode*>;}
+	ParadisArm(uint16_t burgers) :mBurgersType(burgers) {mNodes = new deque<ParadisNode*>;}
 	  void push_front(ParadisNode *inNode); 
 	  void push_back(ParadisNode *inNode) ;
 	  void PurgeExcess(void) { delete mNodes; mNodes = NULL; }
@@ -141,7 +141,7 @@ namespace paraDIS {
 	  void Finalize(void); 
 	  
 	  
-	  void SetBurgers(uint8_t burgers) {mBurgersType = burgers; }
+	  void SetBurgers(uint16_t burgers) {mBurgersType = burgers; }
 	  
 	  
   private:
@@ -149,7 +149,7 @@ namespace paraDIS {
 	  
 	  vector <ParadisMinimalNode> mMinimalNodes; 
 	  
-	  uint8_t mBurgersType; 
+	  uint16_t mBurgersType; 
 	  
   }; // end ParadisArm
   
@@ -241,7 +241,7 @@ namespace paraDIS {
 	/*! 
 	  Compute a burgersType based on the burgers vector
 	*/ 
-	uint8_t ComputeBurgersType(float burgers[3]);
+	uint16_t ComputeBurgersType(float burgers[3]);
 	/*!
 	  Helper to ComputeBurgersType()
 	*/
@@ -251,7 +251,7 @@ namespace paraDIS {
 	  Emit the unique arm that contains both of these nodes and flush all eligible nodes from memory, meaning all member nodes that are neighbor-complete, EXCEPT firstNode, which needs to stick around for one last check.  nextNode's sole purpose is to disambiguate the arms in case firstNode is a terminal node. 
   Return true if firstNode is purged, else return false; 
 	*/ 
-	bool EmitArm(ParadisNode *firstNode, ParadisNode *nextNode, uint8_t burgersType); 
+	bool EmitArm(ParadisNode *firstNode, ParadisNode *nextNode, uint16_t burgersType); 
 	
 	/*!
 	  Attempt to complete the given arm by marching to the endpoint and storing all nodes seen along the way. 

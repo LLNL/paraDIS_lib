@@ -30,7 +30,7 @@
 
 /* now for the API */  
 #include "boost/cstdint.hpp"
-using boost::int8_t;
+using boost::int16_t;
 using boost::int16_t;
 using boost::int32_t;
 using boost::uint32_t;
@@ -285,12 +285,12 @@ namespace paraDIS {
       Accessor function.  
       The node will attempt to determine its own type.  
     */ 
-    void ComputeNodeType(void); 
+    void ComputeNodeType(bool BCC); 
 
    /*!
       Accessor function set the node type.  
     */ 
-    void SetNodeType(int8_t itype) { 
+    void SetNodeType(int16_t itype) { 
       mNodeType = itype; 
       return; 
     }
@@ -298,7 +298,7 @@ namespace paraDIS {
     /*!
       Accessor function
     */ 
-    int8_t GetNodeType(void) { return mNodeType; }
+    int16_t GetNodeType(void) { return mNodeType; }
     
     
     /*!
@@ -456,7 +456,7 @@ namespace paraDIS {
     /*!
       Node Type is whether we are a butterfly, monster, or normal node (or a placeholder in a segment)
     */ 
-    int8_t mNodeType; 
+    int16_t mNodeType; 
     
     bool mIsLoopNode; 
 
@@ -553,7 +553,7 @@ namespace paraDIS {
     } 
 
 
-    int8_t GetBurgersType(void) const { return mBurgersType; } 
+    int16_t GetBurgersType(void) const { return mBurgersType; } 
 
    /*!
       Return the distance between the endpoints
@@ -579,7 +579,7 @@ namespace paraDIS {
      /*! 
       Accessor for MN type
     */ 
-    int8_t GetMNType(void) const;
+    int16_t GetMNType(void) const;
 
      /* Get the arm ID for the parent of this segment */ 
     uint32_t GetArmID(void);
@@ -588,7 +588,7 @@ namespace paraDIS {
     uint32_t GetMetaArmID(void); 
 
     /* Get the metaarm Type for the parent of this segment */ 
-    uint8_t GetMetaArmType(void);
+    uint16_t GetMetaArmType(void);
  
    
     /*! 
@@ -633,9 +633,9 @@ namespace paraDIS {
     /*!
       Compute the mScrewType value
     */ 
-    int8_t ComputeScrewType(void); 
+    int16_t ComputeScrewType(void); 
     
-    int8_t GetScrewType(void) {
+    int16_t GetScrewType(void) {
       return ComputeScrewType(); 
     }
 
@@ -705,17 +705,17 @@ namespace paraDIS {
      /*!
       The screw type is defined above and is derived from the burgers type. 
     */ 
-    int8_t mScrewType; 
+    int16_t mScrewType; 
     static double mScrewToleranceAngle,  // Meaning: angle deviation inside which a segment is 'screw' or 'edge'
       mScrewToleranceCosine;// the computational twin derived from mScrewToleranceAngle and used in computations many times
     static double SQRT3; // sqrt(3), used many times
     /*! 
       The MN_type of the segment is set by its parent arm.  See Arm struct for definitions, but it describes whether the segment is 200 or 111 and whether its parent arm has any monsters at either end. 
     */ 
-    //int8_t mMNType; 
+    //int16_t mMNType; 
      
     /* The metaArm type that it belongs to.  */ 
-    int8_t mMetaArmType; 
+    int16_t mMetaArmType; 
 
     /*!
       Marker used for "once-through" operations like building arms that must look at every segment, but which will usually discover echo particular segment more than once. 
@@ -784,7 +784,7 @@ namespace paraDIS {
       mTraceFileBasename = ""; 
       mLongestLength = 0.0; 
       mDecomposedLength = 0.0; 
-      mNumDecomposed.resize(7,0);
+      mNumDecomposed.clear();
       mNumDestroyedInDetachment = 0; 
       mTotalArmLengthBeforeDecomposition = 0.0;
       mTotalArmLengthAfterDecomposition = 0.0;  
@@ -852,7 +852,7 @@ namespace paraDIS {
       Give the exact Burgers type of its segments. 
       Return 0 is no terminal segments. 
     */
-    int8_t GetBurgersType(void) const {
+    int16_t GetBurgersType(void) const {
       if (!mTerminalSegments.size() || !mTerminalSegments[0])  {        
         return BCC_BURGERS_UNKNOWN; 
       }
@@ -864,7 +864,7 @@ namespace paraDIS {
     uint32_t GetMetaArmID(void);
 
     /* Get the metaarm Type for the parent of this arm */ 
-    uint8_t GetMetaArmType(void);
+    uint16_t GetMetaArmType(void);
 
   #if LINKED_LOOPS
    /*! 
@@ -983,7 +983,7 @@ namespace paraDIS {
       return mArmLength; 
     }
 
-    uint8_t GetArmType(void) const { return mArmType; }
+    uint16_t GetArmType(void) const { return mArmType; }
 
     struct MetaArm *GetParentMetaArm(void) const { return mParentMetaArm; }
 
@@ -1044,8 +1044,8 @@ namespace paraDIS {
 	std::deque<Node*> mNodes; 
 	std::deque<ArmSegment*> mSegments; 
 
-    int8_t mArmType;
-    int8_t mMetaArmType; // of its parent if it exists
+    int16_t mArmType;
+    int16_t mMetaArmType; // of its parent if it exists
     double mArmLength; 
     /*!
       This is useless to the user, only used for classification 
@@ -1053,7 +1053,7 @@ namespace paraDIS {
     static std::vector<Arm *> mArms; 
     static double mThreshold; // shorter than this and an arm is "short"
     static double mDecomposedLength; // statistics
-    static vector<int32_t> mNumDecomposed; // statistics
+    static map<int, int32_t> mNumDecomposed; // statistics
     static int32_t mNumDestroyedInDetachment; // statistics
     static double mTotalArmLengthBeforeDecomposition, 
       mTotalArmLengthAfterDecomposition;  
@@ -1070,7 +1070,7 @@ namespace paraDIS {
    /*!
       number of segments that got wrapped (affects node and segments counts)
     */ 
-    uint8_t mNumWrappedSegments; 
+    uint16_t mNumWrappedSegments; 
     /*! 
       purely for debugging
     */ 
@@ -1097,7 +1097,7 @@ namespace paraDIS {
       When tracing arms, how deep to BFS for neighbors? 
       0 is no neighbors. 1 is immediate neighbors, etc. 
     */ 
-    static uint8_t mTraceDepth; 
+    static uint16_t mTraceDepth; 
 
     private: 
     struct MetaArm * mParentMetaArm; 
@@ -1184,10 +1184,10 @@ namespace paraDIS {
       return; 
     }
     
-    int8_t GetMetaArmType(void) { return mMetaArmType; }
+    int16_t GetMetaArmType(void) { return mMetaArmType; }
     int32_t GetMetaArmID(void) { return mMetaArmID; }
 
-	int8_t GetBurgersType(void) const {
+	int16_t GetBurgersType(void) const {
 	  if (mTerminalArms.size()) {
 		return mTerminalArms[0]->GetBurgersType(); 
 	  }
@@ -1197,7 +1197,7 @@ namespace paraDIS {
 	vector<Node *>mTerminalNodes; // 
     vector<Arm*> mTerminalArms; // one or two arms
     double mLength; 
-    int8_t mMetaArmType; 
+    int16_t mMetaArmType; 
     uint32_t mMetaArmID; 
     uint32_t mNumSegments, mNumNodes; 
     static rclib::Point<float> mWrappedNode; // Used in GetNodeLocations -- used to indicate a gap in the point list from a MetaArm where a segment is skipped due to wrapping.  

@@ -115,12 +115,12 @@ static paraDIS::DataSet *gDataSet = NULL;
     return; 
   }
   
-  int8_t paraDIS_GetNodeType(uint32_t nodenum){
+  int16_t paraDIS_GetNodeType(uint32_t nodenum){
     PARADIS_INIT;
     return gDataSet->GetNode(nodenum)->GetNodeType(); 
   }  
     
-  int8_t paraDIS_GetNumNodeNeighbors(uint32_t nodenum){
+  int16_t paraDIS_GetNumNodeNeighbors(uint32_t nodenum){
     PARADIS_INIT;
     return gDataSet->GetNode(nodenum)->GetNumNeighborSegments(); 
   }  
@@ -145,12 +145,12 @@ static paraDIS::DataSet *gDataSet = NULL;
     cout << gDataSet->GetArmSegment(segnum)->Stringify() << endl; 
   }
 
-  int8_t paraDIS_GetSegmentBurgersType(uint32_t segmentnum) {
+  int16_t paraDIS_GetSegmentBurgersType(uint32_t segmentnum) {
     PARADIS_INIT;
     return gDataSet->GetArmSegment(segmentnum)->GetBurgersType(); 
   }  
   
-  int8_t paraDIS_GetSegmentMNType(uint32_t segmentnum) {
+  int16_t paraDIS_GetSegmentMNType(uint32_t segmentnum) {
     PARADIS_INIT;
     return gDataSet->GetArmSegment(segmentnum)->GetMNType(); 
   }  

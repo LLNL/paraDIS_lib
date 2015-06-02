@@ -62,29 +62,13 @@ install-debug:
 libparadis: $(PARADISLIB) 
 
 $(SYS_TYPE)/%.o: %.C
+	mkdir -p $(SYS_TYPE)
 	@echo; echo '***************************************'; echo 
 	echo building $@ due to $?
 	$(CXX) -std=c++0x $(CXXFLAGS)  -c -o $@ -DUSE_ABORT=1 $<
 	@echo DONE WITH $@
 	@echo; echo '***************************************'; echo 
 
-$(SYS_TYPE)/xxparadis.o: paradis.C
-	@echo; echo '**************XXXXXXXXXX*************************'; echo 
-	$(CXX)  $(CXXFLAGS) -c -o $@ -DUSE_ABORT=1 $<
-	@echo DONE WITH $@
-	@echo; echo '***************************************'; echo 
-
-$(SYS_TYPE)/xxparadisStreaming.o: paradisStreaming.C
-	@echo; echo '**************XXXXXXXXXX**************************'; echo 
-	$(CXX)  $(CXXFLAGS) -c -o $@  $<
-	@echo DONE WITH $@
-	@echo; echo '***************************************'; echo 
-
-$(SYS_TYPE)/xxparadis_c_interface.o: paradis_c_interface.C
-	@echo; echo '**************XXXXXXXXXX**************************'; echo 
-	$(CXX)  $(CXXFLAGS) -c -o $@  $<
-	@echo DONE WITH $@
-	@echo; echo '***************************************'; echo 
 
 
 $(PARADISLIB): $(RCCLIB) $(RCCPPLIB) $(SYS_TYPE)/paradis_c_interface.o  $(SYS_TYPE)/paradis.o $(SYS_TYPE)/paradisStreaming.o  $(SYS_TYPE)/BurgersTypes.o 
@@ -139,12 +123,9 @@ depend:
 
 # DO NOT DELETE
 
-chaos_5_x86_64_ib/paradis.o: paradis.h BurgersTypes.h paradis_version.h
-chaos_5_x86_64_ib/paradis_c_interface.o: paradis.h BurgersTypes.h
-chaos_5_x86_64_ib/paradis_c_interface.o: paradis_c_interface.h
-chaos_5_x86_64_ib/paradisStreaming.o: paradisStreaming.h paradis.h
-chaos_5_x86_64_ib/paradisStreaming.o: BurgersTypes.h
-chaos_5_x86_64_ib/paradisTest.o: paradis.h BurgersTypes.h
-chaos_5_x86_64_ib/analyzeParaDIS.o: paradis_c_interface.h paradis.h
-chaos_5_x86_64_ib/analyzeParaDIS.o: BurgersTypes.h
-chaos_5_x86_64_ib/BurgersTypes.o: BurgersTypes.h
+paradis.o: paradis.h BurgersTypes.h paradis_version.h
+paradis_c_interface.o: paradis.h BurgersTypes.h paradis_c_interface.h
+paradisStreaming.o: paradisStreaming.h paradis.h BurgersTypes.h
+paradisTest.o: paradis.h BurgersTypes.h
+analyzeParaDIS.o: paradis_c_interface.h paradis.h BurgersTypes.h
+BurgersTypes.o: BurgersTypes.h

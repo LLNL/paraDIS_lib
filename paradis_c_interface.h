@@ -7,7 +7,7 @@
 #define PARADIS_C_INTERFACE_H
 
 #include <boost/cstdint.hpp>
-using boost::int8_t;
+using boost::int16_t;
 using boost::int32_t;
 using boost::uint32_t;
 
@@ -55,9 +55,9 @@ extern "C" {
 
   void paraDIS_GetNodeLocation(uint32_t nodenum, float loc[3]);
   
-  int8_t paraDIS_GetNodeType(uint32_t nodenum);
+  int16_t paraDIS_GetNodeType(uint32_t nodenum);
 
-  int8_t paraDIS_GetNumNodeNeighbors(uint32_t nodenum);
+  int16_t paraDIS_GetNumNodeNeighbors(uint32_t nodenum);
 
   /*!
     The domain refers to the simulation domain
@@ -75,9 +75,9 @@ extern "C" {
 
   int32_t paraDIS_GetEndpointIndex(uint32_t segmentnum, int endpointnum);
 
-  int8_t paraDIS_GetSegmentBurgersType(uint32_t segmentnum);
+  int16_t paraDIS_GetSegmentBurgersType(uint32_t segmentnum);
   
-  int8_t paraDIS_GetSegmentMNType(uint32_t segmentnum);
+  int16_t paraDIS_GetSegmentMNType(uint32_t segmentnum);
   
 
 #ifdef __cplusplus
