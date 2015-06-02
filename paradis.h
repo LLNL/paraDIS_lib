@@ -700,7 +700,7 @@ namespace paraDIS {
      /*!
       The burgers-type is defined above.  
     */ 
-    int8_t mBurgersType, mOriginalBurgersType; 
+    int16_t mBurgersType, mOriginalBurgersType; 
 
      /*!
       The screw type is defined above and is derived from the burgers type. 

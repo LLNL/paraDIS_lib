@@ -47,7 +47,7 @@ double AngularDifference(vector<float>v1, vector<float>v2, double v1Length=-1, d
 #define NUM_BCC_ENERGY_LEVELS  8
 #define NUM_BCC_BURGERS_TYPES  26
 //  Segment BCC_BURGERS TYPES: (P = plus(+) and M = minus(-))
-#define BCC_BURGERS_UNKNOWN     -1  // analysis failed
+#define BCC_BURGERS_UNKNOWN    (-1) // analysis failed
 #define BCC_BURGERS_NONE         0  // no analysis done yet
 #define BCC_BURGERS_PPP         10  // +++ BEGIN ENERY LEVEL 1
 #define BCC_BURGERS_PPM         11  // ++- 
@@ -76,7 +76,7 @@ double AngularDifference(vector<float>v1, vector<float>v2, double v1Length=-1, d
 
 /* ========================================  */ 
 //  Segment HCP_BURGERS TYPES: Currently an arbitrary pile of meaningless junk
-extern vector<vector<float> > hcpBurgersList; 
+#define HCP_BURGERS_UNKNOWN (-42) 
 
 /* ========================================  */ 
 

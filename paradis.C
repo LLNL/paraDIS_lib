@@ -2699,7 +2699,13 @@ namespace paraDIS {
     } catch (string err) {
       throw string("Error in DataSet::CreateNodesAndArmSegments while reading node ") + intToString(nodenum) +":\n" + err;
     }
-
+    if (ArmSegment::mArmSegments.size()) {
+      if (ArmSegment::mArmSegments[0]->mBurgersType >= 1000) {
+        mDataType = PARADIS_DATATYPE_HCP; 
+      } else {
+        mDataType = PARADIS_DATATYPE_BCC; 
+      }
+    }
     dbprintf(2, "CreateNodesAndArmSegments ended...\n");
     return;
   }
@@ -4765,7 +4771,9 @@ namespace paraDIS {
 
       Node::PrintAllNodeTraces("before-decomposition");
 
-      DecomposeArms();
+      if (mDataType !=  PARADIS_DATATYPE_HCP) {
+        DecomposeArms();
+      }
 
       ComputeNodeTypes();
 
