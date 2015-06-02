@@ -2,8 +2,11 @@
     
 timestampOnly=false
 function usage() {
-    echo "Usage:  setversion.sh [--timestamp or $version]"
+    current_version=$(grep '#define RC_PARADIS_VERSION ' paradis_version.h | awk '{print $3}' | sed 's/"//g' )
+    echo "Usage:  setversion.sh [--timestamp or version]"
 	echo "If --timestamp, then only changes the timestamp, leaves version alone" 
+    echo "Example: setversion.sh $current_version"
+    echo "Note: Current version is $current_version"
 }
 
 errexit () {
