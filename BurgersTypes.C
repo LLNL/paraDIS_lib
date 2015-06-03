@@ -51,6 +51,7 @@ bool compareByVector (const BurgerTypeInfo&b1, const BurgerTypeInfo &b2) {
   return false; // the two are equal within BURGERS_EPSILON
 }
 
+
 vector<BurgerTypeInfo> HCPBurgInfos {
   {HCP_BURGERS_UNKNOWN, {0, 0, 0}, 0, "HCP_BURGERS_UNKNOWN"},
   {1000, {-0.50000000000,  0.86602540378,  0.00000000000}, 0, "HCP_Burg00"},
@@ -218,9 +219,11 @@ int InterpretBurgersType(vector<float> burg) {
   return InterpretHCPBurgersType(burg); 
 }
 
-
+        
 // =====================================================================
 int InterpretHCPBurgersType(vector<float> burg) {
+  // We shall encode the burgers vector as a triple: 
+    
   vector<BurgerTypeInfo>::iterator pos = 
     find(HCPBurgInfos.begin(), HCPBurgInfos.end(), burg); 
   if (pos == HCPBurgInfos.end()) {

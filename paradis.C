@@ -310,6 +310,22 @@ namespace paraDIS {
     vtkfile << endl << endl;
     vtkfile.flush();
 
+    // next the arm type for each line
+    vtkfile << "SCALARS arm_type int" << endl;
+    vtkfile << "LOOKUP_TABLE default" << endl;  
+    for (uint32_t arm = 0; arm < numArms; arm++) {
+	  if (!arms[arm]->mSegments.size()) {
+		continue;
+      }
+      uint32_t armtype = arms[arm]->mArmType;
+      for (uint32_t linenum = 0; linenum < arms[arm]->mNumNormalSegments; linenum++) {
+        vtkfile << armtype << " " ;
+        vtkfile.flush();
+      }
+    }
+    vtkfile << endl << endl;
+    vtkfile.flush();
+
     // next the arm depths for each line
     vtkfile << "SCALARS BFS_depth int" << endl;
     vtkfile << "LOOKUP_TABLE default" << endl;
@@ -3972,7 +3988,25 @@ namespace paraDIS {
 
  
       // ----------------------------------------------------------
-      // 7. Segment file: Segment metaarm type
+      // 7a. Segment file: Segment arm type
+      // ----------------------------------------------------------
+      fprintf(segfile, "SCALARS arm_type int\n");
+      fprintf(segfile, "LOOKUP_TABLE default\n");
+      for (uint32_t armnum = 0; armnum < numarms; armnum++) {
+        Arm *theArm = Arm::mArms[armnum+firstarm];
+        if (!theArm->mNumNormalSegments)
+          continue;
+        uint32_t atype = theArm->mArmType;
+        for (uint32_t segnum = 0; segnum < theArm->mNumNormalSegments; segnum++) {
+          fprintf(segfile, "%d ", atype);
+        }
+ 		UPDATEPROGRESS(armnum, numarms, "Writing segment arm types for arms"); 
+     }
+      fprintf(segfile, "\n");
+      COMPLETEPROGRESS(numarms, "Writing segment arm types for arms"); 
+
+      // ----------------------------------------------------------
+      // 7b. Segment file: Segment metaarm type
       // ----------------------------------------------------------
       fprintf(segfile, "SCALARS metaarm_type int\n");
       fprintf(segfile, "LOOKUP_TABLE default\n");
@@ -3985,7 +4019,7 @@ namespace paraDIS {
           fprintf(segfile, "%d ", matype);
         }
  		UPDATEPROGRESS(armnum, numarms, "Writing segment metaarm types for arms"); 
-     }
+      }
       fprintf(segfile, "\n");
 	  //COMPLETEPROGRESS(numarms, "Writing segment metaarm types for arms"); 
 
@@ -4026,6 +4060,7 @@ namespace paraDIS {
       }
 	  fprintf(segfile, "\n");
       COMPLETEPROGRESS(numarms, "Writing segment screw types for arms"); 
+
 
 	  COMPLETEPROGRESS(numarms, str(boost::format("Writing segment file %s\n")% filename));
       // ----------------------------------------------------------
