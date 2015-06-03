@@ -123,9 +123,12 @@ depend:
 
 # DO NOT DELETE
 
-paradis.o: paradis.h BurgersTypes.h paradis_version.h
-paradis_c_interface.o: paradis.h BurgersTypes.h paradis_c_interface.h
-paradisStreaming.o: paradisStreaming.h paradis.h BurgersTypes.h
-paradisTest.o: paradis.h BurgersTypes.h
-analyzeParaDIS.o: paradis_c_interface.h paradis.h BurgersTypes.h
-BurgersTypes.o: BurgersTypes.h
+chaos_5_x86_64_ib/paradis.o: paradis.h BurgersTypes.h paradis_version.h
+chaos_5_x86_64_ib/paradis_c_interface.o: paradis.h BurgersTypes.h
+chaos_5_x86_64_ib/paradis_c_interface.o: paradis_c_interface.h
+chaos_5_x86_64_ib/paradisStreaming.o: paradisStreaming.h paradis.h
+chaos_5_x86_64_ib/paradisStreaming.o: BurgersTypes.h
+chaos_5_x86_64_ib/paradisTest.o: paradis.h BurgersTypes.h
+chaos_5_x86_64_ib/analyzeParaDIS.o: paradis_c_interface.h paradis.h
+chaos_5_x86_64_ib/analyzeParaDIS.o: BurgersTypes.h
+chaos_5_x86_64_ib/BurgersTypes.o: BurgersTypes.h
