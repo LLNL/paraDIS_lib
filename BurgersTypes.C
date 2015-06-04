@@ -130,7 +130,7 @@ vector<int> GetAllBurgersTypes(void) {
 
 string BurgersTypeNames(int btype) {
   if (btype >=1000) {
-    return str(boost::format("HCP_Burg%02d")%(btype-1000)); 
+    return str(boost::format("HCP_BURGERS_%04d")%(btype)); 
   }
   switch (btype) {
   case BCC_BURGERS_UNKNOWN  : return "UNKNOWN";
@@ -165,10 +165,7 @@ string BurgersTypeNames(int btype) {
 
 string ArmTypeNames(int atype) {
   if (atype >= 1000) {
-    if (atype >= 2000) {
-      return str(boost::format("HCP_ARM_OF_INTEREST_Burg%02d")%(atype-2000)); 
-    }      
-    return str(boost::format("HCP_ARM_Burg%02d")%(atype-1000)); 
+    return str(boost::format("HCP_BURGERS_%04d")%(atype)); 
   }
   switch (atype) {
   case ARM_EMPTY         : return "EMPTY";

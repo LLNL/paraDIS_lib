@@ -2779,6 +2779,7 @@ namespace paraDIS {
     //dbprintf(3, "Beginning PrintArmStats()");
     string summary;     
     map<int, double>  armLengths; 
+    map<int, double>  armEPDistances; 
     double totalArmLength=0;
     
 
@@ -2825,6 +2826,14 @@ namespace paraDIS {
         }
       }
       armLengths[armType+1] += length;
+
+      int numtermnodes = (*armpos)->mTerminalNodes.size();
+      if (numtermnodes == 2) {
+        armEPDistances[armType+1] +=  (*armpos)->mTerminalNodes[0]->Distance(*( (*armpos)->mTerminalNodes[1]), true);
+      } else {
+        armEPDistances[armType+1] += 0.0; 
+      }
+
       totalArmLength += length;
       numArmsByType[armType+1]++;
 
@@ -2855,27 +2864,28 @@ namespace paraDIS {
       summary +=  errmsg;
     }
  
-    summary += "\n===========================================\n\n";
+    summary += "\n=================================================================\n\n";
 
     summary += str(boost::format("%50s%12d\n")%"Total number of segments before decomposition:" % ArmSegment::mNumBeforeDecomposition);
     summary += str(boost::format("%50s%12d\n")%"Total number of segments decomposed:" % ArmSegment::mNumDecomposed);
     summary += str(boost::format("%50s%12d\n")%"Total number of segments after decomposition:" % (ArmSegment::mArmSegments.size()));
-    summary += "===========================================\n";
+    summary += "=================================================================\n";
     totalArmLength = 0; 
     vector<int> energyLevels; 
     for (map<int, uint32_t>::iterator pos = numArmsByType.begin(); pos != numArmsByType.end(); pos++) {
-      summary += str(boost::format("%40s = %d\n")%(str(boost::format("Number of %s arms") % ArmTypeNames(pos->first))) % pos->second);
-      summary += str(boost::format("%40s = %.2f\n")%(str(boost::format("Total length of %s arms") % ArmTypeNames(pos->first))) % armLengths[pos->first]);
+      summary += str(boost::format("%43s = %d\n")%(str(boost::format("Number of %s arms") % ArmTypeNames(pos->first))) % pos->second);
+      summary += str(boost::format("%43s = %.2f (%.2f average)\n")%(str(boost::format("Total length of %s arms") % ArmTypeNames(pos->first))) % armLengths[pos->first] % (armLengths[pos->first]/pos->second));
+      summary += str(boost::format("%43s = %.2f (%.2f average)\n")%(str(boost::format("Total EP Distance of %s arms") % ArmTypeNames(pos->first))) % armEPDistances[pos->first] % (armEPDistances[pos->first]/pos->second));
       totalArmLength += armLengths[pos->first]; 
-      summary += "----------------------\n";
+      summary += "-------------------------------------------------------\n";
     }
     summary += str(boost::format("%40s = %.2f\n")%"Total length of all arm types" % totalArmLength);
-    summary += "\n===========================================\n\n";
+    summary += "\n=================================================================\n\n";
      
 #if LINKED_LOOPS
     summary += str(boost::format("LINKED LOOPS: total number of arms = %d\n") % numLinkedLoops);
     summary += str(boost::format("LINKED LOOPS: total length of arms = %.2f\n") % linkedLoopLength);
-    summary += "----------------------\n";
+    summary += "---------------------------------------------------------\n";
 #endif
     
     // write a row of arm lengths to make analysis via spreadsheet easier
@@ -2889,11 +2899,11 @@ namespace paraDIS {
     
     
     if (mThreshold >= 0.0) {
-      summary += "\n\n----------------------\n";
+      summary += "\n\n--------------------------------------------------\n";
       summary += str(boost::format("THRESHOLD data.  Threshold = %.2f\n") % mThreshold);
 	  vector<int> burgvals = GetAllBurgersTypes(); 
 	  for (vector<int>::iterator burg = burgvals.begin(); burg != burgvals.end(); burg++) {
-		summary += "----------------------\n";
+		summary += "--------------------------------------------------\n";
 		string armType = BurgersTypeNames(*burg); 
 		summary += str(boost::format("Total number of %s arms: %d\n") % armType % (numShortArms[n] + numLongArms[n]));
 		summary += str(boost::format("Total length of %s arms: %.2f\n") % armType % (shortLengths[n] + longLengths[n]));
@@ -2906,7 +2916,7 @@ namespace paraDIS {
     }
     
     // write a row of arm lengths to make analysis via spreadsheet easier
-    summary += "----------------------\n";
+    summary += "--------------------------------------------------\n";
     summary += "Key: NN_200\tNN_020\tNN_002\tNN_+++\tNN_++-\tNN_+-+\tNN_-++\n";
     summary += "SHORT ARM LENGTHS:\n";
     n=0; while (n<NUM_BCC_BURGERS_TYPES) {
