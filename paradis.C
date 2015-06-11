@@ -933,47 +933,6 @@ namespace paraDIS {
     return ;
   }
 
-
-  //===========================================================================
-  /* Returns true if the arm has four unique type "111" burgers vectors represented in the exterior arms, but no type "200" burgers vectors types.  Assumes arm has at least one 3-armed endpoint, and the other must be either 3 or 5 armed. */
-  /* Changes:  2012-06-08 Allow 5 armed endpoints to be included in the check.  But we still do not allow type 200 arms to be included.
-   */
-  bool Arm::HaveFourUniqueType111ExternalArms(void) {
-
-    if (mArmType == ARM_LOOP) return false;
-
-    // enforce "at least one 3 armed endpoint" condition
-    if (mTerminalNodes[0]->mNeighborSegments.size() != 3 && mTerminalNodes[1]->mNeighborSegments.size() != 3 ) return false;
-
-    int btypes[13] = {false};
-    int nodenum = 2;
-    while (nodenum--) {
-      Node *thisNode = mTerminalNodes[nodenum];
-      int neighbornum = thisNode->mNeighborSegments.size();
-
-      // enforce "endpoint must have 3 arms or 5 arms" condition.
-      if (neighbornum != 3 && neighbornum != 5) return false;
-
-      while (neighbornum--) {
-        const ArmSegment *thisSegment = thisNode->mNeighborSegments[neighbornum];
-        /*!
-          Only check exterior segments (those which don't belong to *this).
-        */
-        if (thisSegment == mTerminalSegments[0] ||
-            thisSegment == mTerminalSegments[1]) continue;
-
-        int btype = thisSegment->GetBurgersType();
-        // if (btype <= 3 /*  || btype == 8 || btypes[btype]*/ ) return false;
-        btypes[btype] = true;
-      }
-    }
-    
-    /*!
-      At this point, have we seen four unique type 111 arms?
-    */
-    return btypes[4] && btypes[5] && btypes[6] && btypes[7];
-  }/* end HaveFourUniqueType111ExternalArms */
-
   //===========================================================================
   string Arm::StringifyExternalArms(int indent) const {
     if (mTerminalNodes.size() == 0) return "(no terminal nodes)";
@@ -997,39 +956,6 @@ namespace paraDIS {
     return s1 + ">";
   }
   
-  //===========================================================================
-  bool Arm::HaveTwoMatchingType111ExternalArms(void) {
-    int btypes[13] = {false };
-    if (mTerminalNodes.size() != 2) return false;
-    int nodenum = 2;
-    while (nodenum--) {
-      Node *thisNode = mTerminalNodes[nodenum];
-      int neighbornum = thisNode->mNeighborSegments.size();
-
-      while (neighbornum--) {
-        const ArmSegment *thisSegment = thisNode->mNeighborSegments[neighbornum];
-        /*!
-          Only check exterior segments (those which don't belong to *this).
-        */
-        if (thisSegment == mTerminalSegments[0] ||
-            thisSegment == mTerminalSegments[1]) continue;
-
-        int btype = thisSegment->GetBurgersType();
-        if (btype > 3 && btype < 8 && btypes[btype]) {
-          return true;
-        }
-
-        btypes[btype] = true;
-
-      }
-    }
-    
-    /*!
-      At this point, we know that none of our 111 neighbors are matched to each other
-    */
-    return false;
-  }/* end  HaveTwoMatchingType111ExternalArms */
-
 
   //===========================================================================
   uint32_t Arm::GetMetaArmID(void) {

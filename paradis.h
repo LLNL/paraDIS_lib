@@ -1027,15 +1027,9 @@ namespace paraDIS {
     }
 
     /*! 
-      Check to see if this is the body of a "butterfly," which is two three armed nodes connected by a type 200 arm, and which have four uniquely valued type 111 exterior arms ("exterior" means the arms not connecting the two).  If so, mark each terminal node as -3 (normal butterfly.  If one of the terminal nodes is a type -44 "special monster" node, then mark the other terminal node as being type -34 ("special butterfly"). Finally, could be a -35 connected to a -5 node, which is means, a 3 armed connected to 5 armed, such that exterior arms include all four 111 arm types.  
-    */ 
-    //void CheckForButterfly(void); 
-    /*! 
       This is a necessary component to CheckForButterfly, broken out for readability in the code. 
     */ 
-    bool HaveFourUniqueType111ExternalArms(void); 
     string StringifyExternalArms(int indent) const ;
-    bool HaveTwoMatchingType111ExternalArms(void); 
 
     vector < ArmSegment *> mTerminalSegments; // All arms have two of these, even loops, unless there is only a single segment in the arm.  
     vector <Node *> mTerminalNodes;  // All arms have two of these, except loops.
