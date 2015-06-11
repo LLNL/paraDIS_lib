@@ -25,13 +25,34 @@ using boost::uint32_t;
 
 using namespace std; 
 
-string BurgersTypeNames(int btype);
+// Special commonly-used values
+#define BCC_BURGERS_PPP         10  
+#define BCC_BURGERS_PPM         11 
+#define BCC_BURGERS_PMP         12  
+#define BCC_BURGERS_PMM         13 
+
+class BurgerTypeInfo {
+public:
+  BurgerTypeInfo(int num, vector<float> v, int e, string nom): 
+    burgnum(num), energy(e), burgvec(v), name(nom) {}
+  BurgerTypeInfo() = default; 
+  int burgnum = -1; 
+  int energy = 0; 
+  vector<float> burgvec {-42, -42, -42};
+  string name {"UNKNOWN_BURGER_TYPE"}; 
+};
+
+extern vector<BurgerTypeInfo> BurgInfos;
+
+//string BurgersTypeNames(int btype);
 string ArmTypeNames(int atype);
 string MetaArmTypeNames(int mtype);
-int InterpretBurgersType(vector<float> burg);
-int InterpretHCPBurgersType(vector<float> burg);
-int InterpretBCCBurgersType(vector<float> burg);
-vector<int> GetAllBurgersTypes(void); 
+BurgerTypeInfo BurgTypeToBurgInfo(int burgnum);
+BurgerTypeInfo BurgVecToBurgInfo(const vector<float> &burgvec);
+int BurgVecToBurgType(const vector<float> &burgvec);
+string BurgTypeToName(int btype); 
+
+//vector<int> GetAllBurgersTypes(void); 
 double AngularDifference(vector<float>v1, vector<float>v2, double v1Length=-1, double v2Length=-1);
 
 //=============================================
@@ -41,41 +62,17 @@ double AngularDifference(vector<float>v1, vector<float>v2, double v1Length=-1, d
 #define PARADIS_DATATYPE_UNKNOWN (42)
 #define PARADIS_DATATYPE_BCC     (0) 
 #define PARADIS_DATATYPE_HCP     (1) 
-
+// #define \(BCC_BURGERS_[^ ]*\) *\([0-9]*\).* 
 // These are valued in order of increasing energy levels, corresponding to the sum of the square of the components of the burgers vector.  
 #define NUM_BCC_ENERGY_LEVELS  8
 #define NUM_BCC_BURGERS_TYPES  26
 // Segment BCC_BURGERS TYPES: (P = plus(+) and M = minus(-))
-#define BCC_BURGERS_UNKNOWN    4242 // analysis failed
+#define BCC_BURGERS_UNKNOWN    -42 // analysis failed
 #define BCC_BURGERS_NONE        00  // no analysis done yet
-#define BCC_BURGERS_PPP         10  // +++ BEGIN ENERY LEVEL 1
-#define BCC_BURGERS_PPM         11  // ++- 
-#define BCC_BURGERS_PMP         12  // +-+
-#define BCC_BURGERS_PMM         13  // +--
-#define BCC_BURGERS_200         20  // BEGIN ENERGY LEVEL 2
-#define BCC_BURGERS_020         21  
-#define BCC_BURGERS_002         22
-#define BCC_BURGERS_220         30  // BEGIN ENERGY LEVEL 3
-#define BCC_BURGERS_202         31
-#define BCC_BURGERS_022         32
-#define BCC_BURGERS_311         40  // BEGIN ENERGY LEVEL 4
-#define BCC_BURGERS_131         41
-#define BCC_BURGERS_113         42
-#define BCC_BURGERS_222         50  // BEGIN ENERGY LEVEL 5
-#define BCC_BURGERS_004         60  // BEGIN ENERGY LEVEL 6
-#define BCC_BURGERS_331         70  // BEGIN ENERGY LEVEL 7
-#define BCC_BURGERS_313         71
-#define BCC_BURGERS_133         72
-#define BCC_BURGERS_420         80  // BEGIN ENERGY LEVEL 8
-#define BCC_BURGERS_240         81 
-#define BCC_BURGERS_024         82 
-#define BCC_BURGERS_042         83 
-#define BCC_BURGERS_204         84 
-#define BCC_BURGERS_402         85 
 
 /* ========================================  */ 
 //  Segment HCP_BURGERS TYPES: Currently an arbitrary pile of meaningless junk
-#define HCP_BURGERS_UNKNOWN (4242) 
+#define HCP_BURGERS_UNKNOWN (-43) 
 #define HCP_ARM_OF_INTEREST (1000) 
 
 /* ========================================  */ 

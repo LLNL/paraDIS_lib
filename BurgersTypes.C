@@ -1,6 +1,6 @@
 #include "BurgersTypes.h"
 // GRRR.  Visit hooks are lame.  This is bad code but if I don't structure it like this, the SVN hooks complain. 
-#ifdef  USE_ABORT
+#ifdef USE_ABORT
 #define errexit abort()
 #define errexit1 abort()
 #else
@@ -15,45 +15,36 @@
 
 
 
-/* If needed, we can now initialize a vector of structs using C++-11 syntax
-   in a more "listlike" way.  
-*/ 
-class BurgerTypeInfo {
-public:
-  BurgerTypeInfo(int num, vector<float> v, int e, string nom): 
-    burgnum(num), burg(v), energyLevel(e), name(nom) {}
-  int burgnum ; 
-  vector<float> burg;
-  int energyLevel; 
-  string name; 
-};
 
-// Test the burgers for equality
-bool operator == (const BurgerTypeInfo&b1, const vector<float> &bval) {
-  for (int i=0; i<3; i++) {
-    if (fabs(bval[i]-b1.burg[i])>BURGERS_EPSILON) return false; 
-  }
-  return true; 
-}
-
-// This will be used for sorting the burgtypes by burgnum for display output
-bool compareByBurgnum  (const BurgerTypeInfo&b1, const BurgerTypeInfo &b2) {
-  return b1.burgnum < b2.burgnum; 
-}
-
-// This will be used for sorting the burgtypes by burgers vector for faster compares
-bool compareByVector (const BurgerTypeInfo&b1, const BurgerTypeInfo &b2) {
-  for (int i=0; i<3; i++) {
-    if (b2.burg[i]-b1.burg[i]>BURGERS_EPSILON) return true; // b1 < b2
-    if (b1.burg[i]-b2.burg[i]>BURGERS_EPSILON) return false;// b2 < b1
-    // b1.burg[i] and b2.burg[i] are equal within BURGERS_EPSILON; check next
-  }
-  return false; // the two are equal within BURGERS_EPSILON
-}
-
-
-vector<BurgerTypeInfo> HCPBurgInfos {
-  {HCP_BURGERS_UNKNOWN, {0, 0, 0}, 0, "HCP_BURGERS_UNKNOWN"},
+/* ============================================================ */
+vector<BurgerTypeInfo> BurgInfos {
+  {BCC_BURGERS_UNKNOWN, {0, 0, 0},                          0, "BCC_BURGERS_UNKNOWN"},
+  {00,                {0.0000000,   0.0000000,  0.0000000}, 0, "BCC_BURGERS_NONE"},
+  {BCC_BURGERS_PPP,   {0.5773503,   0.5773503, 0.5773503},  1, "BCC_BURGERS_PPP"},
+  {BCC_BURGERS_PPM,   {0.5773503,   0.5773503, -0.5773503}, 1, "BCC_BURGERS_PPM"},
+  {BCC_BURGERS_PMP,   {0.5773503,  -0.5773503,  0.5773503}, 1, "BCC_BURGERS_PMP"},
+  {BCC_BURGERS_PMM,   {0.5773503,  -0.5773503, -0.5773503}, 1, "BCC_BURGERS_PMM"},
+  {20,                {1.1547006,   0.0000000,  0.0000000}, 2, "BCC_BURGERS_200"},
+  {21,                {0.0000000,   1.1547006,  0.0000000}, 2, "BCC_BURGERS_020"},
+  {22,                {0.0000000,   0.0000000,  1.1547006}, 2, "BCC_BURGERS_002"},
+  {30,                {1.1547006,   1.1547006,  0.0000000}, 3, "BCC_BURGERS_220"},
+  {31,                {1.1547006,   0.0000000,  1.1547006}, 3, "BCC_BURGERS_202"},
+  {32,                {0.0000000,   1.1547006,  1.1547006}, 3, "BCC_BURGERS_022"},
+  {40,                {1.7320509,   0.5773503,  0.5773503}, 4, "BCC_BURGERS_311"},
+  {41,                {0.5773503,   1.7320509,  0.5773503}, 4, "BCC_BURGERS_131"},
+  {42,                {0.5773503,   0.5773503,  1.7320509}, 4, "BCC_BURGERS_113"},
+  {50,                {1.1547006,   1.1547006,  1.1547006}, 5, "BCC_BURGERS_222"},
+  {60,                {0.0000000,   0.0000000,  2.3094012}, 6, "BCC_BURGERS_004"},
+  {70,                {1.7320509,   1.7320509,  0.5773503}, 7, "BCC_BURGERS_331"},
+  {71,                {1.7320509,   0.5773503,  1.7320509}, 7, "BCC_BURGERS_313"},
+  {72,                {0.5773503,   1.7320509,  1.7320509}, 7, "BCC_BURGERS_133"},
+  {80,                {2.3094012,   1.1547006,  0.0000000}, 8, "BCC_BURGERS_420"},
+  {81,                {1.1547006,   2.3094012,  0.0000000}, 8, "BCC_BURGERS_240"},
+  {82,                {0.0000000,   1.1547006,  2.3094012}, 8, "BCC_BURGERS_024"},
+  {83,                {0.0000000,   2.3094012,  1.1547006}, 8, "BCC_BURGERS_042"},
+  {84,                {1.1547006,   0.0000000,  2.3094012}, 8, "BCC_BURGERS_204"},
+  {85,                {2.3094012,   0.0000000,  1.1547006}, 8, "BCC_BURGERS_402"},
+  {HCP_BURGERS_UNKNOWN, {0, 0, 0},                0, "HCP_BURGERS_UNKNOWN"},
   {1000, {-0.50000000000,  0.86602540378,  0.00000000000}, 0, "HCP_Burg00"},
   {1001, { 1.00000000000,  0.00000000000,  0.00000000000}, 0, "HCP_Burg01"},
   {1002, {-0.50000000000, -0.86602540378,  0.00000000000}, 0, "HCP_Burg02"},
@@ -97,71 +88,77 @@ vector<BurgerTypeInfo> HCPBurgInfos {
   {1040, {-0.50000000000, -0.86602540378,  3.13600000000}, 0, "HCP_Burg40"}
 }; 
 
-vector<int> GetAllBurgersTypes(void) {
-  vector<int> alltypes; 
-  alltypes.push_back(BCC_BURGERS_UNKNOWN); 
-  alltypes.push_back(BCC_BURGERS_NONE); 
-  alltypes.push_back(BCC_BURGERS_PPP); 
-  alltypes.push_back(BCC_BURGERS_PPM); 
-  alltypes.push_back(BCC_BURGERS_PMP); 
-  alltypes.push_back(BCC_BURGERS_PMM);
-  alltypes.push_back(BCC_BURGERS_200);
-  alltypes.push_back(BCC_BURGERS_020);
-  alltypes.push_back(BCC_BURGERS_002); 
-  alltypes.push_back(BCC_BURGERS_220); 
-  alltypes.push_back(BCC_BURGERS_202); 
-  alltypes.push_back(BCC_BURGERS_022); 
-  alltypes.push_back(BCC_BURGERS_311); 
-  alltypes.push_back(BCC_BURGERS_131); 
-  alltypes.push_back(BCC_BURGERS_113); 
-  alltypes.push_back(BCC_BURGERS_222); 
-  alltypes.push_back(BCC_BURGERS_004); 
-  alltypes.push_back(BCC_BURGERS_331); 
-  alltypes.push_back(BCC_BURGERS_313); 
-  alltypes.push_back(BCC_BURGERS_133); 
-  alltypes.push_back(BCC_BURGERS_420); 
-  alltypes.push_back(BCC_BURGERS_240); 
-  alltypes.push_back(BCC_BURGERS_024); 
-  alltypes.push_back(BCC_BURGERS_042); 
-  alltypes.push_back(BCC_BURGERS_204); 
-  alltypes.push_back(BCC_BURGERS_402); 
-  return alltypes;
+/* ============================================================ */
+/* If needed, we can now initialize a vector of structs using C++-11 syntax
+   in a more "listlike" way.  
+*/ 
+// Test the burgers for equality
+bool operator == (const BurgerTypeInfo&b1, const vector<float> &bval) {
+  int posmatches = 0, negmatches = 0; 
+  for (int i=0; i<3; i++) {
+    if (bval[i]-b1.burgvec[i] < BURGERS_EPSILON) posmatches++;  
+    if (-bval[i]-b1.burgvec[i] < BURGERS_EPSILON) negmatches++;     
+  }    
+  return posmatches == 3 || negmatches == 3; 
+ 
 }
 
-string BurgersTypeNames(int btype) {
-  if (btype >=1000) {
-    return str(boost::format("HCP_BURGERS_%04d")%(btype)); 
-  }
-  switch (btype) {
-  case BCC_BURGERS_UNKNOWN  : return "UNKNOWN";
-  case BCC_BURGERS_NONE     : return "NONE";
-  case BCC_BURGERS_PPP      : return "PPP";
-  case BCC_BURGERS_PPM      : return "PPM";
-  case BCC_BURGERS_PMP      : return "PMP";
-  case BCC_BURGERS_PMM      : return "PMM";
-  case BCC_BURGERS_200      : return "200";
-  case BCC_BURGERS_020      : return "020";
-  case BCC_BURGERS_002      : return "002";
-  case BCC_BURGERS_220      : return "220";
-  case BCC_BURGERS_202      : return "202";
-  case BCC_BURGERS_022      : return "022";
-  case BCC_BURGERS_311      : return "311";
-  case BCC_BURGERS_131      : return "131";
-  case BCC_BURGERS_113      : return "113";
-  case BCC_BURGERS_222      : return "222";
-  case BCC_BURGERS_004      : return "004";
-  case BCC_BURGERS_331      : return "331";
-  case BCC_BURGERS_313      : return "313";
-  case BCC_BURGERS_133      : return "133"; 
-  case BCC_BURGERS_420      : return "420";  
-  case BCC_BURGERS_240      : return "240";  
-  case BCC_BURGERS_024      : return "024";  
-  case BCC_BURGERS_042      : return "042";  
-  case BCC_BURGERS_204      : return "204";  
-  case BCC_BURGERS_402      : return "402";  
-  default: return str(boost::format("UNKNOWN CODE %1%")%btype);
-  }
+/* ============================================================ */
+// This will be used for sorting the burgtypes by burgnum for display output
+bool compareByBurgnum  (const BurgerTypeInfo&b1, const BurgerTypeInfo &b2) {
+  return b1.burgnum < b2.burgnum; 
 }
+
+/* ============================================================ */
+// This will be used for sorting the burgtypes by burgers vector for faster compares
+// Therefore, we do not worry about equality of negative vectors here. 
+bool compareByVector (const BurgerTypeInfo&b1, const BurgerTypeInfo &b2) {
+  for (int i=0; i<3; i++) {
+    if (b2.burgvec[i]-b1.burgvec[i]>BURGERS_EPSILON) return true; // b1 < b2
+    if (b1.burgvec[i]-b2.burgvec[i]>BURGERS_EPSILON) return false;// b2 < b1
+    // b1.burg[i] and b2.burg[i] are equal within BURGERS_EPSILON; check next
+  }
+  return false; // the two are equal within BURGERS_EPSILON
+}
+
+/* ============================================================ */
+map<int, BurgerTypeInfo> BurgTypeToBurgInfoMap; 
+
+BurgerTypeInfo BurgTypeToBurgInfo(int burgnum) {
+  if (BurgTypeToBurgInfoMap.size()) {
+    for (vector<BurgerTypeInfo>::iterator bt = BurgInfos.begin(); 
+         bt != BurgInfos.end(); bt++) {
+      BurgTypeToBurgInfoMap[bt->burgnum] = *bt; 
+    }
+  }
+  return BurgTypeToBurgInfoMap[burgnum];
+}
+
+/* ============================================================ */
+map<vector<float>, BurgerTypeInfo> BurgVecToBurgInfoMap; 
+
+BurgerTypeInfo BurgVecToBurgInfo(const vector<float> &burgvec) {
+  if (BurgVecToBurgInfoMap.size()) {
+    for (vector<BurgerTypeInfo>::iterator bt = BurgInfos.begin(); 
+         bt != BurgInfos.end(); bt++) {
+      BurgVecToBurgInfoMap[bt->burgvec] = *bt; 
+    }
+  }
+  return BurgVecToBurgInfoMap[burgvec];
+}
+
+/* ============================================================ */
+int BurgVecToBurgType(const vector<float> &burgvec) {
+  return BurgVecToBurgInfo(burgvec).burgnum; 
+}
+
+/* ============================================================ */
+string BurgTypeToName(int btype) {
+  return BurgTypeToBurgInfo(btype).name; 
+}
+  
+
+/* ============================================================ */
 
 string ArmTypeNames(int atype) {
   if (atype >= 1000) {
@@ -190,130 +187,6 @@ string MetaArmTypeNames(int mtype) {
   }
 }; 
 
-// =====================================================================
-int InterpretBurgersType(vector<float> burg) {
-  static int doBCC = -1; 
-  if (doBCC < 0) { 
-    // Sort the HCP Burgers vector for quick finds later:
-    std::sort(HCPBurgInfos.begin(), HCPBurgInfos.end(), compareByVector); 
-    for (int i = 0; i<3; i++) {
-      if (fabs(burg[i])>BURGERS_EPSILON) {
-        if (fabs(burg[i]/0.577350 - (int)(burg[i]/0.577350))>BURGERS_EPSILON) {
-          doBCC = 0;           
-        }
-        else {
-          doBCC = 1; 
-        }
-        break; 
-      }
-    }
-    if (doBCC < 0) {
-      cerr << "Error:  Cannot determine if burgers vector is BCC or HCP" << endl; 
-      errexit;
-    }
-  }
-  if (doBCC) return InterpretBCCBurgersType(burg); 
-  return InterpretHCPBurgersType(burg); 
-}
-
-        
-// =====================================================================
-int InterpretHCPBurgersType(vector<float> burg) {
-  // We shall encode the burgers vector as a triple: 
-    
-  vector<BurgerTypeInfo>::iterator pos = 
-    find(HCPBurgInfos.begin(), HCPBurgInfos.end(), burg); 
-  if (pos == HCPBurgInfos.end()) {
-    for (int i=0; i<3; i++) burg[i] *= -1.0; 
-    pos = find(HCPBurgInfos.begin(), HCPBurgInfos.end(), burg); 
-  }
-  if (pos == HCPBurgInfos.end()) {
-    dbprintf(1, "\n\n********************************\n");
-    dbprintf(1, "WARNING: Weird burgers vector <%g,%g,%g> encountered\n", burg[0], burg[1], burg[2]);
-    dbprintf(1, "\n********************************\n\n");
-    return HCP_BURGERS_UNKNOWN; 
-  }
-  
-  return pos->burgnum;  
-}
-
-// =====================================================================
-int InterpretBCCBurgersType(vector<float> burg) {
-  int burgersType = BCC_BURGERS_UNKNOWN;
-  vector<int> catarray(3,0); 
-  for (int i = 0; i<3; i++) {
-    catarray[i] = burg[i]/0.577350;
-    if (catarray[i] < -1 ) catarray[i] *= -1;
-    if (abs(catarray[i]) > 4) {
-      dbprintf(1, "\n\n********************************\n");
-      dbprintf(1, "WARNING: Weird value %g encountered in Category\n", catarray[i]);
-      dbprintf(1, "\n********************************\n\n");
-    }
-  }
-  
-  if ((catarray[0] == 1 && catarray[1] == 1 && catarray[2] == 1) ||
-           (catarray[0] == -1 && catarray[1] == -1 && catarray[2] == -1))
-    burgersType = BCC_BURGERS_PPP;
-  else if ((catarray[0] == 1 && catarray[1] == 1 && catarray[2] == -1) ||
-           (catarray[0] == -1 && catarray[1] == -1 && catarray[2] == 1))
-    burgersType = BCC_BURGERS_PPM;
-  else if ((catarray[0] == 1 && catarray[1] == -1 && catarray[2] == 1) ||
-           (catarray[0] == -1 && catarray[1] == 1 && catarray[2] == -1))
-    burgersType = BCC_BURGERS_PMP;
-  else if ((catarray[0] == 1 && catarray[1] == -1 && catarray[2] == -1) ||
-           (catarray[0] == -1 && catarray[1] == 1 && catarray[2] == 1))
-    burgersType = BCC_BURGERS_PMM;
-  else if (abs(catarray[0]) == 2 && catarray[1] == 0 && catarray[2] == 0)
-    burgersType = BCC_BURGERS_200;
-  else if (catarray[0] == 0 && abs(catarray[1]) == 2 && catarray[2] == 0)
-    burgersType = BCC_BURGERS_020;
-  else if (catarray[0] == 0 && catarray[1] == 0 && abs(catarray[2]) == 2)
-    burgersType = BCC_BURGERS_002;
-  else if (abs(catarray[0]) == 2 && abs(catarray[1]) == 2 && catarray[2] == 0)
-    burgersType = BCC_BURGERS_220;
-  else if (abs(catarray[0]) == 2 && catarray[1] == 0 && abs(catarray[2]) == 2)
-    burgersType = BCC_BURGERS_202;
-  else if (catarray[0] == 0 && abs(catarray[1]) == 2 && abs(catarray[2]) == 2)
-    burgersType = BCC_BURGERS_022;
-  else if (abs(catarray[0]) == 2 && abs(catarray[1]) == 2 && abs(catarray[2]) == 2)
-    burgersType = BCC_BURGERS_222;
-  else if (catarray[0] == 3 && abs(catarray[1]) == 1 && abs(catarray[2]) == 1)
-    burgersType = BCC_BURGERS_311;
-  else if (abs(catarray[0]) == 1 && catarray[1] == 3 && abs(catarray[2]) == 1)
-    burgersType = BCC_BURGERS_131;
-  else if (abs(catarray[0]) == 1 && abs(catarray[1]) == 1 && catarray[2] == 3)
-    burgersType = BCC_BURGERS_113;
-  else if ((abs(catarray[0]) == 0 && abs(catarray[1]) == 0 && catarray[2] == 4) ||
-           (abs(catarray[0]) == 0 && catarray[1] == 4 && abs(catarray[2]) == 0) ||
-           (catarray[0] == 4 && abs(catarray[1]) == 0 && abs(catarray[2]) == 0) )
-    burgersType = BCC_BURGERS_004;
-  else if (abs(catarray[0]) == 1 && abs(catarray[1]) == 3 && catarray[2] == 3)
-    burgersType = BCC_BURGERS_133;
-  else if (abs(catarray[0]) == 3 && abs(catarray[1]) == 1 && catarray[2] == 3)
-    burgersType = BCC_BURGERS_313;
-  else if (abs(catarray[0]) == 3 && abs(catarray[1]) == 3 && catarray[2] == 1)
-    burgersType = BCC_BURGERS_331;
-  else if (abs(catarray[0]) == 0 && abs(catarray[1]) == 2 && catarray[2] == 4)
-    return BCC_BURGERS_024; 
-  else if (abs(catarray[0]) == 0 && abs(catarray[1]) == 4 && catarray[2] == 2)
-    return BCC_BURGERS_042; 
-  else if (abs(catarray[0]) == 2 && abs(catarray[1]) == 0 && catarray[2] == 4)
-    return BCC_BURGERS_204; 
-  else if (abs(catarray[0]) == 2 && abs(catarray[1]) == 4 && catarray[2] == 0)
-    return BCC_BURGERS_240; 
-  else if (abs(catarray[0]) == 4 && abs(catarray[1]) == 0 && catarray[2] == 2)
-    return BCC_BURGERS_402; 
-  else if (abs(catarray[0]) == 4 && abs(catarray[1]) == 2 && catarray[2] == 0)
-    return BCC_BURGERS_420; 
-  else {
-    burgersType = BCC_BURGERS_UNKNOWN;
-    dbprintf(3, "\n\n********************************\n");
-    dbprintf(3, "ERROR: segment has unknown type: burgers = (%f, %f, %f), categories=(%d, %d, %d).  This will cause problems later in analysis.\n", burg[0], burg[1], burg[2], catarray[0], catarray[1], catarray[2]);
-    dbprintf(3, "\n********************************\n\n");
-	abort(); 
-  }
-  return burgersType;
-}
 
 
 // =====================================================================

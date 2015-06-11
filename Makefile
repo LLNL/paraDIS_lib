@@ -65,7 +65,7 @@ $(SYS_TYPE)/%.o: %.C
 	mkdir -p $(SYS_TYPE)
 	@echo; echo '***************************************'; echo 
 	echo building $@ due to $?
-	$(CXX) -std=c++0x $(CXXFLAGS)  -c -o $@ -DUSE_ABORT=1 $<
+	$(CXX) -std=c++0x $(CXXFLAGS) -DUSE_ABORT=1 -c -o $@ $<
 	@echo DONE WITH $@
 	@echo; echo '***************************************'; echo 
 

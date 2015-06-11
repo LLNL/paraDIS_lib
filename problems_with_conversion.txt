@@ -1,0 +1,15 @@
+I'd like to encode the burgers vector in such a way that
+1)  it's not wasteful of space
+2)  it's not hard to compute
+3)  it works with the paradis reader (can be converted to integer easily)
+4)  I don't need to keep creating tables of #defines and strings to name things
+
+Currently I do #1-#3 by storing as an integer.  I should keep doing this, but find a way to automatically convert between the integers, the names, and the original burgers values. 
+Let's just go with enumerated lists.  
+
+We need GetBurgersType() to return an integer to make most of the code work. 
+
+What do we do in the code with the output of GetBurgersType()  
+     1.  We check to see if they are in the range 10-13 (type 111).  
+     2.  We compare them to each other for equality.
+     3.  We use them in VisIt 

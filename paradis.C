@@ -482,7 +482,7 @@ namespace paraDIS {
   "#define BCC_BURGERS_004         60  // BEGIN ENERGY LEVEL 6\n"
   "#define BCC_BURGERS_331         70  // BEGIN ENERGY LEVEL 7\n"
   "#define BCC_BURGERS_313         71\n"
-  "#define BCC_BURGERS_133         72\n"
+  "#define BCC_BURGERS_133         72Fq\n"
   "\n"
   "===================================================================\n"
   "NODE TYPES and MONSTER NODES: \n"
@@ -990,7 +990,7 @@ namespace paraDIS {
         */
         if (arm == this) continue;
         s1 += str(boost::format("[%1%: %2%]")
-                  % arm->mArmID % BurgersTypeNames(arm->GetBurgersType()));
+                  % arm->mArmID % BurgTypeToName(arm->GetBurgersType()));
 		if (neighbornum || nodenum) s1+= ", "; 
       }
     }
@@ -1860,7 +1860,7 @@ namespace paraDIS {
     if (mSeenInMeta) seenMeta = "true";
     int btype = GetBurgersType();
     int atype = mArmType;
-    string btypestring = BurgersTypeNames(GetBurgersType());
+    string btypestring = BurgTypeToName(GetBurgersType());
     string armtypestring = ArmTypeNames(mArmType);
     string parentMetaArmIDString = "(NONE)";
     if (mParentMetaArm) parentMetaArmIDString = str(boost::format("%1%")%(mParentMetaArm->GetMetaArmID()));
@@ -1979,7 +1979,7 @@ namespace paraDIS {
       return false;
     }
     if ( candidate->GetBurgersType() != seed->GetBurgersType()) {
-      dbprintf(4, "FindEndpoint(metaarm %d): candidate arm burgers (%s) does not match seed burgers (%s)-- return false\n", mMetaArmID, BurgersTypeNames(candidate->GetBurgersType()).c_str(), BurgersTypeNames(seed->GetBurgersType()).c_str());
+      dbprintf(4, "FindEndpoint(metaarm %d): candidate arm burgers (%s) does not match seed burgers (%s)-- return false\n", mMetaArmID, BurgTypeToName(candidate->GetBurgersType()).c_str(), BurgTypeToName(seed->GetBurgersType()).c_str());
       return false;
     }
     
@@ -2631,7 +2631,7 @@ namespace paraDIS {
 			   neighbor have already been created, including the one that points to the 
 			   current node.  If not, then we need to create a new arm segment  here.  
 			*/
-			ArmSegment *seg = new ArmSegment(node, neighbor, InterpretBurgersType(burgers)); 
+			ArmSegment *seg = new ArmSegment(node, neighbor, BurgVecToBurgType(burgers)); 
 			ArmSegment::mArmSegments[seg->mSegmentIndex] = seg; 
 			dbprintf(6, "DataSet::ReadNodeFromFile created segment %s\n", seg->Stringify().c_str()); 
 		  }
@@ -2901,31 +2901,28 @@ namespace paraDIS {
     if (mThreshold >= 0.0) {
       summary += "\n\n--------------------------------------------------\n";
       summary += str(boost::format("THRESHOLD data.  Threshold = %.2f\n") % mThreshold);
-	  vector<int> burgvals = GetAllBurgersTypes(); 
-	  for (vector<int>::iterator burg = burgvals.begin(); burg != burgvals.end(); burg++) {
+	  for (vector<BurgerTypeInfo>::iterator burg = BurgInfos.begin(); burg != BurgInfos.end(); burg++) {
 		summary += "--------------------------------------------------\n";
-		string armType = BurgersTypeNames(*burg); 
-		summary += str(boost::format("Total number of %s arms: %d\n") % armType % (numShortArms[n] + numLongArms[n]));
-		summary += str(boost::format("Total length of %s arms: %.2f\n") % armType % (shortLengths[n] + longLengths[n]));
-		summary += str(boost::format("Number of %s arms SHORTER than threshold = %d\n") % armType % numShortArms[n]);
-		summary += str(boost::format("Total length of %s arms shorter than threshold = %.2f\n") % armType % shortLengths[n]);
-		summary += str(boost::format("Number of %s arms LONGER than threshold = %d\n") % armType % numLongArms[n]);
-		summary += str(boost::format("Total length of %s arms longer than threshold = %.2f\n") % armType % longLengths[n]);
+		summary += str(boost::format("Total number of %s arms: %d\n") % burg->name % (numShortArms[burg->burgnum] + numLongArms[burg->burgnum]));
+		summary += str(boost::format("Total length of %s arms: %.2f\n") % burg->name % (shortLengths[burg->burgnum] + longLengths[burg->burgnum]));
+		summary += str(boost::format("Number of %s arms SHORTER than threshold = %d\n") % burg->name % numShortArms[burg->burgnum]);
+		summary += str(boost::format("Total length of %s arms shorter than threshold = %.2f\n") % burg->name % shortLengths[burg->burgnum]);
+		summary += str(boost::format("Number of %s arms LONGER than threshold = %d\n") % burg->name % numLongArms[burg->burgnum]);
+		summary += str(boost::format("Total length of %s arms longer than threshold = %.2f\n") % burg->name % longLengths[burg->burgnum]);
 		summary += "\n";
 	  }
     }
     
     // write a row of arm lengths to make analysis via spreadsheet easier
     summary += "--------------------------------------------------\n";
-    summary += "Key: NN_200\tNN_020\tNN_002\tNN_+++\tNN_++-\tNN_+-+\tNN_-++\n";
     summary += "SHORT ARM LENGTHS:\n";
-    n=0; while (n<NUM_BCC_BURGERS_TYPES) {
-      summary += str(boost::format("%.2f\t") %  shortLengths[n]);
+    for (vector<BurgerTypeInfo>::iterator burg = BurgInfos.begin(); burg != BurgInfos.end(); burg++) {
+      summary += str(boost::format("%.2f\t") %  shortLengths[burg->burgnum]);
       ++n;
     }
     summary += "\nLONG ARM LENGTHS:\n";
-    n = 0; while (n<NUM_BCC_BURGERS_TYPES) {
-      summary += str(boost::format("%.2f\t") %  longLengths[n]);
+    for (vector<BurgerTypeInfo>::iterator burg = BurgInfos.begin(); burg != BurgInfos.end(); burg++) {
+      summary += str(boost::format("%.2f\t") %  longLengths[burg->burgnum]);
       ++n;
     }
     summary += "\n";
@@ -3309,9 +3306,9 @@ namespace paraDIS {
         if ((*pos)->Decompose(energyLevel)) {
           numDecomposed[energyLevel]++;
         }
-        UPDATEPROGRESS(armnum, numarms, str(boost::format("DecomposeArms: level %1% (%2%), arm %3%, %4% decomp.") % energyLevel % BurgersTypeNames(energyLevel*10) % armnum % numDecomposed[energyLevel]));
+        UPDATEPROGRESS(armnum, numarms, str(boost::format("DecomposeArms: level %1% (%2%), arm %3%, %4% decomp.") % energyLevel %  BurgTypeToName(energyLevel*10) % armnum % numDecomposed[energyLevel]));
       }
-      COMPLETEPROGRESS(numarms, str(boost::format("DecomposeArms: level %1% (%2%), arm %3%, %4% decomp.") % energyLevel % BurgersTypeNames(energyLevel*10) % armnum % numDecomposed[energyLevel]));
+      COMPLETEPROGRESS(numarms, str(boost::format("DecomposeArms: level %1% (%2%), arm %3%, %4% decomp.") % energyLevel % BurgTypeToName(energyLevel*10) % armnum % numDecomposed[energyLevel]));
     }
     Arm::mTotalArmLengthAfterDecomposition = ComputeArmLengths();
     
@@ -4333,7 +4330,7 @@ namespace paraDIS {
         if (numtermnodes == 2) {
           eplength = (*pos)->mTerminalNodes[0]->Distance(*( (*pos)->mTerminalNodes[1]), true);
         }
-        string burgstring =  BurgersTypeNames((*pos)->mTerminalArms[0]->GetBurgersType());
+        string burgstring =   BurgTypeToName((*pos)->mTerminalArms[0]->GetBurgersType());
         int matype = (*pos)->mMetaArmType;
         fprintf(armfile, "%-8d%-5d%-12.3f%-12.3f%-10d%-12s%-12.3f%-12.3f%-12.3f%-10d%-12s%-12.3f%-12.3f%-12.3f%-12s(%d):< ",
                 armnum, matype, (*pos)->mLength, eplength,

@@ -924,11 +924,11 @@ namespace paraDIS {
     }
 
     bool isType111(void) {
-      return mTerminalSegments.size() && mTerminalSegments[0]->GetBurgersType() >= BCC_BURGERS_PPP && mTerminalSegments[0]->GetBurgersType() <= BCC_BURGERS_PMM;
+      return mTerminalSegments.size() && BurgTypeToBurgInfo(mTerminalSegments[0]->GetBurgersType()).energy == 1;
     }
 
     bool isHighEnergy(void) {
-      return  mTerminalSegments.size() && mTerminalSegments[0]->GetBurgersType() >= BCC_BURGERS_200; 
+      return  mTerminalSegments.size() && BurgTypeToBurgInfo(mTerminalSegments[0]->GetBurgersType()).energy > 1;
     }
 
     Node *GetCommonNode(Arm *other) {
