@@ -8,6 +8,7 @@
 #include "tclap/Arg.h"
 #include <boost/algorithm/string/erase.hpp> 
 #include <boost/filesystem.hpp>
+#include <regex> // C++11 yay!  
 
 paraDIS::DataSet *gDataSet = NULL; 
 
@@ -147,8 +148,9 @@ int main(int argc, char *argv[]) {
         if (basename == *dfile) {          
           errexit(cmd, str(boost::format("Data file name %s does not end with '.dat' or '.data'.")%*dfile)); 
         }
+        basename = regex_replace(basename, regex( ".*/"), ""); 
 	  }			
-
+      
 	  string outdir = outdirFlag.getValue(); 
 	  if (outdir == "") {
 		outdir = basename + "-output"; 

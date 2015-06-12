@@ -2715,17 +2715,19 @@ namespace paraDIS {
           armBins[binNum]++;
         }
       }
-      armLengths[armType+1] += length;
+      armLengths[armType] += length;
+      if (armType == 3) 
+        int x = 1; 
 
       int numtermnodes = (*armpos)->mTerminalNodes.size();
       if (numtermnodes == 2) {
-        armEPDistances[armType+1] +=  (*armpos)->mTerminalNodes[0]->Distance(*( (*armpos)->mTerminalNodes[1]), true);
+        armEPDistances[armType] +=  (*armpos)->mTerminalNodes[0]->Distance(*( (*armpos)->mTerminalNodes[1]), true);
       } else {
-        armEPDistances[armType+1] += 0.0; 
+        armEPDistances[armType] += 0.0; 
       }
 
       totalArmLength += length;
-      numArmsByType[armType+1]++;
+      numArmsByType[armType]++;
 
       totalArms++;
 #if LINKED_LOOPS
@@ -2788,9 +2790,9 @@ namespace paraDIS {
         armtypes = armnums = totallengths = avglengths = totalepdists = avglepdists = ""; 
         numtypes = 0; 
       }
-      ByTypeSummaries += str(boost::format("%43s = %d\n")%(str(boost::format("Number of %s arms") % ArmTypeToName(armtype))) % numArmsByType[armtype]);
-      ByTypeSummaries += str(boost::format("%43s = %.2f (%.2f average)\n")%(str(boost::format("Total length of %s arms") % ArmTypeToName(armtype))) % armLengths[armtype] % (numArmsByType[armtype] ? armLengths[armtype]/numArmsByType[armtype] : 0));
-      ByTypeSummaries += str(boost::format("%43s = %.2f (%.2f average)\n")%(str(boost::format("Total EP Distance of %s arms") % ArmTypeToName(armtype))) % armEPDistances[armtype] % (numArmsByType[armtype] ? armEPDistances[armtype]/numArmsByType[armtype] : 0));
+      ByTypeSummaries += str(boost::format("%60s = %d\n")%(str(boost::format("Number of type %d (%s) arms") % armtype % ArmTypeToName(armtype))) % numArmsByType[armtype]);
+      ByTypeSummaries += str(boost::format("%60s = %.2f (%.2f average)\n")%(str(boost::format("Total length of type %d (%s) arms") % armtype % ArmTypeToName(armtype))) % armLengths[armtype] % (numArmsByType[armtype] ? armLengths[armtype]/numArmsByType[armtype] : 0));
+      ByTypeSummaries += str(boost::format("%60s = %.2f (%.2f average)\n")%(str(boost::format("Total EP Distance of type %d (%s) arms") % armtype % ArmTypeToName(armtype))) % armEPDistances[armtype] % (numArmsByType[armtype] ? armEPDistances[armtype]/numArmsByType[armtype] : 0));
       ByTypeSummaries += "-------------------------------------------------------\n";
     }
     if (numtypes) {

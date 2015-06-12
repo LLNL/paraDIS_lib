@@ -99,7 +99,7 @@ string DocumentAllBurgersTypes(void) {
   for (vector<BurgerTypeInfo>::iterator bt = BurgInfos.begin(); 
        bt != BurgInfos.end(); bt++) {
     output += str(boost::format("%=15d%10.6f%10.6f%10.6f%=8d%=23s\n")
-                  %(bt->burgnum)%(bt->burgvec[1])%(bt->burgvec[2])%(bt->burgvec[3])
+                  %(bt->burgnum)%(bt->burgvec[0])%(bt->burgvec[1])%(bt->burgvec[2])
                   %(bt->energy)%(bt->name)); 
   }
   return output;
@@ -114,11 +114,19 @@ string DocumentAllBurgersTypes(void) {
 bool operator == (const BurgerTypeInfo&b1, const vector<float> &bval) {
   int posmatches = 0, negmatches = 0; 
   for (int i=0; i<3; i++) {
-    if (fabs(bval[i]-b1.burgvec[i]) < BURGERS_EPSILON) posmatches++;  
-    if (fabs(-bval[i]-b1.burgvec[i]) < BURGERS_EPSILON) negmatches++;     
+    if (fabs(bval[i]-b1.burgvec[i]) < BURGERS_EPSILON) {
+      posmatches++; 
+    } else if (fabs(-bval[i]-b1.burgvec[i]) < BURGERS_EPSILON) {
+      negmatches++; 
+    } 
   }    
-  return posmatches == 3 || negmatches == 3; 
- 
+  if (b1.burgnum >= 1000 || b1.energy == 1) { 
+    // For HCP or type 111 BCC arms, signs matter, 
+    // so only accept three of the same type of match, positive or negative
+    return posmatches == 3 || negmatches == 3; 
+  }
+  // sign does not matter, so any three value matches are a match
+  return (posmatches + negmatches == 3);    
 }
 
 /* ============================================================ */
