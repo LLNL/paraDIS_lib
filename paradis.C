@@ -4205,7 +4205,7 @@ namespace paraDIS {
     fprintf(armfile, " (for more, use the -debugfiles option and look in MetaArms-debug.txt )\n");
     fprintf(armfile, "=========================================================================\n");
     
-    fprintf(armfile, "%-8s%-5s%-12s%-12s%-10s%-12s%-12s%-12s%-12s%-10s%-12s%-12s%-12s%-12s%-12s%s\n",
+    fprintf(armfile, "%-8s%-5s%-12s%-12s%-10s%-12s%-12s%-12s%-12s\n%-10s%-12s%-12s%-12s%-12s%-12s%s\n",
             "ID", "Type", "Length", "EP-Dist",
             "EP1-Type", "EP1-ID",   "EP1-X", "EP1-Y", "EP1-Z",
             "EP2-Type", "EP2-ID",   "EP2-X", "EP2-Y", "EP2-Z",
@@ -4239,7 +4239,7 @@ namespace paraDIS {
         }
         string burgstring =   BurgTypeToName((*pos)->mTerminalArms[0]->GetBurgersType());
         int matype = (*pos)->mMetaArmType;
-        fprintf(armfile, "%-8d%-5d%-12.3f%-12.3f%-10d%-12s%-12.3f%-12.3f%-12.3f%-10d%-12s%-12.3f%-12.3f%-12.3f%-12s(%d):< ",
+        fprintf(armfile, "%-8d%-5d%-12.3f%-12.3f%-10d%-12s%-12.3f%-12.3f%-12.3f\n%-10d%-12s%-12.3f%-12.3f%-12.3f%-12s(%d):< ",
                 armnum, matype, (*pos)->mLength, eplength,
                 ntypes[0], ids[0].c_str(), loc[0][0],loc[0][1],loc[0][2],
                 ntypes[1], ids[1].c_str(), loc[1][0],loc[1][1],loc[1][2],
@@ -4288,10 +4288,17 @@ namespace paraDIS {
 
     PrintArmStats(armfile);
 
-    fprintf(armfile, "%-12s%-6s%-6s%-15s%-15s%-10s%-10s%-10s%-15s%-15s%-15s%-10s%-10s%-10s%-15s%-15s%-15s\n",
-            "Arm-ID", "Type", "Burg", "Length", "EP-Distance",
-            "EP1-ID", "EP1-Type", "EP1-Nbrs", "EP1-X", "EP1-Y", "EP1-Z",
-            "EP2-ID", "EP2-Type", "EP2-Nbrs", "EP2-X", "EP2-Y", "EP2-Z");
+    fprintf(armfile, 
+            str(boost::format("%=12s%=6s%=6s%=15s%=15s\n")
+                % "Arm-ID" % "Type" % "Burg" % "Length" % "EP-Distance").c_str());
+    fprintf(armfile, 
+            str(boost::format("%10s%=10s%=10s%=10s%=15s%=15s%=15s\n")
+                % "**" % "EP1-ID" % "EP1-Type" % "EP1-Nbrs" 
+                % "EP1-X" % "EP1-Y" % "EP1-Z").c_str());
+    fprintf(armfile,
+            str(boost::format("%10s%=10s%=10s%=10s%=15s%=15s%=15s\n") 
+                % "**" % "EP2-ID" % "EP2-Type" % "EP2-Nbrs" 
+                % "EP2-X" % "EP2-Y" % "EP2-Z").c_str());
     vector<Arm*>::iterator pos = Arm::mArms.begin(), endpos = Arm::mArms.end();
     uint32_t armnum = 0;
     while (pos != endpos) {
@@ -4318,8 +4325,18 @@ namespace paraDIS {
                       % (*pos)->mTerminalNodes[i]->GetNodeSimulationID());
       }
 
-      fprintf(armfile, "%-12d%-6d%-6d%-15f%-15f%-10s%-10c%-10d%-15f%-15f%-15f%-10s%-10c%-10d%-15f%-15f%-15f\n",
-              (*pos)->mArmID, (*pos)->mArmType, (*pos)->GetBurgersType(), (*pos)->mArmLength, eplength, ids[0].c_str(), ntypes[0], numNeighbors[0], loc[0][0], loc[0][1], loc[0][2], ids[1].c_str(), ntypes[1], numNeighbors[1], loc[1][0], loc[1][1], loc[1][2]);
+      fprintf(armfile, 
+              str(boost::format( "%=12d%=6d%=6d%=15f%=15f\n")
+                  % (*pos)->mArmID % (*pos)->mArmType % (*pos)->GetBurgersType() % 
+                  (*pos)->mArmLength % eplength).c_str());
+      fprintf(armfile, 
+              str(boost::format( "%10s%=10s%=10c%=10d%=15f%=15f%=15f\n")
+                  % "**" % ids[0] % ntypes[0] % numNeighbors[0] 
+                  % loc[0][0] % loc[0][1] % loc[0][2]).c_str()); 
+      fprintf(armfile, 
+              str(boost::format( "%10s%=10s%=10c%=10d%=15f%=15f%=15f\n")
+                  % "**" % ids[1] % ntypes[1] % numNeighbors[1] 
+                  % loc[1][0] % loc[1][1] % loc[1][2]).c_str());
 
 
       ++armnum;
