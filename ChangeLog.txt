@@ -1,4 +1,4 @@
-2015-06-02: version 2.6.3c (tag "v2.6.3c")
+2015-06-12: version 2.6.3c (tag "v2.6.3c")
   Feature: Added new summary arm table for Moono.  
   Feature: Better arm file formatting.  
   Feature: Improved documentation of burgers type in header.  
