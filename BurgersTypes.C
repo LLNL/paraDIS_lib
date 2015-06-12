@@ -18,7 +18,7 @@
 
 
 /* ============================================================ */
-vector<BurgerTypeInfo> BurgInfos {
+vector<BurgerTypeInfo> BurgInfos = {
   {BCC_BURGERS_UNKNOWN, {0, 0, 0},                          0, "BCC_BURGERS_UNKNOWN"},
   {00,                {0.0000000,   0.0000000,  0.0000000}, 0, "BCC_BURGERS_NONE"},
   {BCC_BURGERS_PPP,   {0.5773503,   0.5773503, 0.5773503},  1, "BCC_BURGERS_PPP"},
@@ -89,9 +89,12 @@ vector<BurgerTypeInfo> BurgInfos {
   {1040, {-0.50000000000, -0.86602540378,  3.13600000000}, 0, "HCP_Burg40"}
 }; 
 
+
 /* ============================================================ */
 string DocumentAllBurgersTypes(void) {
-  string output; 
+  string output  =   "  //  Segment BURGERS TYPES: (P = plus(+) and M = minus(-))\n"
+    "// These are valued in order of increasing energy levels, corresponding to the sum of the square of the components of the burgers vector.  \n";
+      
   output += str(boost::format("%=15s%=30s%=8s%=23s\n")%"Burgers Value"%"Vector"%"Energy"%"Name"); 
   for (vector<BurgerTypeInfo>::iterator bt = BurgInfos.begin(); 
        bt != BurgInfos.end(); bt++) {
@@ -101,6 +104,7 @@ string DocumentAllBurgersTypes(void) {
   }
   return output;
 }
+
 
 /* ============================================================ */
 /* If needed, we can now initialize a vector of structs using C++-11 syntax
@@ -189,32 +193,73 @@ string BurgTypeToName(int btype) {
   
 
 /* ============================================================ */
+map<int, string> ArmTypeToNameMap; 
 
-string ArmTypeNames(int atype) {
-  if (atype >= 1000) {
-    return str(boost::format("HCP_BURGERS_%04d")%(atype)); 
+string ArmTypeToName(int atype) {
+  if (!ArmTypeToNameMap.size()) {
+    ArmTypeToNameMap[ARM_EMPTY] =            "ARM_EMPTY"; // for deletion after decomposition
+    ArmTypeToNameMap[ARM_UNKNOWN] =          "ARM_UNKNOWN";
+    ArmTypeToNameMap[ARM_UNINTERESTING] =    "ARM_UNINTERESTING";
+    ArmTypeToNameMap[ARM_LOOP] =             "ARM_LOOP";
+    ArmTypeToNameMap[ARM_BCC_MM_111] =       "ARM_BCC_MM_111"; 
+    ArmTypeToNameMap[ARM_BCC_MN_111] =       "ARM_BCC_MN_111";
+    ArmTypeToNameMap[ARM_BCC_NN_111] =       "ARM_BCC_NN_111"; 
+    ArmTypeToNameMap[ARM_BCC_SHORT_NN_111] = "ARM_BCC_SHORT_NN_111";
+    ArmTypeToNameMap[ARM_BOUNDARY] =         "ARM_BOUNDARY";  // Has terminal node with one neighbor segment; happens in non-periodic data
+    for (vector<BurgerTypeInfo>::iterator bt = BurgInfos.begin(); 
+         bt != BurgInfos.end(); bt++) {
+      if (bt->burgnum >= 1000) {
+        ArmTypeToNameMap[bt->burgnum] = str(boost::format("ARM_HCP_BURGERS_%04d")%(bt->burgnum));
+        ArmTypeToNameMap[bt->burgnum+1000] = str(boost::format("ARM_HCP_UNZIPPED_%04d")%(bt->burgnum+1000)); 
+      }
+    }
   }
-  switch (atype) {
-  case ARM_EMPTY         : return "EMPTY";
-  case ARM_UNKNOWN        : return "UNKNOWN";
-  case ARM_UNINTERESTING  : return "UNINTERESTING";
-  case ARM_LOOP           : return "LOOP";
-  case ARM_MM_111          : return "MM_111";
-  case ARM_MN_111         : return "MN_111";
-  case ARM_NN_111          : return "NN_111";
-  case ARM_SHORT_NN_111   : return "SHORT_NN_111";
-  default: return "UNKNOWN ARMTYPE";
+  string result = ArmTypeToNameMap[atype]; 
+  if (result == "") {
+    return "ERROR_UNKNOWN_ARM_TYPE"; 
   }
+  return result; 
 }
 
-string MetaArmTypeNames(int mtype) {
-  switch (mtype) {
-  case METAARM_UNKNOWN             : return "METAARM_UNKNOWN";
-  case METAARM_111                 : return "METAARM_111";
-  case METAARM_LOOP_111            : return "METAARM_LOOP_111";
-  case METAARM_LOOP_HIGH_ENERGY    : return "METAARM_LOOP_HIGH_ENERGY";
-  default                          : return "METAARM ERROR";
+/* ============================================================ */
+vector<int> GetAllArmTypes(void) {
+  string initializeArms = ArmTypeToName(0); 
+  vector<int> result;
+  for (map<int,string>::iterator pos = ArmTypeToNameMap.begin(); 
+       pos != ArmTypeToNameMap.end(); pos++) {
+    result.push_back(pos->first); 
   }
+  return result; 
+}
+
+/* ============================================================ */
+string DocumentAllArmTypes(void) {
+  string output; 
+  output += "Each Arm has an Arm Type which usually corresponds closely to the burgers value of the arm segments it contains.  However, it also expresses emergent properties of the arm such as whether it is a LOOP or has been otherwise defined to have interesting topology or features.\n"; 
+  output += str(boost::format("%=15s%=23s\n")%"Arm Type"%"Name"); 
+  vector<int> armtypes = GetAllArmTypes(); 
+  for (vector<int>::iterator pos = armtypes.begin(); 
+       pos != armtypes.end(); pos++) {
+    output += str(boost::format("%=15d%=23s\n")
+                  %(*pos)%ArmTypeToName(*pos)); 
+  }
+  return output;
+}
+
+/* ============================================================ */
+map<int, string> MetaArmTypeToNameMap; 
+string MetaArmTypeToName(int mtype) {
+  if (!ArmTypeToNameMap.size()) {
+    MetaArmTypeToNameMap[METAARM_UNKNOWN] = "METAARM_UNKNOWN";
+    MetaArmTypeToNameMap[METAARM_111] = "METAARM_111";
+    MetaArmTypeToNameMap[METAARM_LOOP_111] = "METAARM_LOOP_111";
+    MetaArmTypeToNameMap[METAARM_LOOP_HIGH_ENERGY] = "METAARM_LOOP_HIGH_ENERGY";
+  }
+  string result = MetaArmTypeToNameMap[mtype]; 
+  if (result == "") {
+    return "ERROR_UNKNOWN_METAARM_TYPE"; 
+  }
+  return result; 
 }; 
 
 

@@ -916,9 +916,9 @@ namespace paraDIS {
     void Classify(void) ; 
 
     bool isTypeMM(void) const {
-      return mArmType == ARM_MM_111; 
+      return mArmType == ARM_BCC_MM_111; 
     }
-           
+    
     bool isTypeUnknown(void) const { 
       return mArmType == ARM_UNKNOWN; 
     }

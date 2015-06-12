@@ -446,58 +446,41 @@ namespace paraDIS {
     return;
   }
   
-  string doctext = str(boost::format("DISCUSSION AND DEFINITIONS: \n"
-            "ParaDIS data is a set of disconnected undirected graphs, which may contain cycles.  \n"
-            "\n"
-            "===================================================================\n"
-            "NODES AND SEGMENTS\n"
-            "All nodes in a paraDIS data set have at least one neighbor given in the paraDIS output file.  The connection, or neighbor relation, between two adjacent nodes is called an \"arm segment.\"  A node is considered an \"interior node\" if it has exactly two neighbors, else it is considered a \"terminal node.\"  The only exception to this is that loops always have one terminal node, which may have two neighbors.  \n"
-            "\n"
-            "===================================================================\n"
-            "ARMS\n"
-            "An \"arm\" is a sequence of interior nodes terminated by one or two terminal nodes.  A loop is an arm that has only one terminal node.  \n"
-            "Every node is part of at least one arm.  If it's not an interior node, we say the node \"has arms.\"  The number of arms equals the number of neighbors, even if some are loops.  E.g., a terminal node with three neighbors has three arms by definition, even if two of the neighbors are part of the same loop, i.e., two of the arms might be the same arm.\n"
-            "Every segment in an arm has the same Burgers vector.  See below.\n"
-            "\n"
-            "===================================================================\n"
-            "Segments, arms, and metaarms have Burgers vectors associated with them.\n"
-            "  //  Segment BURGERS TYPES: (P = plus(+) and M = minus(-))\n"
-  "// These are valued in order of increasing energy levels, corresponding to the sum of the square of the components of the burgers vector.  \n"
-  "%1%"
-  "\n"
-  "===================================================================\n"
-  "NODE TYPES and MONSTER NODES: \n"
-  "Every node has a node type.  The vast majority of nodes are simply have NodeType = number of neighboring nodes.  But some nodes get negative types, and these are known as Monster Nodes.  Oooh, scary.  \n"
-  "Only a terminal node may be a \"monster node\" A.K.A. \"M Type node.\" If a node is not an \"M\" then it is an \"N\" for \"non-monster\" or \"normal.\"  Interior nodes are always type \"N\" if anyone cares to ask, but this is usually ignored.  \n"
-  "A monster is any node where all four basic 111 type arms are neighbors of the node.  Thus, monster nodes always have 4 or more arms. \n"
-  "\n"
-  "\n"
-  "\n"
-  "Arms also have \"arm type,\" which mostly indicates whether its endpoints are monsters or not or whether they are looped arms.  \n"
-  "  // Arm MN types:\n"
-  "#define ARM_EMPTY        -1 //marked for deletion after decomposition step\n"
-  "#define ARM_UNKNOWN       0 \n"
-  "#define ARM_UNINTERESTING 1\n"
-  "#define ARM_LOOP          2\n"
-  "#define ARM_MM_111        3 \n"
-  "#define ARM_MN_111        4\n"
-  "#define ARM_NN_111        5 \n"
-  "#define ARM_MM_200        6\n"
-  "#define ARM_MN_200        7\n"
-  "#define ARM_NN_200        8\n"
-  "#define ARM_SHORT_NN_111  9\n"
-  "#define ARM_SHORT_NN_200  10\n"
-  "\n"
-  "===================================================================\n"
-  "METAARMS\n"
-  "MetaArms are collections of arms, either a loop, or terminated by two M nodes. Every arm in a MetaArm has the same Burgers vector, and there are always either zero or two M nodes in a MetaArm.  There are three main types, plus an \"unknonwn\" category for misfit arms:\n"
-  "#define METAARM_UNKNOWN     0  // Not defined, error, or some other odd state\n"
-  "#define METAARM_111         1  // Entirely composed of type 111 arms of the same burgers vector.   Does not include loops. \n"
-  "#define METAARM_LOOP_111    2  // Contains a loop, composed entirely of type 111 arms.\n"
-                                     "#define METAARM_LOOP_200    3  // Contains a loop, composed entirely of type 200 arms.\n")%(DocumentAllBurgersTypes())); 
-  ;
-
-
+  string doctext 
+  = string("DISCUSSION AND DEFINITIONS: \n"
+           "ParaDIS data is a set of disconnected undirected graphs, which may contain cycles.  \n"
+           "\n"
+           "===================================================================\n"
+           "NODES AND SEGMENTS\n"
+           "All nodes in a paraDIS data set have at least one neighbor given in the paraDIS output file.  The connection, or neighbor relation, between two adjacent nodes is called an \"arm segment.\"  A node is considered an \"interior node\" if it has exactly two neighbors, else it is considered a \"terminal node.\"  The only exception to this is that loops always have one terminal node, which may have two neighbors.  \n"
+           "\n"
+           "===================================================================\n"
+           "ARMS\n"
+           "An \"arm\" is a sequence of interior nodes terminated by one or two terminal nodes.  A loop is an arm that has only one terminal node.  \n"
+           "Every node is part of at least one arm.  If it's not an interior node, we say the node \"has arms.\"  The number of arms equals the number of neighbors, even if some are loops.  E.g., a terminal node with three neighbors has three arms by definition, even if two of the neighbors are part of the same loop, i.e., two of the arms might be the same arm.\n"
+           "Every segment in an arm has the same Burgers vector.  See below.\n"
+           "\n"
+           "===================================================================\n"
+           "Segments, arms, and metaarms have Burgers vectors associated with them.\n")
+    + DocumentAllBurgersTypes()
+    + string("\n"
+             "===================================================================\n"
+             "NODE TYPES and MONSTER NODES: \n"
+             "Every node has a node type.  The vast majority of nodes are simply have NodeType = number of neighboring nodes.  But some nodes get negative types, and these are known as Monster Nodes.  Oooh, scary.  \n"
+             "Only a terminal node may be a \"monster node\" A.K.A. \"M Type node.\" If a node is not an \"M\" then it is an \"N\" for \"non-monster\" or \"normal.\"  Interior nodes are always type \"N\" if anyone cares to ask, but this is usually ignored.  \n"
+             "A monster is any node where all four basic 111 type arms are neighbors of the node.  Thus, monster nodes always have 4 or more arms. \n"
+             "\n"
+             "\n"
+             "\n") 
+    + DocumentAllArmTypes() 
+    + string("\n"
+             "===================================================================\n"
+             "METAARMS\n"
+             "MetaArms are collections of arms, either a loop, or terminated by two M nodes. Every arm in a MetaArm has the same Burgers vector, and there are always either zero or two M nodes in a MetaArm.  There are three main types, plus an \"unknonwn\" category for misfit arms:\n"
+             "#define METAARM_UNKNOWN     0  // Not defined, error, or some other odd state\n"
+             "#define METAARM_111         1  // Entirely composed of type 111 arms of the same burgers vector.   Does not include loops. \n"
+             "#define METAARM_LOOP_111    2  // Contains a loop, composed entirely of type 111 arms.\n"
+             "#define METAARM_LOOP_200    3  // Contains a loop, composed entirely of type 200 arms.\n");
   
   //===========================================================================
   void Node::PrintAllNodeTraces(string stepname) {
@@ -1158,11 +1141,11 @@ namespace paraDIS {
       }  
       if (mArmType != ARM_BOUNDARY && mArmType != ARM_LOOP) {
         if (mTerminalNodes[0]->IsTypeM() && mTerminalNodes[1]->IsTypeM()) {
-          mArmType = ARM_MM_111;
+          mArmType = ARM_BCC_MM_111;
         } else if (mTerminalNodes[0]->IsTypeM() || mTerminalNodes[1]->IsTypeM()){
-          mArmType = ARM_MN_111;
+          mArmType = ARM_BCC_MN_111;
         } else {
-          mArmType = ARM_NN_111;
+          mArmType = ARM_BCC_NN_111;
         }
         
         // This changes _111 to _200 by definition
@@ -1179,10 +1162,10 @@ namespace paraDIS {
 	
     
       if (mThreshold > 0 && mArmLength < mThreshold) {
-        if (mArmType == ARM_NN_111) mArmType = ARM_SHORT_NN_111;
+        if (mArmType == ARM_BCC_NN_111) mArmType = ARM_BCC_SHORT_NN_111;
       }
     } /* end BCC ARM */ 
-    dbprintf(5, "Arm::Classify(%d): gave arm type %d (%s).\n", mArmID, mArmType, ArmTypeNames(mArmType).c_str());
+    dbprintf(5, "Arm::Classify(%d): gave arm type %d (%s).\n", mArmID, mArmType, ArmTypeToName(mArmType).c_str());
     return;
   }
   
@@ -1767,7 +1750,7 @@ namespace paraDIS {
     int btype = GetBurgersType();
     int atype = mArmType;
     string btypestring = BurgTypeToName(GetBurgersType());
-    string armtypestring = ArmTypeNames(mArmType);
+    string armtypestring = ArmTypeToName(mArmType);
     string parentMetaArmIDString = "(NONE)";
     if (mParentMetaArm) parentMetaArmIDString = str(boost::format("%1%")%(mParentMetaArm->GetMetaArmID()));
     std::string s  = INDENT(indent) +
@@ -1832,7 +1815,7 @@ namespace paraDIS {
   //===========================================================================
   string MetaArm::Stringify(int indent) {
     int atype = mMetaArmType;
-    string s = INDENT(indent) + str(boost::format("(MetaArm): mLength: %1%, mMetaArmType: %2% (%3%), mMetaArmID: %4%\n\n")%mLength % atype % MetaArmTypeNames(mMetaArmType) % mMetaArmID);
+    string s = INDENT(indent) + str(boost::format("(MetaArm): mLength: %1%, mMetaArmType: %2% (%3%), mMetaArmID: %4%\n\n")%mLength % atype % MetaArmTypeToName(mMetaArmType) % mMetaArmID);
     uint32_t i = 0;
     while (i<mTerminalNodes.size()) {
       string s2 = mTerminalNodes[i]->Stringify(indent+1);
@@ -2713,7 +2696,7 @@ namespace paraDIS {
         if (!btype) {
           printf("Error:  armpos has no terminal segments!\n");
         }
-        if (armType == ARM_SHORT_NN_111) {
+        if (armType == ARM_BCC_SHORT_NN_111) {
           numShortArms[btype-1]++;
           shortLengths[btype-1] += length;
         }
@@ -2780,15 +2763,21 @@ namespace paraDIS {
     totalArmLength = 0; 
     vector<int> energyLevels; 
     string armtypes, armnums, totallengths, avglengths, totalepdists, avglepdists; 
+    string ByTypeSummaries; 
     int numtypes = 0; 
     summary += "---------------------------------------------------------------\n" ;
-    for (map<int, uint32_t>::iterator pos = numArmsByType.begin(); pos != numArmsByType.end(); pos++) {
-      armtypes += str(boost::format("%=10d")%pos->first); 
-      armnums += str(boost::format("%=10d")%pos->second); 
-      totallengths += str(boost::format("%=10d")%armLengths[pos->first]); 
-      avglengths += str(boost::format("%=10d")%(armLengths[pos->first]/(pos->second))); 
-      totalepdists += str(boost::format("%=10d")%armEPDistances[pos->first]); 
-      avglepdists += str(boost::format("%=10d")%(armEPDistances[pos->first]/(pos->second))); 
+    //  for (vector<BurgerTypeInfo>::iterator pos = BurgInfos.begin(); pos != BurgInfos.end(); pos++) {
+    vector<int> types = GetAllArmTypes(); 
+    for (vector<int>::iterator pos =  types.begin(); pos != types.end(); pos++) {
+      int armtype = *pos; 
+      armtypes += str(boost::format("%=10d")%armtype); 
+      armnums += str(boost::format("%=10d")%numArmsByType[armtype]); 
+      totallengths += str(boost::format("%=10d")%armLengths[armtype]); 
+      totalepdists += str(boost::format("%=10d")%armEPDistances[armtype]); 
+      avglengths += str(boost::format("%=10d")%(numArmsByType[armtype] ? armLengths[armtype]/(numArmsByType[armtype]) : 0)); 
+      avglepdists += str(boost::format("%=10d")%(numArmsByType[armtype] ? armEPDistances[armtype]/(numArmsByType[armtype]) : 0));         
+      totalArmLength += armLengths[armtype]; 
+      
       if (++numtypes == 10) {
         summary += str(boost::format("%=18s%s\n")%"Arm Types:"        % armtypes);
         summary += str(boost::format("%=18s%s\n")%"Total Lengths:"    % totallengths); 
@@ -2799,6 +2788,10 @@ namespace paraDIS {
         armtypes = armnums = totallengths = avglengths = totalepdists = avglepdists = ""; 
         numtypes = 0; 
       }
+      ByTypeSummaries += str(boost::format("%43s = %d\n")%(str(boost::format("Number of %s arms") % ArmTypeToName(armtype))) % numArmsByType[armtype]);
+      ByTypeSummaries += str(boost::format("%43s = %.2f (%.2f average)\n")%(str(boost::format("Total length of %s arms") % ArmTypeToName(armtype))) % armLengths[armtype] % (numArmsByType[armtype] ? armLengths[armtype]/numArmsByType[armtype] : 0));
+      ByTypeSummaries += str(boost::format("%43s = %.2f (%.2f average)\n")%(str(boost::format("Total EP Distance of %s arms") % ArmTypeToName(armtype))) % armEPDistances[armtype] % (numArmsByType[armtype] ? armEPDistances[armtype]/numArmsByType[armtype] : 0));
+      ByTypeSummaries += "-------------------------------------------------------\n";
     }
     if (numtypes) {
       summary += str(boost::format("%=18s%s\n")%"Arm Types:"        % armtypes);
@@ -2808,16 +2801,11 @@ namespace paraDIS {
       summary += str(boost::format("%=18s%s\n")%"Average EP Dists:" % avglepdists); 
       summary += "---------------------------------------------------------------\n" ;
     }
-    for (map<int, uint32_t>::iterator pos = numArmsByType.begin(); pos != numArmsByType.end(); pos++) {
-      summary += str(boost::format("%43s = %d\n")%(str(boost::format("Number of %s arms") % ArmTypeNames(pos->first))) % pos->second);
-      summary += str(boost::format("%43s = %.2f (%.2f average)\n")%(str(boost::format("Total length of %s arms") % ArmTypeNames(pos->first))) % armLengths[pos->first] % (armLengths[pos->first]/pos->second));
-      summary += str(boost::format("%43s = %.2f (%.2f average)\n")%(str(boost::format("Total EP Distance of %s arms") % ArmTypeNames(pos->first))) % armEPDistances[pos->first] % (armEPDistances[pos->first]/pos->second));
-      totalArmLength += armLengths[pos->first]; 
-      summary += "-------------------------------------------------------\n";
-    }
     summary += str(boost::format("%40s = %.2f\n")%"Total length of all arm types" % totalArmLength);
     summary += "\n=================================================================\n\n";
-     
+    
+    summary += ByTypeSummaries; 
+
 #if LINKED_LOOPS
     summary += str(boost::format("LINKED LOOPS: total number of arms = %d\n") % numLinkedLoops);
     summary += str(boost::format("LINKED LOOPS: total length of arms = %.2f\n") % linkedLoopLength);
@@ -2919,8 +2907,8 @@ namespace paraDIS {
     summary += str(boost::format("total length of all segments: %.2f\n") % totalSegmentLength);
     summary += "\n===========================================\n\n";
     for (i=0; i<11; i++) {
-      summary += str(boost::format("%s: number of segs = %d\n") % ArmTypeNames(i).c_str(), numArmsByType[i]);
-      summary += str(boost::format("%s: total length of segments = %.2f\n") % ArmTypeNames(i).c_str() % armLengths[i]);
+      summary += str(boost::format("%s: number of segs = %d\n") % ArmTypeToName(i).c_str(), numArmsByType[i]);
+      summary += str(boost::format("%s: total length of segments = %.2f\n") % ArmTypeToName(i).c_str() % armLengths[i]);
       summary += "----------------------\n";
     }
     
@@ -2995,7 +2983,7 @@ namespace paraDIS {
     double totalLength = 0; 
     while (i<4) {
       summary += str(boost::format("%9d%28s%20d%20.2f\n") % i
-                     % MetaArmTypeNames(i).c_str()
+                     % MetaArmTypeToName(i).c_str()
                      % metaarmcounts[i]
                      % metaarmtypelengths[i]);
       totalLength += metaarmtypelengths[i]; 

@@ -33,6 +33,23 @@ using namespace std;
 #define BCC_BURGERS_PMP         12  
 #define BCC_BURGERS_PMM         13 
 
+// Arm MN types:
+#define ARM_EMPTY          -1 // marked for deletion after decomposition step
+#define ARM_UNKNOWN        0
+#define ARM_UNINTERESTING  1
+#define ARM_LOOP           2
+#define ARM_BCC_MM_111         3 
+#define ARM_BCC_MN_111         4
+#define ARM_BCC_NN_111         5 
+#define ARM_BCC_SHORT_NN_111   6
+#define ARM_BOUNDARY       7  // Has a terminal node with one neighbor segment; happens in non-periodic data
+
+// MetaArm types:
+#define METAARM_UNKNOWN     0  // Not defined, error, or some other odd state
+#define METAARM_111         1  // Entirely composed of type 111 arms of the same burgers vector.  Does not include loops. 
+#define METAARM_LOOP_111    2  // Contains a loop, composed entirely of type 111 arms.
+#define METAARM_LOOP_HIGH_ENERGY    3  // Contains a loop, composed entirely of type 200 arms or higher.
+
 class BurgerTypeInfo {
 public:
   BurgerTypeInfo(int num, vector<float> v, int e, string nom): 
@@ -41,19 +58,20 @@ public:
   int burgnum = BCC_BURGERS_UNKNOWN; 
   int energy = 0; 
   vector<float> burgvec {-42, -42, -42};
-  string name {"UNKNOWN_BURGER_TYPE"}; 
+  string name {"ERROR_UNKNOWN_BURGER_TYPE"}; 
 };
+// ArmTypeToNameMap\[\([^]]*\)\]   ArmTypeToName(\1)
+extern vector<BurgerTypeInfo> BurgInfos;  // list of all burgers types
 
-extern vector<BurgerTypeInfo> BurgInfos;
-
-//string BurgersTypeNames(int btype);
-string ArmTypeNames(int atype);
-string MetaArmTypeNames(int mtype);
+vector<int> GetAllArmTypes(void); 
+string ArmTypeToName(int atype);
+string MetaArmTypeToName(int mtype);
 BurgerTypeInfo BurgTypeToBurgInfo(int burgnum);
 BurgerTypeInfo BurgVecToBurgInfo(const vector<float> &burgvec);
 int BurgVecToBurgType(const vector<float> &burgvec);
 string BurgTypeToName(int btype); 
 string DocumentAllBurgersTypes(void); 
+string DocumentAllArmTypes(void); 
 
 //vector<int> GetAllBurgersTypes(void); 
 double AngularDifference(vector<float>v1, vector<float>v2, double v1Length=-1, double v2Length=-1);
@@ -84,20 +102,5 @@ double AngularDifference(vector<float>v1, vector<float>v2, double v1Length=-1, d
 #define BURGER_SCREW     1
 #define BURGER_EDGE      2
 
-// Arm MN types:
-#define ARM_EMPTY          4242 // marked for deletion after decomposition step
-#define ARM_UNKNOWN        0
-#define ARM_UNINTERESTING  1
-#define ARM_LOOP           2
-#define ARM_MM_111         3 
-#define ARM_MN_111         4
-#define ARM_NN_111         5 
-#define ARM_SHORT_NN_111   6
-#define ARM_BOUNDARY       7  // Has a terminal node with one neighbor segment; happens in non-periodic data
 
-// MetaArm types:
-#define METAARM_UNKNOWN     0  // Not defined, error, or some other odd state
-#define METAARM_111         1  // Entirely composed of type 111 arms of the same burgers vector.  Does not include loops. 
-#define METAARM_LOOP_111    2  // Contains a loop, composed entirely of type 111 arms.
-#define METAARM_LOOP_HIGH_ENERGY    3  // Contains a loop, composed entirely of type 200 arms or higher.
 
