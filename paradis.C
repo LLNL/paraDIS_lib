@@ -2779,6 +2779,35 @@ namespace paraDIS {
     summary += "=================================================================\n";
     totalArmLength = 0; 
     vector<int> energyLevels; 
+    string armtypes, armnums, totallengths, avglengths, totalepdists, avglepdists; 
+    int numtypes = 0; 
+    summary += "---------------------------------------------------------------\n" ;
+    for (map<int, uint32_t>::iterator pos = numArmsByType.begin(); pos != numArmsByType.end(); pos++) {
+      armtypes += str(boost::format("%=10d")%pos->first); 
+      armnums += str(boost::format("%=10d")%pos->second); 
+      totallengths += str(boost::format("%=10d")%armLengths[pos->first]); 
+      avglengths += str(boost::format("%=10d")%(armLengths[pos->first]/(pos->second))); 
+      totalepdists += str(boost::format("%=10d")%armEPDistances[pos->first]); 
+      avglepdists += str(boost::format("%=10d")%(armEPDistances[pos->first]/(pos->second))); 
+      if (++numtypes == 10) {
+        summary += str(boost::format("%=18s%s\n")%"Arm Types:"        % armtypes);
+        summary += str(boost::format("%=18s%s\n")%"Total Lengths:"    % totallengths); 
+        summary += str(boost::format("%=18s%s\n")%"Average Lengths:"  % avglengths); 
+        summary += str(boost::format("%=18s%s\n")%"Total EP Dists:"   % totalepdists); 
+        summary += str(boost::format("%=18s%s\n")%"Average EP Dists:" % avglepdists); 
+        summary += "---------------------------------------------------------------\n" ;
+        armtypes = armnums = totallengths = avglengths = totalepdists = avglepdists = ""; 
+        numtypes = 0; 
+      }
+    }
+    if (numtypes) {
+      summary += str(boost::format("%=18s%s\n")%"Arm Types:"        % armtypes);
+      summary += str(boost::format("%=18s%s\n")%"Total Lengths:"    % totallengths); 
+      summary += str(boost::format("%=18s%s\n")%"Average Lengths:"  % avglengths); 
+      summary += str(boost::format("%=18s%s\n")%"Total EP Dists:"   % totalepdists); 
+      summary += str(boost::format("%=18s%s\n")%"Average EP Dists:" % avglepdists); 
+      summary += "---------------------------------------------------------------\n" ;
+    }
     for (map<int, uint32_t>::iterator pos = numArmsByType.begin(); pos != numArmsByType.end(); pos++) {
       summary += str(boost::format("%43s = %d\n")%(str(boost::format("Number of %s arms") % ArmTypeNames(pos->first))) % pos->second);
       summary += str(boost::format("%43s = %.2f (%.2f average)\n")%(str(boost::format("Total length of %s arms") % ArmTypeNames(pos->first))) % armLengths[pos->first] % (armLengths[pos->first]/pos->second));
