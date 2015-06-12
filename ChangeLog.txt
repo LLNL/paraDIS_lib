@@ -1,65 +1,71 @@
+2015-06-02: version 2.6.3c (tag "v2.6.3c")
+  Feature: Added new summary arm table for Moono.  
+  Feature: Better arm file formatting.  
+  Feature: Improved documentation of burgers type in header.  
+  Bugfix: Fixed bugs in burgers identification code.
+
 2015-06-02: version 2.6.3b (tag "v2.6.3b")
-		Added visualization of arm types for VisIt.
-        Added EP distances and averages to arms file summaries. 
+  Added visualization of arm types for VisIt.
+  Added EP distances and averages to arms file summaries. 
 
 2015-06-02: version 2.6.3 (tag "v2.6.3")
-		Added ability to parse new HCP file format in addition to BCC data.
+	Added ability to parse new HCP file format in addition to BCC data.
 
 2014-10-22: version 2.6.2 (tag "v2.6.2")
-		Bugfix for case where LOOP node has two terminal segments.  This is perfectly fine but the code was complaining about it. 
+	Bugfix for case where LOOP node has two terminal segments.  This is perfectly fine but the code was complaining about it. 
 
 2014-10-22: version 2.6.1 (tag "v2.6.1")
-		Bugfix for povray spline generator code
-		Added 6 BURGERS types at energy level 8 to handle some new data.  
+  Bugfix for povray spline generator code
+	Added 6 BURGERS types at energy level 8 to handle some new data.  
 
 2014-08-12: version 2.6.0 (tag "v2.6.0")
-       Changes to internal data structure changes and analyzeParaDIS program defaults so that by default the user sees excellent performance and readability at the expense of modest increase in memory usage.  
+  Changes to internal data structure changes and analyzeParaDIS program defaults so that by default the user sees excellent performance and readability at the expense of modest increase in memory usage.  
 
 2014-08-12: version 2.5.1 (tag "v2.5.1")
-	   A few more speed tweaks. 
+	A few more speed tweaks. 
 
 2014-08-12: version 2.5.0 (tag "v2.5.0")
-       Changed internal data structures to simplify code and get some speedup.
+  Changed internal data structures to simplify code and get some speedup.
  
 2014-08-07: version 2.4.0 (tag "v2.4.0")
-	   Added povray export
-	   Added JSON export
-	   Print segment IDs in tracefiles.  
-	   Added support for "Light the Fuse" animations ("fuse distance")
-	   Fix a bug stopping non-periodic data from working and added "ARM_BOUNDARY" type in support of this.  
-	   Fixed a bug for a tiny edge case when a decomposition step involves a detachment that then forms a loop in the arm to be decomposed, which was leading to a "source arm should never be a loop" abort() error.
+  Added povray export
+  Added JSON export
+  Print segment IDs in tracefiles.  
+  Added support for "Light the Fuse" animations ("fuse distance")
+  Fix a bug stopping non-periodic data from working and added "ARM_BOUNDARY" type in support of this.  
+  Fixed a bug for a tiny edge case when a decomposition step involves a detachment that then forms a loop in the arm to be decomposed, which was leading to a "source arm should never be a loop" abort() error.
 
 2014-06-05: version 2.3.6b
-       Fixed a bug involving the decomposition of arms and tracing of wrapped segments that caused early termination on some data sets.  
+  Fixed a bug involving the decomposition of arms and tracing of wrapped segments that caused early termination on some data sets.  
 
 2014-06-02: version 2.3.6
-       Fixed bugs relating to very rare cases of looped arms which have wrapped segments, or decomposed arms which cross over themselves when decomposed.  
-       Add --summary flag to allow all summaries to be printed in a single file.
-       Improved documentation in summary files to clarify segments, arms and metaarms.  
-       
+  Fixed bugs relating to very rare cases of looped arms which have wrapped segments, or decomposed arms which cross over themselves when decomposed.  
+  Add --summary flag to allow all summaries to be printed in a single file.
+  Improved documentation in summary files to clarify segments, arms and metaarms.  
+  
 2014-01-31: version 2.3.5
-       Added "ScrewType" to segments for Jaime Marian; shows in VTK files but not yet VisIt plugin. 
-       
+  Added "ScrewType" to segments for Jaime Marian; shows in VTK files but not yet VisIt plugin. 
+  
 2013-07-17: version 2.3.4
-       Change definition of tags, only marking loop nodes with 8192 now. 
-       add burgers vector to metaarm file      
-       Added node tracing in addition to arm tracing.
-       Fix bug where loading a second timestep in VisIt caused crashes. The notorious "second time around" bug. 
+  Change definition of tags, only marking loop nodes with 8192 now. 
+  add burgers vector to metaarm file    
+  Added node tracing in addition to arm tracing.
+  Fix bug where loading a second timestep in VisIt caused crashes. The notorious "second time around" bug. 
 
 2013-05-30: version 2.3.3
-       Enable the creation of "trace files" which allow user to track what happens to particular arms visually and in text
+  Enable the creation of "trace files" which allow user to track what happens to particular arms visually and in text
 
 2013-05-29: version 2.3.2
-       Detach any "pass-through" arms from terminal nodes before decomposing any arm.  
+  Detach any "pass-through" arms from terminal nodes before decomposing any arm.  
 
 2013-05-24: version 2.3.1
-       Various bugfixes to make the code actually produce results that are consistent with previous results. 
-       Added tools to track history of arms after decomposition of higher energy arms into lower energy arms. 
-       Simplified the arguments to analyzeParaDIS to make visualization easier. 
+  Various bugfixes to make the code actually produce results that are consistent with previous results. 
+  Added tools to track history of arms after decomposition of higher energy arms into lower energy arms. 
+  Simplified the arguments to analyzeParaDIS to make visualization easier. 
 2013-04-25: version 2.3
-        Implemented MetaArm visualization, including subsetting by some new variables in the meshes.  Using enumerated scalars now for better subset operations.  
-        We now have metaarm visualization.  
-        Added several new variables, some having to do with meta-arms, cleaned up variable naming convention, and converted some into enumerated scalars to allow subset operations to work. 
-        Added the ability to write out so-called tagfiles, which are simply a copy of the original data with certain values replaced by "8" when a node is in a LOOP metaarm.  
-        
-        
+   Implemented MetaArm visualization, including subsetting by some new variables in the meshes.  Using enumerated scalars now for better subset operations.  
+   We now have metaarm visualization.  
+   Added several new variables, some having to do with meta-arms, cleaned up variable naming convention, and converted some into enumerated scalars to allow subset operations to work. 
+   Added the ability to write out so-called tagfiles, which are simply a copy of the original data with certain values replaced by "8" when a node is in a LOOP metaarm.  
+   
+   
