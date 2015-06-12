@@ -1,4 +1,6 @@
 #include "BurgersTypes.h"
+#include <boost/numeric/ublas/vector.hpp>
+
 // GRRR.  Visit hooks are lame.  This is bad code but if I don't structure it like this, the SVN hooks complain. 
 #ifdef USE_ABORT
 #define errexit abort()
@@ -7,7 +9,6 @@
 #define errexit return 
 #define errexit1 return err
 #endif 
-
 #define paradis_assert(test) if (!(test)) {                             \
 	dbecho(0, "ERROR: %s %d: failed test: "#test"\n", __FUNCTION__, __LINE__); \
 	errexit;                                                            \
@@ -89,15 +90,28 @@ vector<BurgerTypeInfo> BurgInfos {
 }; 
 
 /* ============================================================ */
+string DocumentAllBurgersTypes(void) {
+  string output; 
+  output += str(boost::format("%=15s%=30s%=8s%=23s\n")%"Burgers Value"%"Vector"%"Energy"%"Name"); 
+  for (vector<BurgerTypeInfo>::iterator bt = BurgInfos.begin(); 
+       bt != BurgInfos.end(); bt++) {
+    output += str(boost::format("%=15d%10.6f%10.6f%10.6f%=8d%=23s\n")
+                  %(bt->burgnum)%(bt->burgvec[1])%(bt->burgvec[2])%(bt->burgvec[3])
+                  %(bt->energy)%(bt->name)); 
+  }
+  return output;
+}
+
+/* ============================================================ */
 /* If needed, we can now initialize a vector of structs using C++-11 syntax
    in a more "listlike" way.  
 */ 
-// Test the burgers for equality
+// Test the burgers for equality within BURGERS_EPSILON tolerance
 bool operator == (const BurgerTypeInfo&b1, const vector<float> &bval) {
   int posmatches = 0, negmatches = 0; 
   for (int i=0; i<3; i++) {
-    if (bval[i]-b1.burgvec[i] < BURGERS_EPSILON) posmatches++;  
-    if (-bval[i]-b1.burgvec[i] < BURGERS_EPSILON) negmatches++;     
+    if (fabs(bval[i]-b1.burgvec[i]) < BURGERS_EPSILON) posmatches++;  
+    if (fabs(-bval[i]-b1.burgvec[i]) < BURGERS_EPSILON) negmatches++;     
   }    
   return posmatches == 3 || negmatches == 3; 
  
@@ -125,7 +139,7 @@ bool compareByVector (const BurgerTypeInfo&b1, const BurgerTypeInfo &b2) {
 map<int, BurgerTypeInfo> BurgTypeToBurgInfoMap; 
 
 BurgerTypeInfo BurgTypeToBurgInfo(int burgnum) {
-  if (BurgTypeToBurgInfoMap.size()) {
+  if (!BurgTypeToBurgInfoMap.size()) {
     for (vector<BurgerTypeInfo>::iterator bt = BurgInfos.begin(); 
          bt != BurgInfos.end(); bt++) {
       BurgTypeToBurgInfoMap[bt->burgnum] = *bt; 
@@ -137,24 +151,40 @@ BurgerTypeInfo BurgTypeToBurgInfo(int burgnum) {
 /* ============================================================ */
 map<vector<float>, BurgerTypeInfo> BurgVecToBurgInfoMap; 
 
-BurgerTypeInfo BurgVecToBurgInfo(const vector<float> &burgvec) {
-  if (BurgVecToBurgInfoMap.size()) {
+BurgerTypeInfo BurgVecToBurgInfo(const vector<float> &burgvec) { 
+  if (!BurgVecToBurgInfoMap.size()) {    
     for (vector<BurgerTypeInfo>::iterator bt = BurgInfos.begin(); 
          bt != BurgInfos.end(); bt++) {
-      BurgVecToBurgInfoMap[bt->burgvec] = *bt; 
+      BurgVecToBurgInfoMap[bt->burgvec] = *bt;      
+      vector<float> negvec {-bt->burgvec[0], -bt->burgvec[1], -bt->burgvec[2]}; 
+      BurgVecToBurgInfoMap[negvec] = *bt;           
     }
   }
-  return BurgVecToBurgInfoMap[burgvec];
+  if (BurgVecToBurgInfoMap[burgvec].burgnum == BCC_BURGERS_UNKNOWN) {
+    vector<float> negvec = {-burgvec[0], -burgvec[1], -burgvec[2]};
+    // Not in the current list.  See if we can find a close match, and cache it:
+    for (vector<BurgerTypeInfo>::iterator bt = BurgInfos.begin(); 
+         bt != BurgInfos.end(); bt++) {
+      if (*bt == burgvec || *bt == negvec) {
+        BurgVecToBurgInfoMap[burgvec] = *bt; 
+        break;
+      }
+    }
+  }
+  BurgerTypeInfo burginfo = BurgVecToBurgInfoMap[burgvec];
+  return burginfo; 
 }
 
 /* ============================================================ */
 int BurgVecToBurgType(const vector<float> &burgvec) {
-  return BurgVecToBurgInfo(burgvec).burgnum; 
+  BurgerTypeInfo binfo = BurgVecToBurgInfo(burgvec); 
+  return binfo.burgnum; 
 }
 
 /* ============================================================ */
 string BurgTypeToName(int btype) {
-  return BurgTypeToBurgInfo(btype).name; 
+  BurgerTypeInfo binfo = BurgTypeToBurgInfo(btype);
+  return binfo.name; 
 }
   
 

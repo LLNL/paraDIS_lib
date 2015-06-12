@@ -26,6 +26,8 @@ using boost::uint32_t;
 using namespace std; 
 
 // Special commonly-used values
+#define BCC_BURGERS_UNKNOWN    -42 // analysis failed
+#define BCC_BURGERS_NONE        00 // no analysis done yet
 #define BCC_BURGERS_PPP         10  
 #define BCC_BURGERS_PPM         11 
 #define BCC_BURGERS_PMP         12  
@@ -36,7 +38,7 @@ public:
   BurgerTypeInfo(int num, vector<float> v, int e, string nom): 
     burgnum(num), energy(e), burgvec(v), name(nom) {}
   BurgerTypeInfo() = default; 
-  int burgnum = -1; 
+  int burgnum = BCC_BURGERS_UNKNOWN; 
   int energy = 0; 
   vector<float> burgvec {-42, -42, -42};
   string name {"UNKNOWN_BURGER_TYPE"}; 
@@ -51,6 +53,7 @@ BurgerTypeInfo BurgTypeToBurgInfo(int burgnum);
 BurgerTypeInfo BurgVecToBurgInfo(const vector<float> &burgvec);
 int BurgVecToBurgType(const vector<float> &burgvec);
 string BurgTypeToName(int btype); 
+string DocumentAllBurgersTypes(void); 
 
 //vector<int> GetAllBurgersTypes(void); 
 double AngularDifference(vector<float>v1, vector<float>v2, double v1Length=-1, double v2Length=-1);
@@ -67,8 +70,6 @@ double AngularDifference(vector<float>v1, vector<float>v2, double v1Length=-1, d
 #define NUM_BCC_ENERGY_LEVELS  8
 #define NUM_BCC_BURGERS_TYPES  26
 // Segment BCC_BURGERS TYPES: (P = plus(+) and M = minus(-))
-#define BCC_BURGERS_UNKNOWN    -42 // analysis failed
-#define BCC_BURGERS_NONE        00  // no analysis done yet
 
 /* ========================================  */ 
 //  Segment HCP_BURGERS TYPES: Currently an arbitrary pile of meaningless junk

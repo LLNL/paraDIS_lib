@@ -446,7 +446,7 @@ namespace paraDIS {
     return;
   }
   
-  string doctext = "DISCUSSION AND DEFINITIONS: \n"
+  string doctext = str(boost::format("DISCUSSION AND DEFINITIONS: \n"
             "ParaDIS data is a set of disconnected undirected graphs, which may contain cycles.  \n"
             "\n"
             "===================================================================\n"
@@ -463,26 +463,7 @@ namespace paraDIS {
             "Segments, arms, and metaarms have Burgers vectors associated with them.\n"
             "  //  Segment BURGERS TYPES: (P = plus(+) and M = minus(-))\n"
   "// These are valued in order of increasing energy levels, corresponding to the sum of the square of the components of the burgers vector.  \n"
-  "#define BCC_BURGERS_UNKNOWN     -1  // analysis failed\n"
-  "#define BCC_BURGERS_NONE        0   // no analysis done yet\n"
-  "#define BCC_BURGERS_PPP         10  // +++  BEGIN ENERY LEVEL 1\n"
-  "#define BCC_BURGERS_PPM         11  // ++-\n"
-  "#define BCC_BURGERS_PMP         12  // +-+\n"
-  "#define BCC_BURGERS_PMM         13  // +--\n"
-  "#define BCC_BURGERS_200         20  // BEGIN ENERGY LEVEL 2\n"
-  "#define BCC_BURGERS_020         21  \n"
-  "#define BCC_BURGERS_002         22\n"
-  "#define BCC_BURGERS_220         30  // BEGIN ENERGY LEVEL 3\n"
-  "#define BCC_BURGERS_202         31\n"
-  "#define BCC_BURGERS_022         32\n"
-  "#define BCC_BURGERS_311         40  // BEGIN ENERGY LEVEL 4\n"
-  "#define BCC_BURGERS_131         41\n"
-  "#define BCC_BURGERS_113         42\n"
-  "#define BCC_BURGERS_222         50  // BEGIN ENERGY LEVEL 5\n"
-  "#define BCC_BURGERS_004         60  // BEGIN ENERGY LEVEL 6\n"
-  "#define BCC_BURGERS_331         70  // BEGIN ENERGY LEVEL 7\n"
-  "#define BCC_BURGERS_313         71\n"
-  "#define BCC_BURGERS_133         72Fq\n"
+  "%1%"
   "\n"
   "===================================================================\n"
   "NODE TYPES and MONSTER NODES: \n"
@@ -513,7 +494,7 @@ namespace paraDIS {
   "#define METAARM_UNKNOWN     0  // Not defined, error, or some other odd state\n"
   "#define METAARM_111         1  // Entirely composed of type 111 arms of the same burgers vector.   Does not include loops. \n"
   "#define METAARM_LOOP_111    2  // Contains a loop, composed entirely of type 111 arms.\n"
-  "#define METAARM_LOOP_200    3  // Contains a loop, composed entirely of type 200 arms.\n"
+                                     "#define METAARM_LOOP_200    3  // Contains a loop, composed entirely of type 200 arms.\n")%(DocumentAllBurgersTypes())); 
   ;
 
 
@@ -1142,7 +1123,6 @@ namespace paraDIS {
 	paradis_assert(numsegs < 1 || (uint)numsegs == mNumNormalSegments + mNumWrappedSegments); 
    return;
   }
-
   
   //===========================================================================
   void Arm::Classify(void) {
@@ -2656,7 +2636,8 @@ namespace paraDIS {
       throw string("Error in DataSet::CreateNodesAndArmSegments while reading node ") + intToString(nodenum) +":\n" + err;
     }
     if (ArmSegment::mArmSegments.size()) {
-      if (ArmSegment::mArmSegments[0]->mBurgersType >= 1000) {
+      ArmSegment *seg = ArmSegment::mArmSegments[0];
+      if (seg->mBurgersType >= 1000) {
         mDataType = PARADIS_DATATYPE_HCP; 
       } else {
         mDataType = PARADIS_DATATYPE_BCC; 
