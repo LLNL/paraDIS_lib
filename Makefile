@@ -26,7 +26,7 @@ LDFLAGS+=-lstdc++ -L$(INSTALL_DIR)/lib -lboost_filesystem -lboost_system
 #CC = purify gcc-3.2.3
 
 #USER_CFLAGS= -g
-USER_CXXFLAGS+=$(INCLUDES) -DNO_SETBUF 
+USER_CXXFLAGS+=$(INCLUDES) -DNO_SETBUF -Wno-unused-local-typedefs
 CXXFLAGS += -I$(INSTALL_DIR)/include -DBOOST_SYSTEM_NO_DEPRECATED
 CFLAGS += -I$(INSTALL_DIR)/include 
 
