@@ -1,6 +1,6 @@
 2015-06-12: version 2.6.3d 
-  Feature: Remove /usr/global/tools support, moved to /usr/local/tools
-
+  Feature: Remove /usr/global/tools support, move to /usr/local/tools
+  
 2015-06-12: version 2.6.3c (tag "v2.6.3c")
   Feature: Added new summary arm table for Moono.  
   Feature: Better arm file formatting.  
