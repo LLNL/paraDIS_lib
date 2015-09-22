@@ -154,7 +154,7 @@ int main(int argc, char *argv[]) {
 	  string outdir = outdirFlag.getValue(); 
 	  if (outdir == "") {
 		outdir = basename + "-output"; 
-		basename = boost::filesystem::path(basename).filename();
+		basename = boost::filesystem::path(basename).filename().string();
 	  }
       string fileout = fileoutFlag.getValue(); 
       if (fileout == "") fileout = basename + ".out"; 
