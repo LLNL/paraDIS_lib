@@ -50,7 +50,7 @@ profile:
 	DEBUG="-g -pg" $(MAKE) all
 
 timestamp: $(SOURCES)
-	setversion.sh --timestamp
+	./setversion.sh --timestamp
 	date > timestamp
 
 install: all
