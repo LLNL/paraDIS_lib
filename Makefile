@@ -27,6 +27,8 @@ LDFLAGS+=-lstdc++ -lboost_filesystem
 
 #USER_CFLAGS= -g
 USER_CXXFLAGS+=$(INCLUDES) -DNO_SETBUF 
+CXXFLAGS += -I$(INSTALL_DIR)/include 
+CFLAGS += -I$(INSTALL_DIR)/include 
 
 PARADISLIB = $(CWD)/$(SYS_TYPE)/lib/libparadis.a
 RCCLIB=$(INSTALL_DIR)/lib/librcc.a 
@@ -35,6 +37,11 @@ TARGETS = $(CWD)/$(SYS_TYPE)/bin/analyzeParaDIS $(CWD)/$(SYS_TYPE)/bin/paradisTe
 SOURCES = analyzeParaDIS.C  paradis.h paradisStreaming.h paradis.C paradisTest.C paradis_c_interface.h paradisStreaming.C  paradisStreamingTest.C  paradis_c_interface.C  paradis_types.h   BurgersTypes.C
 
 all: timestamp $(TARGETS)
+
+package:
+	name=paradis-lib-v$$(./setversion.sh -p); \
+		git archive master --prefix=$$name/ | gzip >$${name}.tgz; \
+		echo created archive $${name}.tgz
 
 debug:
 	DEBUG=-g $(MAKE) all
@@ -123,12 +130,9 @@ depend:
 
 # DO NOT DELETE
 
-chaos_5_x86_64_ib/paradis.o: paradis.h BurgersTypes.h paradis_version.h
-chaos_5_x86_64_ib/paradis_c_interface.o: paradis.h BurgersTypes.h
-chaos_5_x86_64_ib/paradis_c_interface.o: paradis_c_interface.h
-chaos_5_x86_64_ib/paradisStreaming.o: paradisStreaming.h paradis.h
-chaos_5_x86_64_ib/paradisStreaming.o: BurgersTypes.h
-chaos_5_x86_64_ib/paradisTest.o: paradis.h BurgersTypes.h
-chaos_5_x86_64_ib/analyzeParaDIS.o: paradis_c_interface.h paradis.h
-chaos_5_x86_64_ib/analyzeParaDIS.o: BurgersTypes.h
-chaos_5_x86_64_ib/BurgersTypes.o: BurgersTypes.h
+paradis.o: paradis.h BurgersTypes.h paradis_version.h
+paradis_c_interface.o: paradis.h BurgersTypes.h paradis_c_interface.h
+paradisStreaming.o: paradisStreaming.h paradis.h BurgersTypes.h
+paradisTest.o: paradis.h BurgersTypes.h
+analyzeParaDIS.o: paradis_c_interface.h paradis.h BurgersTypes.h
+BurgersTypes.o: BurgersTypes.h
