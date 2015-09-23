@@ -1,6 +1,8 @@
 2015-06-12: version 2.6.3d 
   Feature: Remove /usr/global/tools support, move to /usr/local/tools
-  
+  Bugfix:  HCP_Burg24 was missing from the list of arm types.  It is there now.
+  Bugfix:  Fixed formatting (columns run into each other in arms file lists)
+
 2015-06-12: version 2.6.3c (tag "v2.6.3c")
   Feature: Added new summary arm table for Moono.  
   Feature: Better arm file formatting.  
