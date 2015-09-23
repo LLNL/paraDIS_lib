@@ -2716,8 +2716,6 @@ namespace paraDIS {
         }
       }
       armLengths[armType] += length;
-      if (armType == 3) 
-        int x = 1; 
 
       int numtermnodes = (*armpos)->mTerminalNodes.size();
       if (numtermnodes == 2) {
@@ -2772,12 +2770,12 @@ namespace paraDIS {
     vector<int> types = GetAllArmTypes(); 
     for (vector<int>::iterator pos =  types.begin(); pos != types.end(); pos++) {
       int armtype = *pos; 
-      armtypes += str(boost::format("%=10d")%armtype); 
-      armnums += str(boost::format("%=10d")%numArmsByType[armtype]); 
-      totallengths += str(boost::format("%=10d")%armLengths[armtype]); 
-      totalepdists += str(boost::format("%=10d")%armEPDistances[armtype]); 
-      avglengths += str(boost::format("%=10d")%(numArmsByType[armtype] ? armLengths[armtype]/(numArmsByType[armtype]) : 0)); 
-      avglepdists += str(boost::format("%=10d")%(numArmsByType[armtype] ? armEPDistances[armtype]/(numArmsByType[armtype]) : 0));         
+      armtypes += str(boost::format("%=12d")%armtype); 
+      armnums += str(boost::format("%=12d")%numArmsByType[armtype]); 
+      totallengths += str(boost::format("%=12d")%armLengths[armtype]); 
+      totalepdists += str(boost::format("%=12d")%armEPDistances[armtype]); 
+      avglengths += str(boost::format("%=12d")%(numArmsByType[armtype] ? armLengths[armtype]/(numArmsByType[armtype]) : 0)); 
+      avglepdists += str(boost::format("%=12d")%(numArmsByType[armtype] ? armEPDistances[armtype]/(numArmsByType[armtype]) : 0));         
       totalArmLength += armLengths[armtype]; 
       
       if (++numtypes == 10) {
