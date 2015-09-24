@@ -59,8 +59,10 @@ install: all
 install-version: install
 	cd $(INSTALL_DIR)/bin; for tool in paradisTest paradisStreamingTest analyzeParaDIS; do cp $$tool $${tool}-$$(analyzeParaDIS --version-num); done
 
-global: uninstall all
-	INSTALL_DIR=/usr/global/tools/IMG_private/paraDIS/$$SYS_TYPE $(MAKE) install-version;
+#global: uninstall all
+#	INSTALL_DIR=/usr/global/tools/IMG_private/paraDIS/$$SYS_TYPE $(MAKE) install-version;
+global:
+	echo "global installation is no longer supported.  Please use the eris build farm to install into /usr/local/tools" 
 
 install-debug: 
 	DEBUG=-g $(MAKE) install
