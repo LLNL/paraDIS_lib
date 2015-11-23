@@ -257,7 +257,7 @@ string DocumentAllArmTypes(void) {
 /* ============================================================ */
 map<int, string> MetaArmTypeToNameMap; 
 string MetaArmTypeToName(int mtype) {
-  if (!ArmTypeToNameMap.size()) {
+  if (!MetaArmTypeToNameMap.size()) {
     MetaArmTypeToNameMap[METAARM_UNKNOWN] = "METAARM_UNKNOWN";
     MetaArmTypeToNameMap[METAARM_111] = "METAARM_111";
     MetaArmTypeToNameMap[METAARM_LOOP_111] = "METAARM_LOOP_111";

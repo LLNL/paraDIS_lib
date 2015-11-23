@@ -1,3 +1,6 @@
+2015-11-23: version 2.6.3e 
+  Bugfix:  Fix the labels of metaarms under "METAARM SUMMARY STATISTICS" in summary.txt files.
+           
 2015-06-12: version 2.6.3d 
   Feature: Remove /usr/global/tools support, move to /usr/local/tools
   Bugfix:  HCP_Burg24 was missing from the list of arm types.  It is there now.
