@@ -1,3 +1,5 @@
+git hash:  $Id$
+
 The files in this distribution are for creating paraDIS_lib.  
 Files are built into $INSTALL_DIR if defined, else a directory called "./$SYS_TYPE" if SYS_TYPE is defined, else a directory called  "./uname -n". 
 `make global` installs into /usr/global/tools/IMG_private/paraDIS/$SYS_TYPE
