@@ -555,6 +555,8 @@ namespace paraDIS {
 
     int16_t GetBurgersType(void) const { return mBurgersType; } 
 
+    int16_t GetOriginalBurgersType(void) const { return mOriginalBurgersType; }
+
    /*!
       Return the distance between the endpoints
     */ 
@@ -850,7 +852,7 @@ namespace paraDIS {
 
     /*!
       Give the exact Burgers type of its segments. 
-      Return 0 is no terminal segments. 
+      Return 0 if no terminal segments. 
     */
     int16_t GetBurgersType(void) const {
       if (!mTerminalSegments.size() || !mTerminalSegments[0])  {        
@@ -859,6 +861,17 @@ namespace paraDIS {
       return mTerminalSegments[0]->GetBurgersType(); 
     }
 
+    /*!
+      Give the original Burgers type of its segments. 
+      All segment original burgers type will be the same for any given arm.
+      Return 0 if no terminal segments. 
+    */
+    int16_t GetOriginalBurgersType(void) const {
+      if (!mTerminalSegments.size() || !mTerminalSegments[0])  {        
+        return BCC_BURGERS_UNKNOWN; 
+      }
+      return mTerminalSegments[0]->GetOriginalBurgersType(); 
+    }
 
     /* Get the metaarm ID for the parent of this arm */ 
     uint32_t GetMetaArmID(void);

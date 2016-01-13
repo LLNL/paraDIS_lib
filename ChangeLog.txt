@@ -1,3 +1,6 @@
+2015-11-23: version 2.6.4a
+  Feature: output original burgers vector values in VTK files along with decomposed values
+
 2015-11-23: version 2.6.3e 
   Bugfix:  Fix the labels of metaarms under "METAARM SUMMARY STATISTICS" in summary.txt files.
            
