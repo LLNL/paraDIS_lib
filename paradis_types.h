@@ -1,4 +1,4 @@
-/* $Id: paradis_types.h,v 1.3 2009/04/30 01:23:41 rcook Exp $ 
+/* $Id$ 
  $File$
 */
 #ifndef LIBPARADIS_TYPES_H 
