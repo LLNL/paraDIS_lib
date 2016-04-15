@@ -1,3 +1,9 @@
+/*   Written by Richard David Cook 
+     at Lawrence Livermore National Laboratory
+     Contact:  wealthychef@gmail.com
+*/
+
+
 /*!
   \file paradis_c_interface.h
   Purpose:  provide a pure C interface for C++ codes to link to to potentially avoid linker and header conflicts by isolating all C++ data structures into a set of similarly compiled modules. 

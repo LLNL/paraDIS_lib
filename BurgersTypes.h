@@ -1,3 +1,9 @@
+/*   Written by Richard David Cook 
+     at Lawrence Livermore National Laboratory
+     Contact:  wealthychef@gmail.com
+*/
+
+
 #pragma once
 /* http://en.wikipedia.org/wiki/Pragma_once */
 #include "boost/cstdint.hpp"

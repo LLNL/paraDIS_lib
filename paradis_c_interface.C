@@ -1,3 +1,9 @@
+/*   Written by Richard David Cook 
+     at Lawrence Livermore National Laboratory
+     Contact:  wealthychef@gmail.com
+*/
+
+
 /*!
   Implements the pure C interface to paraDIS lib, but is a C++ file.  
 */ 

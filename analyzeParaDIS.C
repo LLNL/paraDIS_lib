@@ -1,3 +1,9 @@
+/*   Written by Richard David Cook 
+     at Lawrence Livermore National Laboratory
+     Contact:  wealthychef@gmail.com
+*/
+
+
 #include "Prefs.h"
 #include "RC_c_lib/args.h"
 #include "paradis_c_interface.h" // for testing

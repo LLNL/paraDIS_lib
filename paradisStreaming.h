@@ -1,3 +1,9 @@
+/*   Written by Richard David Cook 
+     at Lawrence Livermore National Laboratory
+     Contact:  wealthychef@gmail.com
+*/
+
+
 /*!
   Header file for the streaming library for paraDIS dumpfile visualization and conversion.
 

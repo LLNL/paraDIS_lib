@@ -1,3 +1,9 @@
+/*   Written by Richard David Cook 
+     at Lawrence Livermore National Laboratory
+     Contact:  wealthychef@gmail.com
+*/
+
+
 #include "BurgersTypes.h"
 #include <boost/numeric/ublas/vector.hpp>
 

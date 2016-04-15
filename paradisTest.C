@@ -1,3 +1,9 @@
+/*   Written by Richard David Cook 
+     at Lawrence Livermore National Laboratory
+     Contact:  wealthychef@gmail.com
+*/
+
+
 /* just a file to contain a main() for testing paraDIS library */ 
 #include "paradis.h"
 #include "RC_c_lib/debugutil.h"
