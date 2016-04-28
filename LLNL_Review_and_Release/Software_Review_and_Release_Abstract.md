@@ -1,38 +1,34 @@
 # Software Review and Release Abstract
 
 
-* Identification. Used to uniquely identify the software.
+* **Identification**:  paraDIS_lib
 
-* Software Acronym. Acronym (limit 20 characters) that names your code product.
+* **Developer Name(s) and Affiliation**:  Richard D. Cook, LLNL
 
-* Short or Keywords in context (KWIC) title. Code title (limit 80 characters).
+* **Software Completion Date**  03-30-2016
 
-* Developer Name(s) and Affiliation. 
+* **Brief Description**:  The ParaDIS_lib software is a project that is funded by the DOE ASC Program. Its purpose is to provide visualization and analysis capabilities for the existing ParaDIS parallel dislocation dynamics simulation code. 
 
-* Software Completion Date. List approximate date that the version of the executable module(s), which will be created by the submitted program modules, was first used in an application environment.
+* **Method of Solution**:  Software creates a graph of the nodes and edges in a paraDIS dump file.  It then traces out important features using DFS of the graph and data values provided for each node and edge in the graph.  It produces VTK files and provides a C++ interface for use in tools such as VisIt for visualization.  It also outputs statistics found while traversing the graph. 
 
-* Brief Description. Describe the purpose of the computer program.
+* **Computer(s) for which software is written** Linux machines such as those installed in the Livermore Computing clusters. 
 
-* Method of Solution. Provide a short summary of the mathematical methods, engineering principles, numerical algorithms, and procedures incorporated into the software.
+* **Operating System**. Red Hat Enterprise Linux 6 or similar flavors of Linux.  
 
-* Computer(s) for which software is written. List the computer(s) on which this software product will run.
+* **Programming Language(s) Used** C/C++
 
-* Operating System. Indicate the operating system used, Release Number, and any deviations or exceptions.
+* **Software Limitations** Software is serial and in-core.  Very large datasets could require more than the available memory in a machine.
 
-* Programming Language(s) Used. Indicate the programming language(s) in which the software is written along with the approximate percentages (in parenthesis) of each used.
+* **Unique Features of the Software** Software produces unique statistics resulting from a post-processing graph analysis which cannot be performed without searching the entire graph.  
 
-* Software Limitations. Provide a short paragraph on any restrictions implied by storage allocation as well as those due to approximations used.
+* **Related and Auxiliary Software**. Works on data produced by the ParaDIS parallel dislocation dynamics simulation code. 
 
-* Unique Features of the Software Highlight the advantages, distinguishing features, or special capabilities which may influence the user to select this package over similar products.
+* **Other Programming or Operating Information or Restrictions** none
 
-* Related and Auxiliary Software. If the software supersedes or is an extension of earlier software, identify the original.
+* **Hardware Requirements** Uses ordinary off the shelf linux compatible hardware.
 
-* Other Programming or Operating Information or Restrictions. Indicate file naming conventions used.
+* **Time Requirements** None
 
-* Hardware Requirements. List hardware and installation environment requirements necessary for full utilization of the software.
-
-* Time Requirements. Include any timing requirements estimations necessary to execute the product.
-
-* References. List citations of pertinent publications by author, title, and report number. References are to be broken down into two groupings:
+* **References**. List citations of pertinent publications by author, title, and report number. References are to be broken down into two groupings:
 	* Reference documents provided with the submittal package
 	* Additional background reference materials generally available
