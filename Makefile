@@ -32,9 +32,9 @@ CFLAGS += -I$(INSTALL_DIR)/include
 
 PARADISLIB = $(SYS_TYPE)/libparadis.a
 TARGETS = $(SYS_TYPE)/bin/analyzeParaDIS $(SYS_TYPE)/bin/paradisTest $(SYS_TYPE)/bin/paradisStreamingTest
-SOURCES = analyzeParaDIS.C  paradis.h paradisStreaming.h paradis.C paradisTest.C paradis_c_interface.h paradisStreaming.C  paradisStreamingTest.C  paradis_c_interface.C  paradis_types.h   BurgersTypes.C RCDebugStream.C RCDebugStream.h debugutil.c debugutil.h timer.C timer.h
-SFILES = paradis.C paradis_c_interface.C paradisStreaming.C paradisTest.C analyzeParaDIS.C BurgersTypes.C RCDebugStream.C debugutil.c timer.C
-LIBOBJ = $(SYS_TYPE)/paradis_c_interface.o  $(SYS_TYPE)/paradis.o $(SYS_TYPE)/paradisStreaming.o  $(SYS_TYPE)/BurgersTypes.o $(SYS_TYPE)/RCDebugStream.o $(SYS_TYPE)/debugutil.o $(SYS_TYPE)/timer.o
+SOURCES = analyzeParaDIS.C  paradis.h paradisStreaming.h paradis.C paradisTest.C paradis_c_interface.h paradisStreaming.C  paradisStreamingTest.C  paradis_c_interface.C  paradis_types.h   BurgersTypes.C RCDebugStream.C RCDebugStream.h debugutil.c debugutil.h timer.C timer.h args.h args.c
+SFILES = paradis.C paradis_c_interface.C paradisStreaming.C paradisTest.C analyzeParaDIS.C BurgersTypes.C RCDebugStream.C debugutil.c timer.C args.c
+LIBOBJ = $(SYS_TYPE)/paradis_c_interface.o  $(SYS_TYPE)/paradis.o $(SYS_TYPE)/paradisStreaming.o  $(SYS_TYPE)/BurgersTypes.o $(SYS_TYPE)/RCDebugStream.o $(SYS_TYPE)/debugutil.o $(SYS_TYPE)/timer.o $(SYS_TYPE)/args.o
 all: timestamp $(TARGETS)
 
 package:
