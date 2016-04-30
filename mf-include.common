@@ -1,0 +1,118 @@
+MFINCLUDE_ID = "$Id$"
+
+#
+#       Platform specific user options
+#
+# MAKE SURE THIS IS THE FIRST TARGET!!!
+
+$(warning mf-include.commom)
+default: all
+
+SHELL=bash
+
+COMMON_ID="$Id$"
+TOP_DIR ?= $(shell pwd)
+SYS_TYPE ?= $(shell uname)
+PREFIX ?= $(HOME)/$(SYS_TYPE)
+INSTALL_DIR ?= $(shell pwd)
+
+SOSUFFIX=.so
+OBJSUFFIX=.o
+
+# note:  do not include mf-include.$SYS_TYPE any longer, this file does this automatically now.  $SYS_TYPE is also computed.
+##############################################################
+#
+#       Defines
+#
+
+export SYS_TYPE = $(shell if [ -f $(MF-INCLUDE)/mf-include.$${SYS_TYPE} ]; then /bin/echo $${SYS_TYPE}; else if [ -f $(MF-INCLUDE)/mf-include.$$(uname) ]; then uname; else /bin/echo Linux; fi; fi)
+$(warning SYS_TYPE is $(SYS_TYPE))
+
+DEBUG ?= -O2
+ifneq (,$(findstring debug,$(MAKECMDGOALS)))
+$(warning Warning: setting DEBUG to -g because target contains "debug")
+DEBUG=-g
+endif
+export DEBUG
+#
+#
+#       C compiler
+#
+CC ?= gcc$(GCCVERSION)
+CFLAGS+=$(DEBUG) $(DEFINES) $(INCLUDES)  $(USER_CFLAGS) $(GPROF)
+$(warning Warning: Setting CC in common to $CC $CFLAGS)
+#
+#       C++ compiler
+#
+CXX ?= g++$(GCCVERSION)
+CXXFLAGS+=$(DEBUG) $(DEFINES) $(INCLUDES)  $(USER_CXXFLAGS) $(BOOST_INCLUDE)
+NO_BOOST?=$(shell if [ ! -d ../RC_cpp_lib/$(SYS_TYPE)/include/boost ] ; then echo -DNO_BOOST; fi)
+CXXFLAGS += $(NO_BOOST)
+#
+#       FORTRAN compiler
+#
+FC?=f77$(GCCVERSION)
+FFLAGS=$(DEBUG) $(DEFINES) $(INCLUDES) $(USER_FFLAGS)
+#
+#       Linker
+#
+LD=$(CXX)
+LDFLAGS=
+SHARED=-shared
+#
+
+#
+#
+#
+# copy operation
+#
+CPY = cp
+
+MKDIR = [ -d $(1) ] || mkdir -p $(1)
+
+MAKE_INSTALL_DIRS = \
+	$(call MKDIR,$(PREFIX)/bin) ; \
+	$(call MKDIR,$(PREFIX)/lib) ; \
+	$(call MKDIR,$(PREFIX)/include) ;
+
+MKDIR_SYSTYPE = $(call MKDIR,$(SYS_TYPE))
+
+
+$(SYS_TYPE):
+	$(call MKDIR_SYSTYPE)
+
+BOOST_INCLUDE = -I../RC_cpp_lib/$(SYS_TYPE)/include
+CXX_FLAGS += $(BOOST_INCLUDE)
+
+# this rule is necessary because there is a default Make rule that makes programs from .C files, bleh
+%: %.C
+	@$(MAKE) $(SYS_TYPE)/$@
+
+$(SYS_TYPE)/%.o: %.C
+	@$(call MKDIR_SYSTYPE)
+	$(CXX) -c $(CXXFLAGS) $(GPROF) $< -o $@
+
+$(SYS_TYPE)/%.o: %.cpp
+	@$(call MKDIR_SYSTYPE)
+	$(CXX) -c $(CXXFLAGS) $(GPROF) $< -o $@
+
+$(SYS_TYPE)/%.o: %.c
+	@$(call MKDIR_SYSTYPE)
+	$(CC) -c $(CXXFLAGS) $< -o $@
+
+depend:
+	@echo making depend...
+	@makedepend -p$(SYS_TYPE)/ $(INCLUDES) $(SFILES) >/dev/null 2>&1
+
+undepend:
+	@echo making undepend...
+	makedepend -Y
+
+
+CC = /usr/apps/gnu/4.9.2/bin/gcc
+CXX = /usr/apps/gnu/4.9.2/bin/g++
+CFLAGS += $(DEBUG) -fPIC
+LDFLAGS += -fPIC
+CXXFLAGS+= $(DEBUG) -fPIC -Wall
+SHARED=-shared
+

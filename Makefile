@@ -1,9 +1,10 @@
-# $Id$ 
+# $Id$
 # $File$
 # paraDIS makefile
 #
 # Makefile for paraDIS library
 #
+include mf-include.common
 export DEBUG ?= -g
 export INSTALL_DIR ?= $(HOME)/$(SYS_TYPE)
 
@@ -11,16 +12,15 @@ ifndef SYS_TYPE
 export SYS_TYPE = $(shell uname)
 endif
 CWD = $(shell pwd)
-MF-INCLUDE = $(shell cd ..; pwd)/mf-include
-include $(MF-INCLUDE)/mf-include.common
 
-SFILES = paradis.C paradis_c_interface.C paradisStreaming.C paradisTest.C analyzeParaDIS.C BurgersTypes.C
 
-CPPLIBDIR=$(projdir)/RC_cpp_lib
-CLIBDIR=$(CPPLIBDIR)/RC_c_lib
-TCLAP=$(CPPLIBDIR)/tclap-1.2.0/include
-INCLUDES =  -I$(CLIBDIR) -I$(CPPLIBDIR) -I$(TCLAP) -I.
-LDFLAGS+=-lstdc++ -L$(INSTALL_DIR)/lib -lboost_filesystem -lboost_system
+BOOSTDIR ?= ./boost
+TCLAPDIR ?= ./tclap
+#CPPLIBDIR ?= ./RC_cpp_lib
+#CLIBDIR = $(CPPLIBDIR)/RC_c_lib
+
+INCLUDES =  -I$(CLIBDIR) -I$(CPPLIBDIR) -I$(BOOSTDIR)/include -I$(TCLAPDIR)/include -I.
+LDFLAGS+=-lstdc++ -L$(INSTALL_DIR)/lib -L$(BOOSTDIR)/lib -lboost_filesystem -lboost_system
 #ELECTRIC_FENCE = libefence.a -lpthread
 #CXX = purify g++-3.2.3
 #CC = purify gcc-3.2.3
@@ -28,14 +28,13 @@ LDFLAGS+=-lstdc++ -L$(INSTALL_DIR)/lib -lboost_filesystem -lboost_system
 #USER_CFLAGS= -g
 USER_CXXFLAGS+=$(INCLUDES) -DNO_SETBUF -Wno-unused-local-typedefs
 CXXFLAGS += -I$(INSTALL_DIR)/include -DBOOST_SYSTEM_NO_DEPRECATED
-CFLAGS += -I$(INSTALL_DIR)/include 
+CFLAGS += -I$(INSTALL_DIR)/include
 
-PARADISLIB = $(CWD)/$(SYS_TYPE)/lib/libparadis.a
-RCCLIB=$(INSTALL_DIR)/lib/librcc.a 
-RCCPPLIB=$(INSTALL_DIR)/lib/librccpp.a 
-TARGETS = $(CWD)/$(SYS_TYPE)/bin/analyzeParaDIS $(CWD)/$(SYS_TYPE)/bin/paradisTest $(CWD)/$(SYS_TYPE)/bin/paradisStreamingTest 
-SOURCES = analyzeParaDIS.C  paradis.h paradisStreaming.h paradis.C paradisTest.C paradis_c_interface.h paradisStreaming.C  paradisStreamingTest.C  paradis_c_interface.C  paradis_types.h   BurgersTypes.C
-
+PARADISLIB = $(SYS_TYPE)/libparadis.a
+TARGETS = $(SYS_TYPE)/bin/analyzeParaDIS $(SYS_TYPE)/bin/paradisTest $(SYS_TYPE)/bin/paradisStreamingTest
+SOURCES = analyzeParaDIS.C  paradis.h paradisStreaming.h paradis.C paradisTest.C paradis_c_interface.h paradisStreaming.C  paradisStreamingTest.C  paradis_c_interface.C  paradis_types.h   BurgersTypes.C RCDebugStream.C RCDebugStream.h debugutil.c debugutil.h timer.C timer.h
+SFILES = paradis.C paradis_c_interface.C paradisStreaming.C paradisTest.C analyzeParaDIS.C BurgersTypes.C RCDebugStream.C debugutil.c timer.C
+LIBOBJ = $(SYS_TYPE)/paradis_c_interface.o  $(SYS_TYPE)/paradis.o $(SYS_TYPE)/paradisStreaming.o  $(SYS_TYPE)/BurgersTypes.o $(SYS_TYPE)/RCDebugStream.o $(SYS_TYPE)/debugutil.o $(SYS_TYPE)/timer.o
 all: timestamp $(TARGETS)
 
 package:
@@ -46,7 +45,7 @@ package:
 debug:
 	DEBUG=-g $(MAKE) all
 
-profile:  
+profile:
 	DEBUG="-g -pg" $(MAKE) all
 
 timestamp: $(SOURCES)
@@ -54,7 +53,8 @@ timestamp: $(SOURCES)
 	date > timestamp
 
 install: all
-	mkdir -p $(INSTALL_DIR)/bin && cp $(TARGETS) $(INSTALL_DIR)/bin
+	mkdir -p $(INSTALL_DIR)/bin && cp $(TARGETS) $(INSTALL_DIR)/bin/
+	mkdir -p $(INSTALL_DIR)/lib && cp $(PARADISLIB) $(INSTALL_DIR)/lib/
 
 install-version: install
 	cd $(INSTALL_DIR)/bin; for tool in paradisTest paradisStreamingTest analyzeParaDIS; do cp $$tool $${tool}-$$(analyzeParaDIS --version-num); done
@@ -62,73 +62,58 @@ install-version: install
 #global: uninstall all
 #	INSTALL_DIR=/usr/global/tools/IMG_private/paraDIS/$$SYS_TYPE $(MAKE) install-version;
 global:
-	echo "global installation is no longer supported.  Please use the eris build farm to install into /usr/local/tools" 
+	echo "global installation is no longer supported.  Please use the eris build farm to install into /usr/local/tools"
 
-install-debug: 
+install-debug:
 	DEBUG=-g $(MAKE) install
 
 
-libparadis: $(PARADISLIB) 
+libparadis: $(PARADISLIB)
 
 $(SYS_TYPE)/%.o: %.C
 	mkdir -p $(SYS_TYPE)
-	@echo; echo '***************************************'; echo 
+	@echo; echo '***************************************'; echo
 	echo building $@ due to $?
 	$(CXX) -std=c++0x $(CXXFLAGS) -DUSE_ABORT=1 -c -o $@ $<
 	@echo DONE WITH $@
-	@echo; echo '***************************************'; echo 
+	@echo; echo '***************************************'; echo
 
 
-
-$(PARADISLIB): $(RCCLIB) $(RCCPPLIB) $(SYS_TYPE)/paradis_c_interface.o  $(SYS_TYPE)/paradis.o $(SYS_TYPE)/paradisStreaming.o  $(SYS_TYPE)/BurgersTypes.o 
-	[ -d $(SYS_TYPE)/lib/rclibobjs ] ||  mkdir -p $(SYS_TYPE)/lib/rclibobjs
-	cd $(SYS_TYPE)/lib/rclibobjs && ar -x $(RCCPPLIB) &&  ar -x $(RCCLIB)
-#	ar -rc $@ $(SYS_TYPE)/paradis_c_interface.o  $(SYS_TYPE)/paradis.o $(RCCLIB) $(RCCPPLIB)
-	ar -rc $@ $(SYS_TYPE)/paradisStreaming.o $(SYS_TYPE)/paradis_c_interface.o  $(SYS_TYPE)/paradis.o  $(SYS_TYPE)/BurgersTypes.o $(SYS_TYPE)/lib/rclibobjs/*.o
+$(PARADISLIB): $(LIBOBJ)
+	mkdir -p $(CWD)/$(SYS_TYPE)
+	ar -rc $@ $(LIBOBJ)
 	@echo DONE WITH $@
 
-$(CWD)/$(SYS_TYPE)/bin/paradisTest: $(SYS_TYPE)/paradisTest.o $(PARADISLIB) 
+$(SYS_TYPE)/bin/paradisTest: $(SYS_TYPE)/paradisTest.o $(PARADISLIB)
 	[ -d $(SYS_TYPE)/bin ] || mkdir -p $(SYS_TYPE)/bin
 	$(LD) -o $@ $(LDFLAGS)  $^ $(ELECTRIC_FENCE)
 
-$(CWD)/$(SYS_TYPE)/bin/analyzeParaDIS: $(SYS_TYPE)/analyzeParaDIS.o $(PARADISLIB)  $(RCCLIB)
+$(SYS_TYPE)/bin/analyzeParaDIS: $(SYS_TYPE)/analyzeParaDIS.o $(PARADISLIB)
 	[ -d $(SYS_TYPE)/bin ] || mkdir -p $(SYS_TYPE)/bin
-	@echo; echo '***************************************'; echo 
+	@echo; echo '***************************************'; echo
 	$(LD) -o $@  $^ $(LDFLAGS) $(ELECTRIC_FENCE) $(DEBUG)
-	@echo; echo '***************************************'; echo 
+	@echo; echo '***************************************'; echo
 
 
-$(CWD)/$(SYS_TYPE)/bin/paradisStreamingTest: $(SYS_TYPE)/paradisStreamingTest.o $(PARADISLIB)  $(RCCLIB)
+$(SYS_TYPE)/bin/paradisStreamingTest: $(SYS_TYPE)/paradisStreamingTest.o $(PARADISLIB)
 	[ -d $(SYS_TYPE)/bin ] || mkdir -p $(SYS_TYPE)/bin
-	@echo; echo '***************************************'; echo 
+	@echo; echo '***************************************'; echo
 	$(LD) -o $@  $^ $(LDFLAGS) $(ELECTRIC_FENCE)
-	@echo; echo '***************************************'; echo 
+	@echo; echo '***************************************'; echo
 
-.DUMMY: 
+.DUMMY:
 
-$(RCCLIB): .DUMMY
-	cd $(CLIBDIR);  $(MAKE) install
-
-$(RCCPPLIB): .DUMMY
-	cd $(CPPLIBDIR);  $(MAKE) install
-
-uninstall: 
+uninstall:
 	rm -f $(INSTALL_DIR)/bin/{analyzeParaDIS,paradisTest,paradisStreamingTest}
 
 clean: undepend
-	rm -rf $(PROGNAME) makeworms *.o $(SYS_TYPE)/* *~ $(SYS_TYPE)/lib/*o $(SYS_TYPE)/lib/*a 
+	rm -rf $(PROGNAME) makeworms *.o $(SYS_TYPE)/* *~ $(SYS_TYPE)/lib/*o $(SYS_TYPE)/lib/*a
 
-realclean: clean
-	cd $(CPPLIBDIR);  $(MAKE) undepend; $(MAKE) clean;
-	cd $(CLIBDIR);  $(MAKE) undepend; $(MAKE) clean;
-
-undepend: 
+undepend:
 	makedepend -Y $(SFILES)
 
-depend: 	
+depend:
 	makedepend -Y -p $(SYS_TYPE)/ $(SFILES)
-	cd $(CLIBDIR);  $(MAKE) depend
-	cd $(CPPLIBDIR);  $(MAKE) depend	
 
 # DO NOT DELETE
 
