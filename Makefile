@@ -55,6 +55,7 @@ timestamp: $(SOURCES)
 install: all
 	mkdir -p $(INSTALL_DIR)/bin && cp $(TARGETS) $(INSTALL_DIR)/bin/
 	mkdir -p $(INSTALL_DIR)/lib && cp $(PARADISLIB) $(INSTALL_DIR)/lib/
+	mkdir -p $(INSTALL_DIR)/include && cp paradis*h $(INSTALL_DIR)/include/
 
 install-version: install
 	cd $(INSTALL_DIR)/bin; for tool in paradisTest paradisStreamingTest analyzeParaDIS; do cp $$tool $${tool}-$$(analyzeParaDIS --version-num); done
