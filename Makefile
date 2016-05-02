@@ -117,9 +117,22 @@ depend:
 
 # DO NOT DELETE
 
-paradis.o: paradis.h BurgersTypes.h paradis_version.h
-paradis_c_interface.o: paradis.h BurgersTypes.h paradis_c_interface.h
-paradisStreaming.o: paradisStreaming.h paradis.h BurgersTypes.h
-paradisTest.o: paradis.h BurgersTypes.h
-analyzeParaDIS.o: paradis_c_interface.h paradis.h BurgersTypes.h
-BurgersTypes.o: BurgersTypes.h
+paradis.o: paradis.h Point.h EffectiveCPP.h RCDebugStream.h stringutil.h
+paradis.o: pathutil.h debugutil.h BurgersTypes.h timer.h paradis_version.h
+paradis_c_interface.o: paradis.h Point.h EffectiveCPP.h RCDebugStream.h
+paradis_c_interface.o: stringutil.h pathutil.h debugutil.h BurgersTypes.h
+paradis_c_interface.o: paradis_c_interface.h
+paradisStreaming.o: paradisStreaming.h Point.h EffectiveCPP.h RCDebugStream.h
+paradisStreaming.o: stringutil.h debugutil.h paradis.h pathutil.h
+paradisStreaming.o: BurgersTypes.h timer.h
+paradisTest.o: paradis.h Point.h EffectiveCPP.h RCDebugStream.h stringutil.h
+paradisTest.o: pathutil.h debugutil.h BurgersTypes.h args.h
+analyzeParaDIS.o: paradis_c_interface.h paradis.h Point.h EffectiveCPP.h
+analyzeParaDIS.o: RCDebugStream.h stringutil.h pathutil.h debugutil.h
+analyzeParaDIS.o: BurgersTypes.h
+BurgersTypes.o: BurgersTypes.h Point.h EffectiveCPP.h RCDebugStream.h
+BurgersTypes.o: stringutil.h pathutil.h debugutil.h
+RCDebugStream.o: RCDebugStream.h timer.h stringutil.h
+debugutil.o: debugutil.h
+timer.o: timer.h stringutil.h
+args.o: args.h debugutil.h
