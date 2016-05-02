@@ -109,8 +109,6 @@ undepend:
 	makedepend -Y
 
 
-CC = /usr/apps/gnu/4.9.2/bin/gcc
-CXX = /usr/apps/gnu/4.9.2/bin/g++
 CFLAGS += $(DEBUG) -fPIC
 LDFLAGS += -fPIC
 CXXFLAGS+= $(DEBUG) -fPIC -Wall
