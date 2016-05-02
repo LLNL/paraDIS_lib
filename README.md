@@ -10,13 +10,13 @@ See <http://paradis.stanford.edu> for more information about ParaDIS.  The image
 
 paraDIS\_lib requires the Boost 1.55 and tclap 1.20 libraries to compile.  By default, it assumes they are installed in the current directory as ./boost and ./tclap.  However, you can also set BOOSTDIR and TCLAPDIR when compiling, something like this: 
 
+`INSTALL_DIR=/some/where/awesome \`
 `BOOSTDIR=/usr/local/tools/boost-nompi-1.55.0 \`
-
-`TCLAPDIR=/g/g0/rcook/current_projects/tclap-1.2.0 make`
+`TCLAPDIR=/g/g0/rcook/current_projects/tclap-1.2.0 make install`
 
 The boost libraries must include compiled libboost\_filesystem and libboost\_system libraries.
 
-Files are built into `$INSTALL_DIR` if defined, else a directory called `./$SYS_TYPE` if `SYS_TYPE` is defined, else a directory called  `./uname -n`. 
+Files are installed into `$INSTALL_DIR` if defined, else a directory called `./$SYS_TYPE` if `SYS_TYPE` is defined, else a directory called  `./uname -n`. 
 
 ## Usage
 
