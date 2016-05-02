@@ -23,7 +23,7 @@ TCLAPDIR ?= ./tclap
 #CLIBDIR = $(CPPLIBDIR)/RC_c_lib
 
 INCLUDES =  -I$(CLIBDIR) -I$(CPPLIBDIR) -I$(BOOSTDIR)/include -I$(TCLAPDIR)/include -I.
-LDFLAGS+=-lstdc++ -L$(INSTALL_DIR)/lib -L$(BOOSTDIR)/lib -lboost_filesystem -lboost_system
+LDFLAGS+=-lstdc++ -L$(INSTALL_DIR)/lib -L$(BOOSTDIR)/lib -lboost_filesystem -lboost_system -Wl,-rpath=$(BOOSTDIR)/lib $(ELECTRIC_FENCE) $(DEBUG)
 #ELECTRIC_FENCE = libefence.a -lpthread
 #CXX = purify g++-3.2.3
 #CC = purify gcc-3.2.3
@@ -90,19 +90,19 @@ $(PARADISLIB): $(LIBOBJ)
 
 $(SYS_TYPE)/bin/paradisTest: $(SYS_TYPE)/paradisTest.o $(PARADISLIB)
 	[ -d $(SYS_TYPE)/bin ] || mkdir -p $(SYS_TYPE)/bin
-	$(LD) -o $@ $(LDFLAGS)  $^ $(ELECTRIC_FENCE)
+	$(LD) -o $@  $^ $(LDFLAGS)
 
 $(SYS_TYPE)/bin/analyzeParaDIS: $(SYS_TYPE)/analyzeParaDIS.o $(PARADISLIB)
 	[ -d $(SYS_TYPE)/bin ] || mkdir -p $(SYS_TYPE)/bin
 	@echo; echo '***************************************'; echo
-	$(LD) -o $@  $^ $(LDFLAGS) $(ELECTRIC_FENCE) $(DEBUG)
+	$(LD) -o $@  $^ $(LDFLAGS)
 	@echo; echo '***************************************'; echo
 
 
 $(SYS_TYPE)/bin/paradisStreamingTest: $(SYS_TYPE)/paradisStreamingTest.o $(PARADISLIB)
 	[ -d $(SYS_TYPE)/bin ] || mkdir -p $(SYS_TYPE)/bin
 	@echo; echo '***************************************'; echo
-	$(LD) -o $@  $^ $(LDFLAGS) $(ELECTRIC_FENCE)
+	$(LD) -o $@  $^ $(LDFLAGS)
 	@echo; echo '***************************************'; echo
 
 .DUMMY:
