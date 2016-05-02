@@ -40,7 +40,7 @@ export DEBUG
 #
 CC ?= gcc$(GCCVERSION)
 CFLAGS+=$(DEBUG) $(DEFINES) $(INCLUDES)  $(USER_CFLAGS) $(GPROF)
-$(warning Warning: Setting CC in common to $CC $CFLAGS)
+$(warning Warning: Setting CC in common to $(CC) $(CFLAGS))
 #
 #       C++ compiler
 #
