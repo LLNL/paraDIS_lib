@@ -11,7 +11,7 @@ errexit() {
 
 [ -d ${farm_dir} ] || errexit "$farm_dir does not exist -- please create it"
 
-if [ -f $export_tarball ]; then 
+if [ -f $export_tarball ]; then
     echo "$export_tarball already exists.  Overwrite? (y/n)"
     read answer
     [ "$answer" == "y" ] ||  errexit "OK.  I'll exit then." 0
@@ -19,8 +19,5 @@ if [ -f $export_tarball ]; then
 fi
 
 
-git archive  master --prefix paradis-lib-v${version}/ -o ${farm_dir}/paradis-lib-v${version}.tar  || errexit "Could not create ${farm_dir}/paradis-lib-v${version}.tar"
-gzip ${farm_dir}/paradis-lib-v${version}.tar || errexit "Could not compress ${farm_dir}/paradis-lib-v${version}.tar into ${farm_dir}/paradis-lib-v${version}.tar.gz" 
-rm -f ${farm_dir}/paradis-lib-v${version}.tar
-mv ${farm_dir}/paradis-lib-v${version}.tar.gz ${farm_dir}/paradis-lib-v${version}.tgz
-echo "${farm_dir}/paradis-lib-v${version}.tgz created."  
+git archive  master --prefix paradis-lib-v${version}/ | gzip > ${farm_dir}/paradis-lib-v${version}.tgz || errexit "Could not compress ${farm_dir}/paradis-lib-v${version}.tar into ${farm_dir}/paradis-lib-v${version}.tar.gz"
+echo "${farm_dir}/paradis-lib-v${version}.tgz created."
