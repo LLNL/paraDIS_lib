@@ -1,5 +1,10 @@
-/* MODIFIED BY: rcook on Thu May 15 17:42:03 PDT 2014 */
-/* VERSION: 1.0 */
+/*   Written by Richard David Cook
+     at Lawrence Livermore National Laboratory
+     Contact:  wealthychef@gmail.com
+     See license.txt for information about usage.
+     Spoiler alert:  it's GNU opensource.
+*/
+
 #ifndef TSB_STRING_UTIL_H
 #define TSB_STRING_UTIL_H
 #include <iostream>
@@ -15,7 +20,7 @@
 //#include <inttypes.h>
 //#include "RCDebugStream.h"
 
-using namespace std;  
+using namespace std;
 
 #define errout if (0) cerr
 #define debugout if (0) cerr
@@ -25,7 +30,7 @@ using namespace std;
 // The first one splits a string into an existing vector and returns that
 inline std::vector<std::string> Split( std::string s, char delim, std::vector<std::string> &elems) {
   boost::trim(s);
-  boost::split(elems, s, boost::is_from_range(delim, delim), boost::token_compress_on); 
+  boost::split(elems, s, boost::is_from_range(delim, delim), boost::token_compress_on);
   /*
   std::stringstream ss(s);
   std::string item;
@@ -44,115 +49,115 @@ inline std::vector<std::string> Split( std::string s, char delim = ' ') {
 
 //===============================================================
 // Don't use references, so caller can construct args on the fly
-// The rule is that after each pattern is replaced,  a new search is performed 
-// from just after the old pattern.  So, for example, 
+// The rule is that after each pattern is replaced,  a new search is performed
+// from just after the old pattern.  So, for example,
 // Replace("xxxxx", "xxx", "yyy") = "yyyxx", NOT "yyyyy" -- since after the first replacement, the remaining "xx" != "xxx", so no second replacement is done.
 inline string Replace(string input, string origPattern, string replPattern) {
-  string output; 
-  string::size_type found = input.find(origPattern), previous=string::npos; 
-  // now loop and find and incrementall build new string.  
+  string output;
+  string::size_type found = input.find(origPattern), previous=string::npos;
+  // now loop and find and incrementall build new string.
   while (1) {
     errout << "Loop: found is "<< found << endl;
     if (previous == string::npos) {
       if (found == string::npos) {
-        return input; 
+        return input;
       }
-      output = input.substr(0, found) + replPattern; 
+      output = input.substr(0, found) + replPattern;
     }
     else {
       if (found == string::npos) {
-        output += input.substr(previous, input.size()-previous); 
-        return output; 
+        output += input.substr(previous, input.size()-previous);
+        return output;
       }
       if (found != previous) {
-        output += input.substr(previous, found-previous); 
+        output += input.substr(previous, found-previous);
       }
-      output += replPattern; 
+      output += replPattern;
     }
     previous = found + origPattern.size(); // just past the last pattern in input
-    found = input.find(origPattern, previous); 
+    found = input.find(origPattern, previous);
   }
 }
 
 //===============================================================
 /*!
-  Strip the indicated pattern from the tail of the value string, 
-  as many repetitions as needed. May result in empty string. 
-*/ 
+  Strip the indicated pattern from the tail of the value string,
+  as many repetitions as needed. May result in empty string.
+*/
 inline string StripBack(const string &value, string pattern=" ") {
   string result(value);
-  int loc = result.size() - pattern.size(), patlen = pattern.length(); 
-  
+  int loc = result.size() - pattern.size(), patlen = pattern.length();
+
   while(loc >= 0 && result.substr(loc,patlen) == pattern) {
-    result.erase(loc, patlen); 
+    result.erase(loc, patlen);
     loc = result.size() - pattern.size();
   }
-  return result; 
+  return result;
 }
 //===============================================================
 /*!
-  Strip the indicated pattern from the head of the value string, 
-  as many repetitions as needed. May result in empty string. 
-*/ 
+  Strip the indicated pattern from the head of the value string,
+  as many repetitions as needed. May result in empty string.
+*/
 inline string StripFront(const string &value, string pattern=" ") {
-  string result(value); 
-  int reslen = result.length(), patlen = pattern.length(); 
+  string result(value);
+  int reslen = result.length(), patlen = pattern.length();
 
   while (reslen >= patlen && result.substr(0, patlen) == pattern) {
-    result.erase(0, patlen); 
+    result.erase(0, patlen);
     reslen = result.length();
   }
-  return result; 
+  return result;
 }
 //===============================================================
 /*!
-  Strip the indicated pattern from the head and tail of the value string, 
-  as many repetitions as needed. May result in empty string. 
-*/ 
+  Strip the indicated pattern from the head and tail of the value string,
+  as many repetitions as needed. May result in empty string.
+*/
 inline string Strip(const string &value, string pattern=" ") {
-  return StripFront(StripBack(value, pattern), pattern); 
+  return StripFront(StripBack(value, pattern), pattern);
 }
 /* given a format string with a %0xd type format in it, apply the num to it and return the result.  I.e., applyPatternToInt("hello %04d world", 6) returns "hello 0006 world"
  */
 inline string applyPatternToInt(string pattern, int num) {
-  int len = pattern.size()+10; 
+  int len = pattern.size()+10;
   char *tmp = new char[len];
-  if (!tmp) throw string("Cannot allocate memory in applyPatternToInt"); 
+  if (!tmp) throw string("Cannot allocate memory in applyPatternToInt");
 
-  sprintf(tmp, pattern.c_str(), num); 
+  sprintf(tmp, pattern.c_str(), num);
   string out(tmp);
-  delete[] tmp; 
-  return out; 
+  delete[] tmp;
+  return out;
 }
 
 /* given a format string with a %s type format in it, apply the string s to it and return the result.  I.e., applyPatternToInt("hello %s", "world) returns "hello world"
  */
 inline string applyPatternToString(string pattern, string s) {
-  int len = pattern.size()+s.size()+5; 
+  int len = pattern.size()+s.size()+5;
   char *tmp = new char[len];
-  if (!tmp) throw string("Cannot allocate memory in applyPatternToString"); 
+  if (!tmp) throw string("Cannot allocate memory in applyPatternToString");
 
-  sprintf(tmp, pattern.c_str(), s.c_str()); 
+  sprintf(tmp, pattern.c_str(), s.c_str());
   string out(tmp);
-  delete[] tmp; 
-  return out; 
+  delete[] tmp;
+  return out;
 }
 
 
 // operator string() cannot be overloaded for doubles, so:
 inline std::string doubleToString(double d, int precision=-1){
   char buf[128] = "", fmt[1024] = "%f";
-  if (precision != -1) 
-    sprintf(fmt, "%%.%df", precision); 
-  
-  sprintf(buf, fmt, d);    
+  if (precision != -1)
+    sprintf(fmt, "%%.%df", precision);
+
+  sprintf(buf, fmt, d);
   std::string s(buf);
-  return s; 
+  return s;
 }
 
 // operator string() cannot be overloaded for ints
 inline std::string intToString(double i) {
-  return doubleToString(i, 0); 
+  return doubleToString(i, 0);
 
 }
 
@@ -164,32 +169,32 @@ inline std::string pointerToString(const void *ptr) {
 
 
 //=====================================================
-template <class T> 
+template <class T>
 string arrayToString(const vector<T>  &array) {
-  if (!array.size()) return string("[(empty vector)]"); 
+  if (!array.size()) return string("[(empty vector)]");
 
   string value("<");
-  typename vector<T>::const_iterator pos = array.begin(), endpos = array.end(); 
+  typename vector<T>::const_iterator pos = array.begin(), endpos = array.end();
   while (pos != endpos) {
     value += str(boost::format("%1%")%(*pos++));
-    if (pos == endpos) value += ">"; 
-    else value += ", "; 
+    if (pos == endpos) value += ">";
+    else value += ", ";
   }
-  return value; 
+  return value;
 }
 
 //=====================================================
-template <class T> 
+template <class T>
 string arrayToString(T *array, int length) {
-  if (length < 1) return string("[(empty array)]"); 
+  if (length < 1) return string("[(empty array)]");
 
   string value("[");
-  T *ptr = array; 
+  T *ptr = array;
   while (--length) {
-    value += (doubleToString(*ptr++)+", "); 
+    value += (doubleToString(*ptr++)+", ");
   }
-  value += doubleToString(*ptr) +"]"; 
-  return value; 
+  value += doubleToString(*ptr) +"]";
+  return value;
 }
 //==========================================================================
 

@@ -1,29 +1,11 @@
-/* MODIFIED BY: rcook on Thu May 15 17:42:03 PDT 2014 */
-/* VERSION: 1.0 */
-/*
-** $RCSfile: debugutil.h,v $
-** $Name:  $
-**
-** ASCI Visualization Project 
-**
-** Lawrence Livermore National Laboratory
-** Information Management and Graphics Group
-** P.O. Box 808, Mail Stop L-561
-** Livermore, CA 94551-0808
-**
-** For information about this project see:
-**  http://www.llnl.gov/sccd/lc/img/
-**
-**      or contact: asciviz@llnl.gov
-**
-** For copyright and disclaimer information see:
-**      $(ASCIVIS_ROOT)/copyright_notice_1.txt
-**
-**  or man llnl_copyright
-**
-** $Id$
-**
+/*   Written by Richard David Cook
+     at Lawrence Livermore National Laboratory
+     Contact:  wealthychef@gmail.com
+     See license.txt for information about usage.
+     Spoiler alert:  it's GNU opensource.
 */
+
+
 /*
 **
 **  Abstract:  Calls to support debug print strings
@@ -62,9 +44,9 @@ extern "C" {
 
   char *datestring(void);
 
-  int dbg_setfile(const char *dbgfile); 
+  int dbg_setfile(const char *dbgfile);
   int  dbg_isverbose(void);
-  void dbg_setverbose(int verbose); 
+  void dbg_setverbose(int verbose);
 
   void dbg_stderr(char *fmt, ...);
   void dbg_maskstderr(int mask,char *fmt, ...);

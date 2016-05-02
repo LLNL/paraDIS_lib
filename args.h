@@ -1,5 +1,10 @@
-/* MODIFIED BY: rcook on Thu May 15 17:42:03 PDT 2014 */
-/* VERSION: 1.0 */
+/*   Written by Richard David Cook
+     at Lawrence Livermore National Laboratory
+     Contact:  wealthychef@gmail.com
+     See license.txt for information about usage.
+     Spoiler alert:  it's GNU opensource.
+*/
+
 /* utilities for args parsing */
 #ifndef args_h
 #define args_h
@@ -8,22 +13,22 @@ extern "C" {
 #endif
 #ifdef _NEVER
 } // to make emacs happy
-#endif 
+#endif
 #include <stdlib.h>
 
-/* 
-   example how to use (typical usage): 
-   
-   long useX=0, verbosity=0; 
+/*
+   example how to use (typical usage):
+
+   long useX=0, verbosity=0;
    double cruftLevel=0.5;
-   char inputfile[1024] = "defaultvalue"; 
-   double location[3] = {0}; 
-   char **unparsed_args = NULL; 
+   char inputfile[1024] = "defaultvalue";
+   double location[3] = {0};
+   char **unparsed_args = NULL;
 
    argt args[5] = {
-   {BOOL_TYPE, "-useX", 1, &useX}, 
-   {LONG_TYPE, "-verbosity", 1, &verbosity}, 
-   {DOUBLE_TYPE, "-cruftiness", 1, &cruftLevel}, 
+   {BOOL_TYPE, "-useX", 1, &useX},
+   {LONG_TYPE, "-verbosity", 1, &verbosity},
+   {DOUBLE_TYPE, "-cruftiness", 1, &cruftLevel},
    {FLOAT_TYPE, "-loc", 3, location}, <------- note no ampersand (reference)
    {STRING_TYPE, "-in", 1024, inputfile} <------- note no ampersand (reference)
    }
@@ -33,16 +38,16 @@ extern "C" {
    ---  OR: ----
    arg_parse_args(-1, argv, 1, NULL);  <-----if you don't care about unparsed args
 */
-   
-typedef long args_bool_t; 
-typedef int args_int_t; 
-typedef long args_long_t; 
+
+typedef long args_bool_t;
+typedef int args_int_t;
+typedef long args_long_t;
 typedef double args_double_t;
-typedef char *args_string_t; 
+typedef char *args_string_t;
 
 typedef enum {
   BOOL_TYPE,   /* must be type long**/
-  INT_TYPE, /*must be type int*  */ 
+  INT_TYPE, /*must be type int*  */
   LONG_TYPE,   /* must be type long* */
   LONG_ARRAY_TYPE,   /* DEPRECATED -- same as LONG_TYPE must be type long* */
   FLOAT_TYPE, /* must be type float* */
@@ -56,7 +61,7 @@ typedef struct argt {
   argtype _type;
   char _flag[64];
   int _numvals; /* for arrays of values */
-  void *_values; /* see enum for actual type */ 
+  void *_values; /* see enum for actual type */
 } argt;
 
 
@@ -68,10 +73,10 @@ void arg_ignore_bad_args(int iYesNo);
 
 /*!
   arg_parse_args
-   return 0 on error, 1 if everything's OK.  
+   return 0 on error, 1 if everything's OK.
    parse argv, looking for flags set using arg_expect_args, starting at argv[1].
-   Continue until no more valid args are found.  
-   Removes all parsed args and options from argv and decrements numargs approprately.  Bad args are ignored, unless gIgnoreBadArgs is false; 
+   Continue until no more valid args are found.
+   Removes all parsed args and options from argv and decrements numargs approprately.  Bad args are ignored, unless gIgnoreBadArgs is false;
 */
 int arg_parse_args(int *argc, char *argv[]);
 #ifdef __cplusplus

@@ -1,7 +1,10 @@
-/*   Written by Richard David Cook 
+/*   Written by Richard David Cook
      at Lawrence Livermore National Laboratory
      Contact:  wealthychef@gmail.com
+     See license.txt for information about usage.
+     Spoiler alert:  it's GNU opensource.
 */
+
 
 
 #include "paradisStreaming.h"
@@ -17,7 +20,6 @@
   This implements a system of reading paraDIS dump files and creating a stream of arms for processing.
 */
 
-using namespace RC_Math;
 
 
 using namespace std;

@@ -1,36 +1,10 @@
-/* MODIFIED BY: rcook on Thu May 15 17:42:03 PDT 2014 */
-/* VERSION: 1.0 */
-/*
-** $RCSfile: debugutil.c,v $
-** $Name:  $
-**
-** ASCI Visualization Project 
-**
-** Lawrence Livermore National Laboratory
-** Information Management and Graphics Group
-** P.O. Box 808, Mail Stop L-561
-** Livermore, CA 94551-0808
-**
-** For information about this project see:
-**  http://www.llnl.gov/sccd/lc/img/
-**
-**      or contact: asciviz@llnl.gov
-**
-** For copyright and disclaimer information see:
-**      $(ASCIVIS_ROOT)/copyright_notice_1.txt
-**
-**  or man llnl_copyright
-**
-** $Id$
-**
+/*   Written by Richard David Cook
+     at Lawrence Livermore National Laboratory
+     Contact:  wealthychef@gmail.com
+     See license.txt for information about usage.
+     Spoiler alert:  it's GNU opensource.
 */
-/*
-**
-**  Abstract:
-**
-**  Author:
-**
-*/
+
 
 #include <stdio.h>
 #include <stdlib.h>
@@ -45,11 +19,11 @@
 static  int iVerbose = 0;
 static  int iCheck = 0;
 
-static FILE *gDebugFile = NULL; 
+static FILE *gDebugFile = NULL;
 #define INITDEBUGFILE if (!gDebugFile) gDebugFile = stderr
 
 char *datestring(void) {
-  static char timebuf[32]; 
+  static char timebuf[32];
   time_t now;
 
   now = time(NULL);
@@ -65,23 +39,23 @@ void __dbfprintf(FILE *stream, int level, const char *fmt, ...){
       vfprintf(stream,fmt,ap);
       va_end(ap);
     */
-    fflush(stream); 
-  }    
+    fflush(stream);
+  }
   return;
 
 }
 
 void __dbprintf(int level, const char *fmt, ...){
   if(iVerbose >= level){
-    INITDEBUGFILE; 
+    INITDEBUGFILE;
     vafprintf(gDebugFile, fmt);
     /*    va_list ap;
       va_start(ap, fmt);
       vfprintf(gDebugFile,fmt,ap);
       va_end(ap);
     */
-    fflush(gDebugFile); 
-  }    
+    fflush(gDebugFile);
+  }
   return;
 }
 
@@ -108,7 +82,7 @@ void dbg_setverbose(int verbose)
     iCheck = 1;
 }
 
-void dbg_stderr(char *fmt, ...) 
+void dbg_stderr(char *fmt, ...)
 {
   /*va_list ap;*/
 
@@ -121,7 +95,7 @@ void dbg_stderr(char *fmt, ...)
     }
 }
 
-void dbg_maskstderr(int mask, char *fmt, ...) 
+void dbg_maskstderr(int mask, char *fmt, ...)
 {
   /*    va_list ap;*/
 
@@ -135,11 +109,11 @@ void dbg_maskstderr(int mask, char *fmt, ...)
 
 /* return 0 on failure, 1 on success */
 int dbg_setfile(const char *dbgfile) {
-  INITDEBUGFILE; 
-  if (!dbgfile) return 0; 
-  FILE *tmpf = fopen(dbgfile, "w"); 
-  if (!tmpf) return 0; 
-  gDebugFile = tmpf; 
+  INITDEBUGFILE;
+  if (!dbgfile) return 0;
+  FILE *tmpf = fopen(dbgfile, "w");
+  if (!tmpf) return 0;
+  gDebugFile = tmpf;
   return 1;
 }
-  
+

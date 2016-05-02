@@ -1,6 +1,8 @@
 /*   Written by Richard David Cook
      at Lawrence Livermore National Laboratory
      Contact:  wealthychef@gmail.com
+     See license.txt for information about usage.
+     Spoiler alert:  it's GNU opensource.
 */
 
 

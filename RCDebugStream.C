@@ -1,51 +1,10 @@
-/* MODIFIED BY: rcook on Thu May 15 17:42:03 PDT 2014 */
-/* VERSION: 1.0 */
-/*
-
-
-                          Copyright 2000 - 2004.
-               The Regents of the University of California.
-                           All rights reserved.
-
-This work was  produced at the  University of California,  Lawrence  Livermore
-National Laboratory  (UC LLNL) under contract  no. W-7405-ENG-48 (Contract 48)
-between the U.S. Department of Energy (DOE)  and The Regents of the University
-of California (University) for the operation of UC LLNL. Copyright is reserved
-to the University for purposes of  controlled dissemination, commercialization
-through formal licensing, or other disposition under terms of Contract 48; DOE
-policies, regulations and orders; and U.S. statutes. The rights of the Federal
-Government are reserved  under Contract 48 subject to  the restrictions agreed
-upon by the DOE and University as allowed under DOE Acquisition Letter 97-1.
-
-
-                                DISCLAIMER
-
-This  work was  prepared as an  account of work sponsored  by an agency of the
-United  States  Government.  Neither  the  United  States  Government  nor the
-University  of California  nor any of  their employees,  makes  any  warranty,
-express  or implied,  or  assumes  any liability  or  responsibility  for  the
-accuracy,  completeness, or usefulness of any information, apparatus, product,
-or process disclosed, or represents that its use would not infringe privately-
-owned rights.  Reference herein  to any specific commercial products, process,
-or  service by  trade  name, trademark,  manufacturer  or  otherwise  does not
-necessarily constitute or  imply its endorsement, recommendation,  or favoring
-by the United States Government or the University of California. The views and
-opinions of authors expressed herein do not necessarily state or reflect those
-of the United States Government or the University of California, and shall not
-be used for advertising or product endorsement purposes.
-
-
-                          LICENSING REQUIREMENTS
-
-Permission is hereby  granted to use and  copy this software and documentation
-for internal noncommercial purposes only, provided that 1) the above copyright
-notice and disclaimer appear in all  copies of the software and documentation,
-and 2) all UC LLNL identification in the user interface remains unchanged. Any
-use,  reproduction,   modification,  or  distribution   of  this  software  or
-documentation for commercial  purposes requires a license from the University.
-Contact:  Lawrence Livermore National Laboratory,  Industrial Partnerships and
-Commercialization Office, P.O. Box 808, L-795, Livermore, CA 94551.
+/*   Written by Richard David Cook
+     at Lawrence Livermore National Laboratory
+     Contact:  wealthychef@gmail.com
+     See license.txt for information about usage.
+     Spoiler alert:  it's GNU opensource.
 */
+
 
 #include "RCDebugStream.h"
 
@@ -70,12 +29,12 @@ namespace rclib {
   // static DebugStreamBuf class data
   vector<DebugStream::DebugStreamBuf*> DebugStream::DebugStreamBuf::allBuffers;
   int DebugStream::DebugStreamBuf::curLevel;
-  bool DebugStream::sTimer = false, DebugStream::sFileLine = false; 
-  string DebugStream::sPrologueText; 
+  bool DebugStream::sTimer = false, DebugStream::sFileLine = false;
+  string DebugStream::sPrologueText;
 
-static int gDebugLevel=0; 
+static int gDebugLevel=0;
 int get_debug_level(void) {
-  return gDebugLevel; 
+  return gDebugLevel;
 }
 
 // global DebugStreams
@@ -86,24 +45,24 @@ DebugStream debug3_real(3);
 DebugStream debug4_real(4);
 DebugStream debug5_real(5);
 
-  /* This is more of an internal function.  The user will basically just see that operator <<() does the right thing, due to the way the #defines work in the header */ 
+  /* This is more of an internal function.  The user will basically just see that operator <<() does the right thing, due to the way the #defines work in the header */
   string DebugStream::prologue(char *file, int line) const {
-    string output = sPrologueText; 
+    string output = sPrologueText;
     if (sTimer) {
       string times = doubleToString(timer::GetExactSeconds(), 3);
       if (times.size() > 8) {
-	times = times.substr(times.size()-8); 
+	times = times.substr(times.size()-8);
       }
-      output +=  string("t=") + times + ": "; 
+      output +=  string("t=") + times + ": ";
     }
     if (sFileLine) output += file + string(" line ") +intToString(line) + "]: " ;
-    return output; 
+    return output;
   }
 
 // ****************************************************************************
 // Function: close_streams
 //
-// Purpose: 
+// Purpose:
 //   Closes the debug streams.
 //
 // Note:       Taken from code in the signal handlers.
@@ -112,7 +71,7 @@ DebugStream debug5_real(5);
 // Creation:   Mon Apr 28 10:19:51 PDT 2003
 //
 // Modifications:
-//   
+//
 // ****************************************************************************
 
 static void
@@ -161,7 +120,7 @@ close_streams()
 
 static void
 signalhandler_core(int sig)
-{ 
+{
     // don't catch the abort!
     signal(SIGABRT,SIG_DFL);
 
@@ -368,8 +327,8 @@ DebugStream::DebugStreamBuf::open(const char *filename_)
     close();
     strcpy(filename, filename_);
     out = new ofstream;
-#ifdef DEBUG_TO_STDERR 
-    out->open("/dev/null"); 
+#ifdef DEBUG_TO_STDERR
+    out->open("/dev/null");
 #else
     out->open(filename, ios::out);
 #endif
@@ -476,10 +435,10 @@ DebugStream::DebugStreamBuf::overflow(int c)
 //    Added initialization of 'enabled'.
 //
 // ****************************************************************************
-  DebugStream::DebugStream(int level_, bool enable) : ostream(&buf), enabled(enable) 
+  DebugStream::DebugStream(int level_, bool enable) : ostream(&buf), enabled(enable)
 {
     level = level_;
-    buf.SetLevel(level);   
+    buf.SetLevel(level);
 }
 
 
@@ -608,7 +567,7 @@ DebugStream::Initialize(const char *progname, int debuglevel)
       default:
         break;
     }
-    gDebugLevel = debuglevel; 
+    gDebugLevel = debuglevel;
 
 #if !defined(_WIN32)
     signal(SIGQUIT,  signalhandler_core);

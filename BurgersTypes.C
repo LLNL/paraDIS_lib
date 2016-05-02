@@ -1,20 +1,22 @@
-/*   Written by Richard David Cook 
+/*   Written by Richard David Cook
      at Lawrence Livermore National Laboratory
      Contact:  wealthychef@gmail.com
+     See license.txt for information about usage.
+     Spoiler alert:  it's GNU opensource.
 */
 
 
 #include "BurgersTypes.h"
 #include <boost/numeric/ublas/vector.hpp>
 
-// GRRR.  Visit hooks are lame.  This is bad code but if I don't structure it like this, the SVN hooks complain. 
+// GRRR.  Visit hooks are lame.  This is bad code but if I don't structure it like this, the SVN hooks complain.
 #ifdef USE_ABORT
 #define errexit abort()
 #define errexit1 abort()
 #else
-#define errexit return 
+#define errexit return
 #define errexit1 return err
-#endif 
+#endif
 #define paradis_assert(test) if (!(test)) {                             \
 	dbecho(0, "ERROR: %s %d: failed test: "#test"\n", __FUNCTION__, __LINE__); \
 	errexit;                                                            \
@@ -93,20 +95,20 @@ vector<BurgerTypeInfo> BurgInfos = {
   {1038, {-1.50000000000, -0.86602540378,  3.13600000000}, 0, "HCP_Burg38"},
   {1039, {-1.00000000000, -1.73205080760,  0.00000000000}, 0, "HCP_Burg39"},
   {1040, {-0.50000000000, -0.86602540378,  3.13600000000}, 0, "HCP_Burg40"}
-}; 
+};
 
 
 /* ============================================================ */
 string DocumentAllBurgersTypes(void) {
   string output  =   "  //  Segment BURGERS TYPES: (P = plus(+) and M = minus(-))\n"
     "// These are valued in order of increasing energy levels, corresponding to the sum of the square of the components of the burgers vector.  \n";
-      
-  output += str(boost::format("%=15s%=30s%=8s%=23s\n")%"Burgers Value"%"Vector"%"Energy"%"Name"); 
-  for (vector<BurgerTypeInfo>::iterator bt = BurgInfos.begin(); 
+
+  output += str(boost::format("%=15s%=30s%=8s%=23s\n")%"Burgers Value"%"Vector"%"Energy"%"Name");
+  for (vector<BurgerTypeInfo>::iterator bt = BurgInfos.begin();
        bt != BurgInfos.end(); bt++) {
     output += str(boost::format("%=15d%10.6f%10.6f%10.6f%=8d%=23s\n")
                   %(bt->burgnum)%(bt->burgvec[0])%(bt->burgvec[1])%(bt->burgvec[2])
-                  %(bt->energy)%(bt->name)); 
+                  %(bt->energy)%(bt->name));
   }
   return output;
 }
@@ -114,36 +116,36 @@ string DocumentAllBurgersTypes(void) {
 
 /* ============================================================ */
 /* If needed, we can now initialize a vector of structs using C++-11 syntax
-   in a more "listlike" way.  
-*/ 
+   in a more "listlike" way.
+*/
 // Test the burgers for equality within BURGERS_EPSILON tolerance
 bool operator == (const BurgerTypeInfo&b1, const vector<float> &bval) {
-  int posmatches = 0, negmatches = 0; 
+  int posmatches = 0, negmatches = 0;
   for (int i=0; i<3; i++) {
     if (fabs(bval[i]-b1.burgvec[i]) < BURGERS_EPSILON) {
-      posmatches++; 
+      posmatches++;
     } else if (fabs(-bval[i]-b1.burgvec[i]) < BURGERS_EPSILON) {
-      negmatches++; 
-    } 
-  }    
-  if (b1.burgnum >= 1000 || b1.energy == 1) { 
-    // For HCP or type 111 BCC arms, signs matter, 
+      negmatches++;
+    }
+  }
+  if (b1.burgnum >= 1000 || b1.energy == 1) {
+    // For HCP or type 111 BCC arms, signs matter,
     // so only accept three of the same type of match, positive or negative
-    return posmatches == 3 || negmatches == 3; 
+    return posmatches == 3 || negmatches == 3;
   }
   // sign does not matter, so any three value matches are a match
-  return (posmatches + negmatches == 3);    
+  return (posmatches + negmatches == 3);
 }
 
 /* ============================================================ */
 // This will be used for sorting the burgtypes by burgnum for display output
 bool compareByBurgnum  (const BurgerTypeInfo&b1, const BurgerTypeInfo &b2) {
-  return b1.burgnum < b2.burgnum; 
+  return b1.burgnum < b2.burgnum;
 }
 
 /* ============================================================ */
 // This will be used for sorting the burgtypes by burgers vector for faster compares
-// Therefore, we do not worry about equality of negative vectors here. 
+// Therefore, we do not worry about equality of negative vectors here.
 bool compareByVector (const BurgerTypeInfo&b1, const BurgerTypeInfo &b2) {
   for (int i=0; i<3; i++) {
     if (b2.burgvec[i]-b1.burgvec[i]>BURGERS_EPSILON) return true; // b1 < b2
@@ -154,60 +156,60 @@ bool compareByVector (const BurgerTypeInfo&b1, const BurgerTypeInfo &b2) {
 }
 
 /* ============================================================ */
-map<int, BurgerTypeInfo> BurgTypeToBurgInfoMap; 
+map<int, BurgerTypeInfo> BurgTypeToBurgInfoMap;
 
 BurgerTypeInfo BurgTypeToBurgInfo(int burgnum) {
   if (!BurgTypeToBurgInfoMap.size()) {
-    for (vector<BurgerTypeInfo>::iterator bt = BurgInfos.begin(); 
+    for (vector<BurgerTypeInfo>::iterator bt = BurgInfos.begin();
          bt != BurgInfos.end(); bt++) {
-      BurgTypeToBurgInfoMap[bt->burgnum] = *bt; 
+      BurgTypeToBurgInfoMap[bt->burgnum] = *bt;
     }
   }
   return BurgTypeToBurgInfoMap[burgnum];
 }
 
 /* ============================================================ */
-map<vector<float>, BurgerTypeInfo> BurgVecToBurgInfoMap; 
+map<vector<float>, BurgerTypeInfo> BurgVecToBurgInfoMap;
 
-BurgerTypeInfo BurgVecToBurgInfo(const vector<float> &burgvec) { 
-  if (!BurgVecToBurgInfoMap.size()) {    
-    for (vector<BurgerTypeInfo>::iterator bt = BurgInfos.begin(); 
+BurgerTypeInfo BurgVecToBurgInfo(const vector<float> &burgvec) {
+  if (!BurgVecToBurgInfoMap.size()) {
+    for (vector<BurgerTypeInfo>::iterator bt = BurgInfos.begin();
          bt != BurgInfos.end(); bt++) {
-      BurgVecToBurgInfoMap[bt->burgvec] = *bt;      
-      vector<float> negvec {-bt->burgvec[0], -bt->burgvec[1], -bt->burgvec[2]}; 
-      BurgVecToBurgInfoMap[negvec] = *bt;           
+      BurgVecToBurgInfoMap[bt->burgvec] = *bt;
+      vector<float> negvec {-bt->burgvec[0], -bt->burgvec[1], -bt->burgvec[2]};
+      BurgVecToBurgInfoMap[negvec] = *bt;
     }
   }
   if (BurgVecToBurgInfoMap[burgvec].burgnum == BCC_BURGERS_UNKNOWN) {
     vector<float> negvec = {-burgvec[0], -burgvec[1], -burgvec[2]};
     // Not in the current list.  See if we can find a close match, and cache it:
-    for (vector<BurgerTypeInfo>::iterator bt = BurgInfos.begin(); 
+    for (vector<BurgerTypeInfo>::iterator bt = BurgInfos.begin();
          bt != BurgInfos.end(); bt++) {
       if (*bt == burgvec || *bt == negvec) {
-        BurgVecToBurgInfoMap[burgvec] = *bt; 
+        BurgVecToBurgInfoMap[burgvec] = *bt;
         break;
       }
     }
   }
   BurgerTypeInfo burginfo = BurgVecToBurgInfoMap[burgvec];
-  return burginfo; 
+  return burginfo;
 }
 
 /* ============================================================ */
 int BurgVecToBurgType(const vector<float> &burgvec) {
-  BurgerTypeInfo binfo = BurgVecToBurgInfo(burgvec); 
-  return binfo.burgnum; 
+  BurgerTypeInfo binfo = BurgVecToBurgInfo(burgvec);
+  return binfo.burgnum;
 }
 
 /* ============================================================ */
 string BurgTypeToName(int btype) {
   BurgerTypeInfo binfo = BurgTypeToBurgInfo(btype);
-  return binfo.name; 
+  return binfo.name;
 }
-  
+
 
 /* ============================================================ */
-map<int, string> ArmTypeToNameMap; 
+map<int, string> ArmTypeToNameMap;
 
 string ArmTypeToName(int atype) {
   if (!ArmTypeToNameMap.size()) {
@@ -215,53 +217,53 @@ string ArmTypeToName(int atype) {
     ArmTypeToNameMap[ARM_UNKNOWN] =          "ARM_UNKNOWN";
     ArmTypeToNameMap[ARM_UNINTERESTING] =    "ARM_UNINTERESTING";
     ArmTypeToNameMap[ARM_LOOP] =             "ARM_LOOP";
-    ArmTypeToNameMap[ARM_BCC_MM_111] =       "ARM_BCC_MM_111"; 
+    ArmTypeToNameMap[ARM_BCC_MM_111] =       "ARM_BCC_MM_111";
     ArmTypeToNameMap[ARM_BCC_MN_111] =       "ARM_BCC_MN_111";
-    ArmTypeToNameMap[ARM_BCC_NN_111] =       "ARM_BCC_NN_111"; 
+    ArmTypeToNameMap[ARM_BCC_NN_111] =       "ARM_BCC_NN_111";
     ArmTypeToNameMap[ARM_BCC_SHORT_NN_111] = "ARM_BCC_SHORT_NN_111";
     ArmTypeToNameMap[ARM_BOUNDARY] =         "ARM_BOUNDARY";  // Has terminal node with one neighbor segment; happens in non-periodic data
-    for (vector<BurgerTypeInfo>::iterator bt = BurgInfos.begin(); 
+    for (vector<BurgerTypeInfo>::iterator bt = BurgInfos.begin();
          bt != BurgInfos.end(); bt++) {
       if (bt->burgnum >= 1000) {
         ArmTypeToNameMap[bt->burgnum] = str(boost::format("ARM_HCP_BURGERS_%04d")%(bt->burgnum));
-        ArmTypeToNameMap[bt->burgnum+1000] = str(boost::format("ARM_HCP_UNZIPPED_%04d")%(bt->burgnum+1000)); 
+        ArmTypeToNameMap[bt->burgnum+1000] = str(boost::format("ARM_HCP_UNZIPPED_%04d")%(bt->burgnum+1000));
       }
     }
   }
-  string result = ArmTypeToNameMap[atype]; 
+  string result = ArmTypeToNameMap[atype];
   if (result == "") {
-    return "ERROR_UNKNOWN_ARM_TYPE"; 
+    return "ERROR_UNKNOWN_ARM_TYPE";
   }
-  return result; 
+  return result;
 }
 
 /* ============================================================ */
 vector<int> GetAllArmTypes(void) {
-  string initializeArms = ArmTypeToName(0); 
+  string initializeArms = ArmTypeToName(0);
   vector<int> result;
-  for (map<int,string>::iterator pos = ArmTypeToNameMap.begin(); 
+  for (map<int,string>::iterator pos = ArmTypeToNameMap.begin();
        pos != ArmTypeToNameMap.end(); pos++) {
-    result.push_back(pos->first); 
+    result.push_back(pos->first);
   }
-  return result; 
+  return result;
 }
 
 /* ============================================================ */
 string DocumentAllArmTypes(void) {
-  string output; 
-  output += "Each Arm has an Arm Type which usually corresponds closely to the burgers value of the arm segments it contains.  However, it also expresses emergent properties of the arm such as whether it is a LOOP or has been otherwise defined to have interesting topology or features.\n"; 
-  output += str(boost::format("%=15s%=23s\n")%"Arm Type"%"Name"); 
-  vector<int> armtypes = GetAllArmTypes(); 
-  for (vector<int>::iterator pos = armtypes.begin(); 
+  string output;
+  output += "Each Arm has an Arm Type which usually corresponds closely to the burgers value of the arm segments it contains.  However, it also expresses emergent properties of the arm such as whether it is a LOOP or has been otherwise defined to have interesting topology or features.\n";
+  output += str(boost::format("%=15s%=23s\n")%"Arm Type"%"Name");
+  vector<int> armtypes = GetAllArmTypes();
+  for (vector<int>::iterator pos = armtypes.begin();
        pos != armtypes.end(); pos++) {
     output += str(boost::format("%=15d%=23s\n")
-                  %(*pos)%ArmTypeToName(*pos)); 
+                  %(*pos)%ArmTypeToName(*pos));
   }
   return output;
 }
 
 /* ============================================================ */
-map<int, string> MetaArmTypeToNameMap; 
+map<int, string> MetaArmTypeToNameMap;
 string MetaArmTypeToName(int mtype) {
   if (!MetaArmTypeToNameMap.size()) {
     MetaArmTypeToNameMap[METAARM_UNKNOWN] = "METAARM_UNKNOWN";
@@ -269,46 +271,46 @@ string MetaArmTypeToName(int mtype) {
     MetaArmTypeToNameMap[METAARM_LOOP_111] = "METAARM_LOOP_111";
     MetaArmTypeToNameMap[METAARM_LOOP_HIGH_ENERGY] = "METAARM_LOOP_HIGH_ENERGY";
   }
-  string result = MetaArmTypeToNameMap[mtype]; 
+  string result = MetaArmTypeToNameMap[mtype];
   if (result == "") {
-    return "ERROR_UNKNOWN_METAARM_TYPE"; 
+    return "ERROR_UNKNOWN_METAARM_TYPE";
   }
-  return result; 
-}; 
+  return result;
+};
 
 
 
 // =====================================================================
-// AngularDifference used in ScrewType calculations and blender rotations 
+// AngularDifference used in ScrewType calculations and blender rotations
 // Since the other length is often known in those contexts, we save computation by taking it as a parameter
 
 double AngularDifference(vector<float>v1, vector<float>v2, double v1Length, double v2Length) {
-  dbprintf(5, str(boost::format("AngularDifference(<%f %f %f>, <%f, %f, %f>, %f, %f)\n") 
-				  % v1[0] % v1[1] % v1[2] % v2[0] % v2[1] % v2[2] 
-				  % v1Length % v2Length).c_str()); 
-				  
+  dbprintf(5, str(boost::format("AngularDifference(<%f %f %f>, <%f, %f, %f>, %f, %f)\n")
+				  % v1[0] % v1[1] % v1[2] % v2[0] % v2[1] % v2[2]
+				  % v1Length % v2Length).c_str());
+
   double dotprod = 0.0; //dot product of segment vec and other vec
   for (uint i=0; i<3; i++) {
-	dotprod += v1[i]*v2[i]; 
+	dotprod += v1[i]*v2[i];
   }
   if (v1Length < 0) {
 	// compute length of v1:
-	double sum = 0; 
+	double sum = 0;
 	for (int i=0; i<3; i++) {
 	  sum += v1[i]*v1[i];
 	}
-	v1Length = sqrt(sum); 
+	v1Length = sqrt(sum);
   }
   if (v2Length < 0) {
 	// compute length of v2:
-	double sum = 0; 
+	double sum = 0;
 	for (int i=0; i<3; i++) {
 	  sum += v2[i]*v2[i];
 	}
-	v2Length = sqrt(sum); 
+	v2Length = sqrt(sum);
   }
-  double ratio = dotprod / (v1Length * v2Length); 
+  double ratio = dotprod / (v1Length * v2Length);
   double theta = acos(ratio); // always positive
-  dbprintf(5, str(boost::format("AngularDifference: dotprod = %f, v1Length = %f, v2Length = %f, ratio = %f, theta = %f\n") % dotprod % v1Length % v2Length % ratio % theta).c_str()); 
-  return theta; 
+  dbprintf(5, str(boost::format("AngularDifference: dotprod = %f, v1Length = %f, v2Length = %f, ratio = %f, theta = %f\n") % dotprod % v1Length % v2Length % ratio % theta).c_str());
+  return theta;
 }
