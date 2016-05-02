@@ -10,11 +10,13 @@ See <http://paradis.stanford.edu> for more information about ParaDIS.  The image
 
 paraDIS\_lib requires g++ 4.9.2 to install.  You can set the CC and CXX variables to help find the compilers as needed or simply set your PATH so that gcc and g++ are the right versions.   Also required are the Boost 1.55 and tclap 1.20 libraries.  By default, the Makefile assumes they are installed in the current directory as ./boost and ./tclap.  However, you can also set BOOSTDIR and TCLAPDIR when compiling, something like this:
 
-`CC=/usr/gapps/gnu/4.9.2/bin/gcc \`
-`CXX=/usr/gapps/gnu/4.9.2/bin/gxx \`
-`INSTALL_DIR=/some/where/awesome \`
-`BOOSTDIR=/usr/local/tools/boost-nompi-1.55.0 \`
-`TCLAPDIR=/g/g0/rcook/current_projects/tclap-1.2.0 make install`
+```CC=/usr/apps/gnu/4.9.2/bin/gcc \
+CXX=/usr/apps/gnu/4.9.2/bin/g++ \
+INSTALL_DIR=./install_dir/ \
+BOOSTDIR=/usr/local/tools/boost-nompi-1.55.0 \
+TCLAPDIR=/g/g0/rcook/current_projects/RC_cpp_lib/tclap-1.2.0 \
+make install
+```
 
 The boost libraries must include compiled libboost\_filesystem and libboost\_system libraries.
 
