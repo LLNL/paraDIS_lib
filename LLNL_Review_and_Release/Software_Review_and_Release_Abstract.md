@@ -29,6 +29,4 @@
 
 * **Time Requirements** None
 
-* **References**. List citations of pertinent publications by author, title, and report number. References are to be broken down into two groupings:
-	* Reference documents provided with the submittal package
-	* Additional background reference materials generally available
+* **References**. Documentation is included with the software.  Contact the authors for more information about publications.  
