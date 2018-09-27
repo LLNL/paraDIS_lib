@@ -213,6 +213,7 @@ map<int, string> ArmTypeToNameMap;
 
 string ArmTypeToName(int atype) {
   if (!ArmTypeToNameMap.size()) {
+    ArmTypeToNameMap.clear();
     ArmTypeToNameMap[ARM_EMPTY] =            "ARM_EMPTY"; // for deletion after decomposition
     ArmTypeToNameMap[ARM_UNKNOWN] =          "ARM_UNKNOWN";
     ArmTypeToNameMap[ARM_UNINTERESTING] =    "ARM_UNINTERESTING";
